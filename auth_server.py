@@ -373,7 +373,8 @@ def admin_page(current_user: dict, users: list, msg='', msg_type='ok'):
     rows = ''
     for u in users:
         is_self = u['id'] == current_user['user_id']
-        del_btn = '' if is_self else f'<form method="POST" action="/admin/remove/{u["id"]}" style="display:inline" onsubmit="return confirm(\'Remove {u[\'email\']}?\')"><button class="btn btn-sm btn-del" type="submit">Remove</button></form>'
+        email_js = u['email'].replace("'", "\\'")
+        del_btn = '' if is_self else f'<form method="POST" action="/admin/remove/{u["id"]}" style="display:inline" onsubmit="return confirm(\'Remove {email_js}?\')"><button class="btn btn-sm btn-del" type="submit">Remove</button></form>'
         role_cls = 'role-admin' if u['role'] == 'admin' else 'role-user'
         joined = u.get('created_at', '')[:10]
         rows += f'<tr><td>{u["email"]}</td><td><span class="role-badge {role_cls}">{u["role"]}</span></td><td>{joined}</td><td>{del_btn}</td></tr>'
