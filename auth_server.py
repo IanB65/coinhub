@@ -10,12 +10,16 @@ AUTH_FILE    = SERVE_DIR / '.coinhub_auth'
 QUEUE_FILE   = SERVE_DIR / '.coinhub_sync_queue.json'
 CONFIG_FILE  = SERVE_DIR / '.coinhub_config'
 CHANGES_FILE = SERVE_DIR / 'coinhub_changes.log'
-PORT        = 8090
-SESSION_TTL = 8 * 3600  # 8 hours
+DEVICES_FILE = SERVE_DIR / '.coinhub_devices.json'
+PORT         = 8090
+SESSION_TTL  = 8 * 3600       # 8 hours  (in-memory, lost on restart)
+REMEMBER_TTL = 7 * 24 * 3600  # 7 days   (persistent, survives restarts)
 _SESSIONS: dict[str, float] = {}
+_DEVICES:  dict[str, float] = {}  # {remember_token: expiry_timestamp}
 
 # ── SENSITIVE FILES (never served) ───────────────────────────────────────────
-_BLOCKED = {'.coinhub_auth', 'auth_server.py', '.coinhub_sync_queue.json', '.coinhub_config', 'coinhub_changes.log'}
+_BLOCKED = {'.coinhub_auth', 'auth_server.py', '.coinhub_sync_queue.json',
+            '.coinhub_config', 'coinhub_changes.log', '.coinhub_devices.json'}
 _BLOCKED_LOWER = {f.lower() for f in _BLOCKED}  # case-insensitive match for Windows FS
 
 # ── NOTION API ────────────────────────────────────────────────────────────────
@@ -220,6 +224,52 @@ def session_from_cookie(header: str) -> str | None:
             return v.strip()
     return None
 
+# ── REMEMBER-DEVICE (persistent, 7-day tokens) ────────────────────────────────
+def _devices_load() -> dict:
+    if DEVICES_FILE.exists():
+        try:
+            return {t: exp for t, exp in json.loads(DEVICES_FILE.read_text()).items()
+                    if exp > time.time()}  # prune expired on load
+        except Exception:
+            pass
+    return {}
+
+def _devices_save():
+    DEVICES_FILE.write_text(json.dumps(_DEVICES, indent=2))
+
+def device_new() -> str:
+    token = secrets.token_urlsafe(32)
+    now = time.time()
+    _DEVICES[token] = now + REMEMBER_TTL
+    # Prune any other expired tokens while we're here
+    for t in [k for k, exp in _DEVICES.items() if exp <= now]:
+        del _DEVICES[t]
+    _devices_save()
+    return token
+
+def device_valid(token: str | None) -> bool:
+    if token and token in _DEVICES:
+        if _DEVICES[token] > time.time():
+            return True
+        del _DEVICES[token]
+        _devices_save()
+    return False
+
+def device_revoke(token: str | None):
+    if token and token in _DEVICES:
+        del _DEVICES[token]
+        _devices_save()
+
+def device_from_cookie(header: str) -> str | None:
+    for part in (header or '').split(';'):
+        k, _, v = part.strip().partition('=')
+        if k.strip() == 'chrid':
+            return v.strip()
+    return None
+
+# Load persisted devices at startup
+_DEVICES.update(_devices_load())
+
 # ── AUTH CONFIG ───────────────────────────────────────────────────────────────
 def auth_load() -> dict | None:
     return json.loads(AUTH_FILE.read_text()) if AUTH_FILE.exists() else None
@@ -280,6 +330,12 @@ def login_page(error='', show_totp=False):
     <div class="field"><label>Email</label><input type="email" name="email" required autocomplete="email"></div>
     <div class="field"><label>Password</label><input type="password" name="password" required autocomplete="current-password"></div>
     {totp}
+    <div class="field">
+      <label class="check-row">
+        <input type="checkbox" name="remember" value="1" checked>
+        Remember this device for 7 days
+      </label>
+    </div>
     <p class="err">{error}</p>
     <button class="btn" type="submit">Sign In</button>
   </form>
@@ -334,16 +390,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
         self.send_header('Cache-Control', 'no-store')
-        if cookie:
-            self.send_header('Set-Cookie', cookie)
+        for c in ([cookie] if isinstance(cookie, str) else (cookie or [])):
+            self.send_header('Set-Cookie', c)
         self.end_headers()
         self.wfile.write(body)
 
     def _redirect(self, loc, cookie=None):
         self.send_response(302)
         self.send_header('Location', loc)
-        if cookie:
-            self.send_header('Set-Cookie', cookie)
+        for c in ([cookie] if isinstance(cookie, str) else (cookie or [])):
+            self.send_header('Set-Cookie', c)
         self.end_headers()
 
     def _body(self):
@@ -372,8 +428,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_response(403); self.end_headers(); return
 
         if path == 'logout':
-            self._redirect('/', cookie='chsid=; Max-Age=0; Path=/; HttpOnly')
+            # Revoke the remember token so this device must log in again
+            rt = device_from_cookie(self.headers.get('Cookie', ''))
+            device_revoke(rt)
+            self._redirect('/', cookie=[
+                'chsid=; Max-Age=0; Path=/; HttpOnly',
+                'chrid=; Max-Age=0; Path=/; HttpOnly',
+            ])
             return
+
+        # ── Remember-device auto-login ────────────────────────────────────────
+        # If no valid session but a valid remember token exists, mint a new
+        # session and redirect to the same URL so the browser picks it up.
+        cookie_hdr = self.headers.get('Cookie', '')
+        if not session_valid(session_from_cookie(cookie_hdr)) and path not in ('', 'login', 'setup'):
+            rt = device_from_cookie(cookie_hdr)
+            if device_valid(rt):
+                sid = session_new()
+                self._redirect(self.path,
+                    cookie=f'chsid={sid}; Max-Age={SESSION_TTL}; Path=/; HttpOnly; SameSite=Strict')
+                return
 
         if auth is None:
             self._html(setup_page()); return
@@ -496,9 +570,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
 
             sid = session_new()
-            print(f'[CoinHub] Login: {email}')
-            self._redirect('/CoinHub.html',
-                cookie=f'chsid={sid}; Max-Age={SESSION_TTL}; Path=/; HttpOnly; SameSite=Strict')
+            cookies = [f'chsid={sid}; Max-Age={SESSION_TTL}; Path=/; HttpOnly; SameSite=Strict']
+            if data.get('remember') == '1':
+                rt = device_new()
+                cookies.append(f'chrid={rt}; Max-Age={REMEMBER_TTL}; Path=/; HttpOnly; SameSite=Strict')
+                print(f'[CoinHub] Login: {email} (device remembered for 7 days)')
+            else:
+                print(f'[CoinHub] Login: {email}')
+            self._redirect('/CoinHub.html', cookie=cookies)
         else:
             self.send_response(404); self.end_headers()
 
