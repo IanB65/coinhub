@@ -13,6 +13,8 @@ coinhub-tunnel.log
 # ─── Claude Code local settings ───────────────────────────────────────────────
 .claude/settings.local.json
 
+# ─── Cloudflare Tunnel ────────────────────────────────────────────────────────
+.cloudflared/
 # ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
