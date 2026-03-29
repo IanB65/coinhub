@@ -1,0 +1,37 @@
+# CoinHub — gitignore
+
+# ─── Sensitive credentials (NEVER commit these) ───────────────────────────────
+.coinhub_auth
+.coinhub_config
+
+# ─── Runtime state ────────────────────────────────────────────────────────────
+.coinhub_sync_queue.json
+coinhub_changes.log
+coinhub.log
+coinhub-tunnel.log
+
+# ─── Claude Code local settings ───────────────────────────────────────────────
+.claude/settings.local.json
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# ─── OS / editor noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
