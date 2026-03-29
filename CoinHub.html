@@ -16,7 +16,7 @@
   --border:#C8BFA8;--muted:#4A4438;
   --r:2px;
 }
-html{font-size:15px;scroll-behavior:smooth}
+html{font-size:16px;scroll-behavior:smooth}
 body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
 
 /* ── CONSOLIDATED ROW ── */
@@ -113,7 +113,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .results-count{font-size:.62rem;color:var(--muted);letter-spacing:.06em}
 .results-count b{color:var(--ink)}
 .sort-row{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:.62rem;color:var(--muted)}
-.sort-btn{padding:.25rem .6rem;border:1px solid var(--border);border-radius:20px;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);transition:all .12s}
+.sort-btn{padding:.25rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);transition:all .12s}
 .sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
 /* ── TABLE ── */
@@ -300,7 +300,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sync-approve-btn:hover{background:var(--got);color:#fff}
 .sync-dismiss-btn{padding:.22rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--muted)}
 .sync-dismiss-btn:hover{border-color:var(--need);color:var(--need)}
-.sync-badge{display:inline-block;background:var(--need);color:#fff;font-size:.48rem;font-weight:600;border-radius:20px;padding:1px 5px;margin-left:.3rem;vertical-align:middle;font-family:'DM Mono',monospace}
+@keyframes syncPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.sync-badge{display:inline-block;background:var(--need);color:#fff;font-size:.48rem;font-weight:600;border-radius:20px;padding:1px 5px;margin-left:.3rem;vertical-align:middle;font-family:'DM Mono',monospace;animation:syncPulse 1.6s ease-in-out infinite}
 
 /* ── STATS DASHBOARD ── */
 .stats-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:64px 1rem 1rem}
@@ -337,6 +338,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .coin-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);background:var(--paper3);flex-shrink:0}
 .coin-thumb-ph{width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--paper3);display:flex;align-items:center;justify-content:center;font-size:.45rem;color:var(--muted);font-family:'Cormorant Garamond',serif;text-align:center;flex-shrink:0;line-height:1.1}
 
+#tableWrap{transition:opacity .1s ease}
 .empty-state{padding:4rem 2rem;text-align:center}
 .empty-state h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;font-style:italic;color:var(--muted);margin-bottom:.5rem}
 .empty-state p{font-size:.65rem;color:var(--muted)}
@@ -365,10 +367,37 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .coll-card-bar-fill.complete{background:var(--gold)}
 .coll-card.active .coll-card-bar-fill{background:var(--gold3)}
 
+/* ── TABLET ── */
+@media(max-width:1024px){
+  header{padding:0 1.2rem}
+  .header-stats{gap:.8rem}
+  #hTotal{display:none}
+}
+@media(max-width:860px){
+  .hstat{display:none}
+}
+
+/* ── MOBILE FILTER TOGGLE ── */
+.mobile-filter-btn{display:none;align-items:center;gap:.35rem;padding:.3rem .65rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);transition:all .12s;flex-shrink:0;white-space:nowrap}
+.mobile-filter-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.mobile-filter-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.mobile-filter-close{display:none;position:fixed;top:max(.8rem,env(safe-area-inset-top) + .3rem);right:max(.8rem,env(safe-area-inset-right) + .3rem);background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:1rem;color:var(--muted);padding:.3rem .6rem;line-height:1;z-index:151}
+
+/* ── MOBILE ── */
 @media(max-width:700px){
+  html{font-size:18px}
   .app{grid-template-columns:1fr}
-  .filters{position:static;height:auto}
+  .filters{position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;height:100dvh;border-right:none;border-bottom:1px solid var(--border);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding-top:max(3.5rem,env(safe-area-inset-top) + 2.5rem);padding-bottom:max(1.5rem,env(safe-area-inset-bottom));padding-left:max(1.2rem,env(safe-area-inset-left));padding-right:max(1.2rem,env(safe-area-inset-right))}
+  .filters.mobile-open{display:flex}
+  .mobile-filter-btn{display:flex}
+  .mobile-filter-close{display:block}
+  .mobile-filter-overlay{display:none;position:fixed;inset:0;z-index:149;background:rgba(12,12,10,.35)}
+  .mobile-filter-overlay.open{display:block}
   .coin-table th:nth-child(n+4),.coin-table td:nth-child(n+4){display:none}
+  /* iOS safe input size to prevent auto-zoom on focus */
+  select,input[type=text],input[type=email],input[type=password]{font-size:16px}
+  .search-refine-bar{flex-wrap:wrap;gap:.4rem}
+  .refine-selects{flex-wrap:wrap}
 }
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out}
 #lightbox.open{display:flex}
@@ -468,9 +497,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<div class="mobile-filter-overlay" id="mobileFilterOverlay" onclick="closeMobileFilters()"></div>
+
 <div class="app" id="mainApp" style="display:none">
   <!-- LEFT: FILTERS -->
-  <aside class="filters">
+  <aside class="filters" id="filterPanel">
+    <button class="mobile-filter-close" onclick="closeMobileFilters()" aria-label="Close filters">✕</button>
     <div class="filter-section">
       <div class="filter-label">Denomination</div>
       <div class="denom-grid" id="denomGrid"></div>
@@ -492,7 +524,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="main">
     <div class="sticky-top">
     <div class="search-refine-bar">
-      <input type="text" id="searchInput" placeholder="Search name, variant, year…" oninput="applyFilters()">
+      <button class="mobile-filter-btn" id="mobileFilterBtn" onclick="toggleMobileFilters()" aria-expanded="false" aria-controls="filterPanel">⊞ Filters</button>
+      <input type="text" id="searchInput" placeholder="Search name, variant, year…" oninput="applyFilters()" inputmode="search">
       <div class="refine-selects">
         <span class="refine-label">Year</span>
         <select id="yearSel" onchange="applyFilters()"><option value="">All</option></select>
@@ -1197,7 +1230,34 @@ const COTUK_MAP = {
 };
   function openLightbox(e, el) { e.stopPropagation(); var lb=document.getElementById('lightbox'); document.getElementById('lightboxImg').src=el.src; lb.classList.add('open'); }
   function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeLightbox();closeMobileFilters();}
+    if(e.key==='/'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      var s=document.getElementById('searchInput');if(s){s.focus();s.select();}
+    }
+  });
+
+  // ── MOBILE FILTER DRAWER ──
+  function toggleMobileFilters() {
+    var panel = document.getElementById('filterPanel');
+    var btn   = document.getElementById('mobileFilterBtn');
+    var ovl   = document.getElementById('mobileFilterOverlay');
+    var open  = panel.classList.toggle('mobile-open');
+    btn.classList.toggle('active', open);
+    ovl.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  function closeMobileFilters() {
+    var panel = document.getElementById('filterPanel');
+    if (!panel) return;
+    panel.classList.remove('mobile-open');
+    document.getElementById('mobileFilterBtn').classList.remove('active');
+    document.getElementById('mobileFilterOverlay').classList.remove('open');
+    document.getElementById('mobileFilterBtn').setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
 
   function imgFallback(el) {
     if (el.src === el.dataset.cotuk && el.dataset.rm) {
@@ -2358,8 +2418,9 @@ function applyFilters() {
   });
 
   sortCoins();
-  renderTable();
-  updateCollProgress();
+  const wrap = document.getElementById('tableWrap');
+  wrap.style.opacity = '0';
+  setTimeout(() => { renderTable(); updateCollProgress(); wrap.style.opacity = '1'; }, 80);
 }
 
 function sortCoins() {

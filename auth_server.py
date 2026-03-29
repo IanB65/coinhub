@@ -314,6 +314,11 @@ input:focus{border-color:var(--g2)}
         background:var(--p2);border-radius:var(--r)}
 .check-row{display:flex;align-items:center;gap:.4rem;font-size:.65rem;cursor:pointer}
 .check-row input{width:auto}
+@media(max-width:480px){
+  .card{width:100%;padding:2rem 1.2rem}
+  body{padding:1rem;align-items:flex-start;padding-top:3rem}
+  input[type=email],input[type=password],input[type=text]{font-size:16px}
+}
 """
 
 def _page(title, body):
