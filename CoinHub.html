@@ -66,10 +66,14 @@ header{border-bottom:1px solid var(--border);padding:0 2rem;height:52px;display:
 
 /* Denomination pills - primary filter */
 .denom-grid{display:grid;grid-template-columns:1fr 1fr;gap:.3rem}
-.denom-btn{padding:.4rem .3rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);transition:all .12s;text-align:center;line-height:1.1}
+.denom-btn{padding:.4rem .3rem .3rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);transition:all .12s;text-align:center;line-height:1.1;overflow:hidden}
 .denom-btn:hover{border-color:var(--gold2);color:var(--ink)}
 .denom-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
 .denom-btn .denom-count{display:block;font-size:.52rem;opacity:.6;margin-top:.1rem}
+.denom-btn .denom-bar-wrap{height:3px;background:rgba(0,0,0,.08);margin:.3rem -.3rem -.3rem;overflow:hidden}
+.denom-btn.active .denom-bar-wrap{background:rgba(255,255,255,.15)}
+.denom-btn .denom-bar-fill{height:100%;background:var(--got);transition:width .3s}
+.denom-btn.active .denom-bar-fill{background:var(--gold3)}
 
 /* Secondary filters */
 .filter-row{margin-bottom:.5rem}
@@ -214,8 +218,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .edit-variant-btn:hover{border-color:var(--gold2);color:var(--ink)}
 
 /* change log */
-.log-btn{padding:.2rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);transition:all .12s;margin-left:.8rem}
+.log-btn{padding:.2rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);transition:all .12s;margin-left:.8rem;white-space:nowrap}
 .log-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.log-btn .btn-icon{display:none;font-style:normal}
+@media(max-width:960px){.log-btn .btn-text{display:none}.log-btn .btn-icon{display:inline}.log-btn{margin-left:.4rem;padding:.2rem .5rem}}
 .log-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:flex-end;padding:64px 1rem 1rem}
 .log-modal-bg.open{display:flex}
 .log-modal{background:var(--paper);border:1px solid var(--border);border-radius:3px;width:420px;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
@@ -336,7 +342,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* coin image */
 .coin-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);background:var(--paper3);flex-shrink:0}
-.coin-thumb-ph{width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--paper3);display:flex;align-items:center;justify-content:center;font-size:.45rem;color:var(--muted);font-family:'Cormorant Garamond',serif;text-align:center;flex-shrink:0;line-height:1.1}
+.coin-thumb-ph{width:48px;height:48px;flex-shrink:0}
 
 #tableWrap{transition:opacity .1s ease}
 .empty-state{padding:4rem 2rem;text-align:center}
@@ -350,22 +356,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .refine-selects select{width:auto;min-width:80px;max-width:140px}
 .refine-label{font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 
-/* ── COLLECTION STRIP ── */
-.coll-strip-outer{border-bottom:1px solid var(--border);overflow-x:auto;padding:.6rem 1.5rem;background:var(--paper2)}
-.coll-strip-outer::-webkit-scrollbar{height:4px}.coll-strip-outer::-webkit-scrollbar-thumb{background:var(--border)}
-.coll-strip{display:flex;gap:.5rem;width:max-content}
-.coll-card{width:100px;border:1px solid var(--border);border-radius:3px;background:var(--paper);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;padding:.5rem .5rem .45rem;text-align:left;transition:all .12s;flex-shrink:0;gap:.25rem}
-.coll-card:hover{border-color:var(--gold2);background:var(--paper3)}
-.coll-card.active{background:var(--ink);border-color:var(--ink)}
-.coll-card-name{font-size:.65rem;color:var(--ink);line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;font-family:'Cormorant Garamond',serif;font-weight:600;flex:1}
-.coll-card.active .coll-card-name{color:var(--paper)}
-.coll-card-frac{font-size:.55rem;color:var(--muted);font-family:'DM Mono',monospace;font-weight:500}
-.coll-card.active .coll-card-frac{color:var(--gold3)}
-.coll-card-bar-wrap{width:100%;height:5px;background:var(--paper3);border-radius:3px;margin-top:.1rem;overflow:hidden}
-.coll-card.active .coll-card-bar-wrap{background:rgba(255,255,255,.15)}
-.coll-card-bar-fill{height:100%;border-radius:3px;background:var(--got);transition:width .3s}
-.coll-card-bar-fill.complete{background:var(--gold)}
-.coll-card.active .coll-card-bar-fill{background:var(--gold3)}
 
 /* ── TABLET ── */
 @media(max-width:1024px){
@@ -423,10 +413,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hstat"><span class="hstat-dot" style="background:var(--need)"></span><b id="hNeed">–</b>&nbsp;Need</div>
     <div class="hstat"><span class="hstat-dot" style="background:var(--list)"></span><b id="hList">–</b>&nbsp;List</div>
     <div class="hstat" id="hTotal" style="border-left:1px solid var(--border);padding-left:1.5rem"><b id="hTotalN">–</b>&nbsp;variants</div>
-    <button class="log-btn" onclick="showStockCheck()">Stock Check</button>
-    <button class="log-btn" onclick="showChangeLog()">Change Log</button>
-    <button class="log-btn" onclick="showStats()">Stats</button>
-    <button class="log-btn" id="syncBtn" onclick="showSyncQueue()">Notion Sync<span class="sync-badge" id="syncBadge" style="display:none">0</span></button>
+    <button class="log-btn" onclick="showStockCheck()" title="Stock Check"><span class="btn-icon">⊙</span><span class="btn-text">Stock Check</span></button>
+    <button class="log-btn" onclick="showChangeLog()" title="Change Log"><span class="btn-icon">◷</span><span class="btn-text">Change Log</span></button>
+    <button class="log-btn" onclick="showStats()" title="Stats"><span class="btn-icon">≋</span><span class="btn-text">Stats</span></button>
+    <button class="log-btn" id="syncBtn" onclick="showSyncQueue()" title="Notion Sync"><span class="btn-icon">⇅</span><span class="btn-text">Notion Sync</span><span class="sync-badge" id="syncBadge" style="display:none">0</span></button>
   </div>
 </header>
 
@@ -534,9 +524,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <span class="refine-label">Collection</span>
         <select id="collectionSel" onchange="applyFilters()"><option value="">All</option></select>
       </div>
-    </div>
-    <div class="coll-strip-outer">
-      <div class="coll-strip" id="collStrip"></div>
     </div>
     <div class="results-bar">
       <div class="results-count">Showing <b id="countShown">–</b> of <b id="countTotal">–</b></div>
@@ -2239,7 +2226,6 @@ function init() {
   buildYearFilter();
   buildMonarchFilter();
   buildCollectionFilter();
-  buildCollectionStrip();
   updateSyncBadge();
 
   applyFilters();
@@ -2254,20 +2240,24 @@ function init() {
 const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
 
 function buildDenomFilter() {
-  const counts = {};
-  ALL_COINS.forEach(c => counts[c.denom] = (counts[c.denom]||0)+1);
+  const counts = {}, got = {};
+  ALL_COINS.forEach(c => {
+    counts[c.denom] = (counts[c.denom]||0)+1;
+    if (c.status === 'Got') got[c.denom] = (got[c.denom]||0)+1;
+  });
   const denoms = Object.keys(counts).sort((a,b)=>{
     const ai = DENOM_ORDER.indexOf(a), bi = DENOM_ORDER.indexOf(b);
     return (ai<0?99:ai)-(bi<0?99:bi);
   });
 
   const grid = document.getElementById('denomGrid');
-  // All button
+  const allGot = ALL_COINS.filter(c=>c.status==='Got').length;
+  const allPct = Math.round(allGot/ALL_COINS.length*100);
   const allBtn = document.createElement('button');
   allBtn.className = 'denom-btn active';
   allBtn.dataset.d = '';
   allBtn.style.gridColumn = '1/-1';
-  allBtn.innerHTML = 'All<span class="denom-count">'+ALL_COINS.length+'</span>';
+  allBtn.innerHTML = 'All<span class="denom-count">'+ALL_COINS.length+'</span><div class="denom-bar-wrap"><div class="denom-bar-fill" style="width:'+allPct+'%"></div></div>';
   allBtn.onclick = () => { STATE.denom = null; updateDenomBtns(); applyFilters(); };
   grid.appendChild(allBtn);
 
@@ -2275,7 +2265,8 @@ function buildDenomFilter() {
     const btn = document.createElement('button');
     btn.className = 'denom-btn';
     btn.dataset.d = d;
-    btn.innerHTML = d+'<span class="denom-count">'+counts[d]+'</span>';
+    const pct = Math.round((got[d]||0)/counts[d]*100);
+    btn.innerHTML = d+'<span class="denom-count">'+counts[d]+'</span><div class="denom-bar-wrap"><div class="denom-bar-fill" style="width:'+pct+'%"></div></div>';
     btn.onclick = () => { STATE.denom = d; updateDenomBtns(); applyFilters(); };
     grid.appendChild(btn);
   });
@@ -2479,7 +2470,7 @@ function renderTable() {
     const imgSrc = cotukUrl || rmUrl;
     const thumb = imgSrc
       ? `<img class="coin-thumb" src="${imgSrc}" data-cotuk="${cotukUrl||''}" data-rm="${rmUrl||''}" alt="" onerror="imgFallback(this)" onclick="openLightbox(event,this)">`
-      : `<div class="coin-thumb-ph">${c.denom}</div>`;
+      : `<svg class="coin-thumb-ph" viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="24" cy="24" r="19" fill="none" stroke="#C8BFA8" stroke-width="0.75" stroke-dasharray="2.5 2"/><text x="24" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#8B6914">${c.denom}</text></svg>`;
     const badge = `<span class="sbadge ${c.status||'Unknown'}">${c.status||'?'}</span>`;
     const qtyDisplay = c.instCount > 0
       ? `<div class="qty-wrap has-inst"><span class="qty-num">${c.instCount}</span><span class="qty-label">owned</span></div>`
