@@ -829,7 +829,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
 
         if self._authed() or guest_session_valid(guest_session_from_cookie(self.headers.get('Cookie', ''))):
-            super().do_GET()
+            # Prevent browser caching of the app file
+            if path in ('', 'CoinHub.html'):
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                content = (SERVE_DIR / 'CoinHub.html').read_bytes()
+                self.send_header('Content-Length', str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            else:
+                super().do_GET()
         else:
             self._redirect('/')
 
@@ -891,6 +901,36 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_resp({'ok': True, 'queued': len(queue)})
             return
 
+        if path == 'admin/guest-invite':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            try:
+                body = json.loads(self._raw_body())
+                hours = float(body.get('hours', 24))
+                if hours <= 0 or hours > 24 * 30:
+                    raise ValueError('Duration must be between 1 hour and 30 days')
+                token = guest_invite_new(hours)
+                expiry = _GUEST_INVITES[token]
+                print(f'[CoinHub] Guest invite created (expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(expiry))})')
+                self._json_resp({
+                    'token': token,
+                    'expires': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(expiry)),
+                })
+            except Exception as e:
+                self._json_resp({'error': str(e)}, 400)
+            return
+
+        if path == 'admin/guest-revoke':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            try:
+                body = json.loads(self._raw_body())
+                guest_invite_revoke(body.get('token', ''))
+                self._json_resp({'ok': True})
+            except Exception as e:
+                self._json_resp({'error': str(e)}, 400)
+            return
+
         data = self._body()
 
         if path == 'setup':
@@ -943,34 +983,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 print(f'[CoinHub] Login: {email}')
             self._redirect('/CoinHub.html', cookie=cookies)
-
-        elif path == 'admin/guest-invite':
-            if not self._authed():
-                self._json_resp({'error': 'unauthorized'}, 401); return
-            try:
-                body = json.loads(self._raw_body())
-                hours = float(body.get('hours', 24))
-                if hours <= 0 or hours > 24 * 30:
-                    raise ValueError('Duration must be between 1 hour and 30 days')
-                token = guest_invite_new(hours)
-                expiry = _GUEST_INVITES[token]
-                print(f'[CoinHub] Guest invite created (expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(expiry))})')
-                self._json_resp({
-                    'token': token,
-                    'expires': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(expiry)),
-                })
-            except Exception as e:
-                self._json_resp({'error': str(e)}, 400)
-
-        elif path == 'admin/guest-revoke':
-            if not self._authed():
-                self._json_resp({'error': 'unauthorized'}, 401); return
-            try:
-                body = json.loads(self._raw_body())
-                guest_invite_revoke(body.get('token', ''))
-                self._json_resp({'ok': True})
-            except Exception as e:
-                self._json_resp({'error': str(e)}, 400)
 
         else:
             self.send_response(404); self.end_headers()

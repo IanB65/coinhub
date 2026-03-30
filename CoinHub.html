@@ -46,6 +46,7 @@ body.guest-mode .inst-remove-btn,
 body.guest-mode .edit-variant-btn,
 body.guest-mode .add-inst-btn,
 body.guest-mode #syncBtn,
+body.guest-mode #adminLink,
 body.guest-mode .log-btn[onclick*="showStockCheck"],
 body.guest-mode .log-btn[onclick*="showChangeLog"]{display:none!important}
 
@@ -477,7 +478,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button class="log-btn" onclick="showChangeLog()" title="Change Log"><span class="btn-icon">◷</span><span class="btn-text">Change Log</span></button>
     <button class="log-btn" onclick="showStats()" title="Stats"><span class="btn-icon">≋</span><span class="btn-text">Stats</span></button>
     <button class="log-btn" id="syncBtn" onclick="showSyncQueue()" title="Notion Sync"><span class="btn-icon">⇅</span><span class="btn-text">Notion Sync</span><span class="sync-badge" id="syncBadge" style="display:none">0</span></button>
-    <a class="log-btn" id="adminLink" href="/admin" title="Guest Admin" style="display:none;text-decoration:none"><span class="btn-icon">⚿</span><span class="btn-text">Admin</span></a>
+    <a class="log-btn" id="adminLink" href="/admin" title="Guest Admin" style="text-decoration:none"><span class="btn-icon">⚿</span><span class="btn-text">Admin</span></a>
   </div>
 </header>
 
@@ -2344,10 +2345,7 @@ async function _applyGuestMode() {
     const r = await fetch('/api/whoami');
     if (!r.ok) return;
     const d = await r.json();
-    if (d.role === 'owner') {
-      document.getElementById('adminLink').style.display = '';
-      return;
-    }
+    if (d.role === 'owner') return;
     if (d.role !== 'guest') return;
     GUEST_MODE = true;
     document.body.classList.add('guest-mode');
