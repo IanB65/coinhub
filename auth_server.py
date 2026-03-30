@@ -606,21 +606,37 @@ def setup_page(prefill='', error='', totp_secret=None, totp_checked=True):
   </form>
 </div>""")
 
-def admin_page():
+def admin_page(link=None, expires=None, error=None):
     dur_options = [
         ('1','1 hour'), ('2','2 hours'), ('4','4 hours'), ('8','8 hours'),
         ('24','1 day'), ('48','2 days'), ('72','3 days'), ('168','7 days'),
         ('336','14 days'), ('720','30 days'),
     ]
     opts = ''.join(f'<option value="{v}"{"  selected" if v=="24" else ""}>{l}</option>' for v, l in dur_options)
+
+    link_box = ''
+    if link:
+        exp_str = f'Expires: {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(float(expires)))}' if expires else ''
+        link_box = f'''<div style="margin-top:.8rem">
+  <label>Share this link with your guest:</label>
+  <div style="margin-top:.3rem;background:var(--paper);border:1px solid var(--bdr);border-radius:var(--r);padding:.5rem .6rem;font-size:.58rem;word-break:break-all;font-family:inherit;line-height:1.6;user-select:all">{link}</div>
+  <p class="hint" style="margin-top:.3rem">{exp_str}</p>
+  <p class="hint" style="margin-top:.2rem">Select the link above and copy it.</p>
+</div>'''
+
+    err_box = f'<p class="err">{error}</p>' if error else ''
+
     now = time.time()
     active = sorted([(t, exp) for t, exp in _GUEST_INVITES.items() if exp > now], key=lambda x: x[1])
     if active:
         rows = ''.join(
             f'<tr style="border-bottom:1px solid var(--bdr)">'
-            f'<td style="padding:.35rem .3rem;font-size:.6rem;color:var(--muted)">expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(exp))}</td>'
+            f'<td style="padding:.35rem .3rem;font-size:.6rem;color:var(--mut)">expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(exp))}</td>'
             f'<td style="padding:.35rem .3rem;text-align:right">'
-            f'<button class="btn" style="width:auto;padding:.2rem .6rem;margin-top:0" onclick="revoke(\'{t}\')">Revoke</button>'
+            f'<form method="POST" action="/admin/guest-revoke" style="display:inline">'
+            f'<input type="hidden" name="token" value="{t}">'
+            f'<button class="btn" style="width:auto;padding:.2rem .6rem;margin-top:0" onclick="return confirm(\'Revoke this invite?\')">Revoke</button>'
+            f'</form>'
             f'</td></tr>'
             for t, exp in active
         )
@@ -628,48 +644,22 @@ def admin_page():
     else:
         invite_table = '<p class="hint" style="margin-top:1rem">No active invite links.</p>'
 
-    return _page('Guest Admin', f"""<div class="card" style="width:480px;max-width:100%">
+    return _page('Guest Admin', f'''<div class="card" style="width:480px;max-width:100%">
   <div class="logo">Coin <span>Hub</span></div>
   <h3>Create Guest Invite Link</h3>
   <p class="hint" style="margin:.4rem 0 .8rem">Guests can browse all coins but cannot edit, add, delete, run stocktake, or sync with Notion.</p>
-  <div class="field">
-    <label>Access Duration</label>
-    <select id="dur" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:var(--r);background:var(--paper);font-family:inherit;font-size:.75rem;color:var(--ink)">{opts}</select>
-  </div>
-  <button class="btn" onclick="create()">Generate Invite Link</button>
-  <div id="result" style="display:none;margin-top:.8rem">
-    <label>Share this link with your guest:</label>
-    <div id="linkBox" style="margin-top:.3rem;background:var(--paper);border:1px solid var(--bdr);border-radius:var(--r);padding:.5rem .6rem;font-size:.58rem;word-break:break-all;font-family:'DM Mono',monospace;cursor:pointer;line-height:1.5" onclick="copy()" title="Click to copy"></div>
-    <p class="hint" style="margin-top:.3rem" id="expHint"></p>
-    <p class="hint" style="color:var(--gold2);margin-top:.2rem">Click the link above to copy it.</p>
-  </div>
-  <p class="err" id="err"></p>
+  <form method="POST" action="/admin/guest-invite">
+    <div class="field">
+      <label>Access Duration</label>
+      <select name="hours" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:var(--r);background:var(--paper);font-family:inherit;font-size:.75rem;color:var(--ink)">{opts}</select>
+    </div>
+    {err_box}
+    <button class="btn" type="submit">Generate Invite Link</button>
+  </form>
+  {link_box}
   {invite_table}
   <a href="/CoinHub.html" style="font-size:.6rem;color:var(--list);text-decoration:none;margin-top:1rem;display:block">← Back to CoinHub</a>
-  <script>
-  async function create() {{
-    document.getElementById('err').textContent='';
-    document.getElementById('result').style.display='none';
-    const r=await fetch('/admin/guest-invite',{{method:'POST',body:JSON.stringify({{hours:+document.getElementById('dur').value}}),headers:{{'Content-Type':'application/json'}}}});
-    const d=await r.json();
-    if(d.error){{document.getElementById('err').textContent=d.error;return;}}
-    const url=location.origin+'/guest?t='+d.token;
-    document.getElementById('linkBox').textContent=url;
-    document.getElementById('expHint').textContent='Expires: '+new Date(d.expires).toLocaleString();
-    document.getElementById('result').style.display='block';
-  }}
-  function copy(){{
-    navigator.clipboard.writeText(document.getElementById('linkBox').textContent);
-    const b=document.getElementById('linkBox');
-    b.style.color='var(--got)';setTimeout(()=>b.style.color='',1500);
-  }}
-  async function revoke(t){{
-    if(!confirm('Revoke this invite link?'))return;
-    await fetch('/admin/guest-revoke',{{method:'POST',body:JSON.stringify({{token:t}}),headers:{{'Content-Type':'application/json'}}}});
-    location.reload();
-  }}
-  </script>
-</div>""")
+</div>''')
 
 # ── REQUEST HANDLER ───────────────────────────────────────────────────────────
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -901,37 +891,32 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_resp({'ok': True, 'queued': len(queue)})
             return
 
+        data = self._body()
+
         if path == 'admin/guest-invite':
             if not self._authed():
-                self._json_resp({'error': 'unauthorized'}, 401); return
+                self._redirect('/'); return
             try:
-                body = json.loads(self._raw_body())
-                hours = float(body.get('hours', 24))
+                hours = float(data.get('hours', 24))
                 if hours <= 0 or hours > 24 * 30:
                     raise ValueError('Duration must be between 1 hour and 30 days')
                 token = guest_invite_new(hours)
                 expiry = _GUEST_INVITES[token]
                 print(f'[CoinHub] Guest invite created (expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(expiry))})')
-                self._json_resp({
-                    'token': token,
-                    'expires': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(expiry)),
-                })
+                host = self.headers.get('Host', 'localhost:8090')
+                scheme = 'https' if 'ghghome' in host else 'http'
+                link = f'{scheme}://{host}/guest?t={token}'
+                self._html(admin_page(link=link, expires=str(expiry)))
             except Exception as e:
-                self._json_resp({'error': str(e)}, 400)
+                self._html(admin_page(error=str(e)))
             return
 
         if path == 'admin/guest-revoke':
             if not self._authed():
-                self._json_resp({'error': 'unauthorized'}, 401); return
-            try:
-                body = json.loads(self._raw_body())
-                guest_invite_revoke(body.get('token', ''))
-                self._json_resp({'ok': True})
-            except Exception as e:
-                self._json_resp({'error': str(e)}, 400)
+                self._redirect('/'); return
+            guest_invite_revoke(data.get('token', ''))
+            self._redirect('/admin')
             return
-
-        data = self._body()
 
         if path == 'setup':
             email    = data.get('email', '').strip().lower()
