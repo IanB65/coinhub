@@ -11,15 +11,19 @@ QUEUE_FILE   = SERVE_DIR / '.coinhub_sync_queue.json'
 CONFIG_FILE  = SERVE_DIR / '.coinhub_config'
 CHANGES_FILE = SERVE_DIR / 'coinhub_changes.log'
 DEVICES_FILE = SERVE_DIR / '.coinhub_devices.json'
+GUESTS_FILE  = SERVE_DIR / '.coinhub_guests.json'
 PORT         = 8090
 SESSION_TTL  = 8 * 3600       # 8 hours  (in-memory, lost on restart)
 REMEMBER_TTL = 7 * 24 * 3600  # 7 days   (persistent, survives restarts)
 _SESSIONS: dict[str, float] = {}
 _DEVICES:  dict[str, float] = {}  # {remember_token: expiry_timestamp}
+_GUEST_INVITES: dict[str, float] = {}   # invite_token → expiry_timestamp
+_GUEST_SESSIONS: dict[str, float] = {} # session_id → expiry_timestamp
 
 # ── SENSITIVE FILES (never served) ───────────────────────────────────────────
 _BLOCKED = {'.coinhub_auth', 'auth_server.py', '.coinhub_sync_queue.json',
-            '.coinhub_config', 'coinhub_changes.log', '.coinhub_devices.json'}
+            '.coinhub_config', 'coinhub_changes.log', '.coinhub_devices.json',
+            '.coinhub_guests.json'}
 _BLOCKED_LOWER = {f.lower() for f in _BLOCKED}  # case-insensitive match for Windows FS
 
 # ── NOTION API ────────────────────────────────────────────────────────────────
@@ -42,6 +46,165 @@ def _notion_request(method, path, body=None):
     })
     with urllib.request.urlopen(req) as r:
         return json.loads(r.read())
+
+def _notion_get_prop_str(prop):
+    """Extract a plain-text string from a Notion property dict."""
+    if not prop:
+        return ''
+    t = prop.get('type', '')
+    if t == 'rich_text':
+        return ''.join(r.get('plain_text', '') for r in prop.get('rich_text', []))
+    if t == 'title':
+        return ''.join(r.get('plain_text', '') for r in prop.get('title', []))
+    if t == 'select':
+        s = prop.get('select')
+        return s.get('name', '') if s else ''
+    if t == 'formula':
+        f = prop.get('formula', {})
+        return f.get('string', '') or (str(f.get('number', '')) if f.get('number') is not None else '')
+    if t == 'date':
+        d = prop.get('date')
+        return d.get('start', '') if d else ''
+    if t == 'relation':
+        rels = prop.get('relation', [])
+        return rels[0]['id'] if rels else ''
+    if t == 'number':
+        n = prop.get('number')
+        return str(n) if n is not None else ''
+    return ''
+
+
+def _notion_resolve_name(page_id, cache):
+    """Fetch the Name title of a Notion page, using cache to avoid duplicate requests."""
+    if not page_id:
+        return ''
+    if page_id in cache:
+        return cache[page_id]
+    try:
+        p = _notion_request('GET', f'/pages/{page_id}')
+        parts = p.get('properties', {}).get('Name', {}).get('title', [])
+        name = ''.join(t.get('plain_text', '') for t in parts)
+        cache[page_id] = name
+    except Exception:
+        cache[page_id] = ''
+    return cache[page_id]
+
+
+def _notion_pull_instances(since_iso=None):
+    """
+    Query the Notion instance DB (optionally filtered to pages edited since since_iso).
+    Returns a list of simplified instance dicts.
+    """
+    config = {}
+    if CONFIG_FILE.exists():
+        try: config = json.loads(CONFIG_FILE.read_text())
+        except Exception: pass
+    db_instance = config.get('notion_databases', {}).get('instance', '')
+    if not db_instance:
+        return []
+
+    body = {'page_size': 100}
+    if since_iso:
+        body['filter'] = {
+            'timestamp': 'last_edited_time',
+            'last_edited_time': {'after': since_iso}
+        }
+
+    pages, cursor = [], None
+    while True:
+        q = dict(body)
+        if cursor:
+            q['start_cursor'] = cursor
+        result = _notion_request('POST', f'/databases/{db_instance}/query', q)
+        pages.extend(result.get('results', []))
+        if not result.get('has_more'):
+            break
+        cursor = result.get('next_cursor')
+
+    cache = {}
+    instances = []
+    for page in pages:
+        props = page.get('properties', {})
+
+        formula_id = _notion_get_prop_str(props.get('Number', {}))
+        if not formula_id:
+            continue
+
+        def rel(key):
+            return _notion_resolve_name(_notion_get_prop_str(props.get(key, {})), cache)
+
+        notes_prop = props.get('Notes', {})
+        notes = ''.join(r.get('plain_text', '') for r in notes_prop.get('rich_text', []))
+
+        instances.append({
+            'id': formula_id,
+            'cond': rel('Condition'),
+            's1':   rel('Storage 1'),
+            's2':   rel('Storage 2'),
+            's3':   rel('Storage 3'),
+            'notes':  notes,
+            'ptype':  rel('Preservation Type'),
+            'lastStocktake': _notion_get_prop_str(props.get('Last Stocktake', {})),
+            'lastEdited':    page.get('last_edited_time', ''),
+        })
+
+    return instances
+
+
+def _notion_push_stocktake(checks):
+    """
+    Push stocktake dates from checks={iid: date_str} to Notion instance pages.
+    Fetches all pages once, builds an id→pageId map, then updates only changed entries.
+    Returns {updated, skipped, errors}.
+    """
+    config = {}
+    if CONFIG_FILE.exists():
+        try: config = json.loads(CONFIG_FILE.read_text())
+        except Exception: pass
+    db_instance = config.get('notion_databases', {}).get('instance', '')
+    if not db_instance:
+        return {'updated': 0, 'skipped': 0, 'errors': ['No instance database configured']}
+
+    # Fetch all instance pages to build formula_id → {pageId, currentDate} map
+    pages, cursor = [], None
+    body = {'page_size': 100}
+    while True:
+        q = dict(body)
+        if cursor:
+            q['start_cursor'] = cursor
+        result = _notion_request('POST', f'/databases/{db_instance}/query', q)
+        pages.extend(result.get('results', []))
+        if not result.get('has_more'):
+            break
+        cursor = result.get('next_cursor')
+
+    id_map = {}
+    for page in pages:
+        props = page.get('properties', {})
+        fid = _notion_get_prop_str(props.get('Number', {}))
+        if fid:
+            current_ls = _notion_get_prop_str(props.get('Last Stocktake', {}))
+            id_map[fid] = {'pageId': page['id'], 'current': current_ls}
+
+    updated, skipped, errors = 0, 0, []
+    for iid, date_str in checks.items():
+        entry = id_map.get(iid)
+        if not entry:
+            skipped += 1
+            continue
+        if entry['current'] == date_str:
+            skipped += 1
+            continue
+        try:
+            _notion_request('PATCH', f'/pages/{entry["pageId"]}', {
+                'properties': {'Last Stocktake': {'date': {'start': date_str}}}
+            })
+            updated += 1
+        except Exception as e:
+            errors.append(f'{iid}: {e}')
+
+    return {'updated': updated, 'skipped': skipped, 'errors': errors}
+
 
 def _append_changes(entries):
     """Append processed change entries to the persistent log file (one JSON object per line)."""
@@ -270,6 +433,72 @@ def device_from_cookie(header: str) -> str | None:
 # Load persisted devices at startup
 _DEVICES.update(_devices_load())
 
+# ── GUEST INVITES & SESSIONS ──────────────────────────────────────────────────
+def _guests_load() -> dict:
+    if GUESTS_FILE.exists():
+        try:
+            now = time.time()
+            return {t: exp for t, exp in json.loads(GUESTS_FILE.read_text()).items()
+                    if exp > now}
+        except Exception:
+            pass
+    return {}
+
+def _guests_save():
+    GUESTS_FILE.write_text(json.dumps(_GUEST_INVITES, indent=2))
+
+def guest_invite_new(hours: float) -> str:
+    token = secrets.token_urlsafe(32)
+    _GUEST_INVITES[token] = time.time() + hours * 3600
+    _guests_save()
+    return token
+
+def guest_invite_use(token: str) -> float | None:
+    """Validate invite token, return expiry timestamp or None if invalid/expired."""
+    now = time.time()
+    if token in _GUEST_INVITES:
+        expiry = _GUEST_INVITES[token]
+        if expiry > now:
+            return expiry
+        del _GUEST_INVITES[token]
+        _guests_save()
+    return None
+
+def guest_invite_revoke(token: str):
+    if token in _GUEST_INVITES:
+        del _GUEST_INVITES[token]
+        _guests_save()
+
+def guest_session_new(expiry: float) -> str:
+    sid = secrets.token_urlsafe(32)
+    _GUEST_SESSIONS[sid] = expiry
+    return sid
+
+def guest_session_valid(sid: str | None) -> bool:
+    if sid and sid in _GUEST_SESSIONS:
+        if _GUEST_SESSIONS[sid] > time.time():
+            return True
+        del _GUEST_SESSIONS[sid]
+    return False
+
+def guest_session_from_cookie(header: str) -> str | None:
+    for part in (header or '').split(';'):
+        k, _, v = part.strip().partition('=')
+        if k.strip() == 'chgsid':
+            return v.strip()
+    return None
+
+def _get_role(cookie_hdr: str) -> str | None:
+    """Returns 'owner', 'guest', or None."""
+    if session_valid(session_from_cookie(cookie_hdr)):
+        return 'owner'
+    if guest_session_valid(guest_session_from_cookie(cookie_hdr)):
+        return 'guest'
+    return None
+
+# Load persisted guest invites at startup
+_GUEST_INVITES.update(_guests_load())
+
 # ── AUTH CONFIG ───────────────────────────────────────────────────────────────
 def auth_load() -> dict | None:
     return json.loads(AUTH_FILE.read_text()) if AUTH_FILE.exists() else None
@@ -377,6 +606,71 @@ def setup_page(prefill='', error='', totp_secret=None, totp_checked=True):
   </form>
 </div>""")
 
+def admin_page():
+    dur_options = [
+        ('1','1 hour'), ('2','2 hours'), ('4','4 hours'), ('8','8 hours'),
+        ('24','1 day'), ('48','2 days'), ('72','3 days'), ('168','7 days'),
+        ('336','14 days'), ('720','30 days'),
+    ]
+    opts = ''.join(f'<option value="{v}"{"  selected" if v=="24" else ""}>{l}</option>' for v, l in dur_options)
+    now = time.time()
+    active = sorted([(t, exp) for t, exp in _GUEST_INVITES.items() if exp > now], key=lambda x: x[1])
+    if active:
+        rows = ''.join(
+            f'<tr style="border-bottom:1px solid var(--bdr)">'
+            f'<td style="padding:.35rem .3rem;font-size:.6rem;color:var(--muted)">expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(exp))}</td>'
+            f'<td style="padding:.35rem .3rem;text-align:right">'
+            f'<button class="btn" style="width:auto;padding:.2rem .6rem;margin-top:0" onclick="revoke(\'{t}\')">Revoke</button>'
+            f'</td></tr>'
+            for t, exp in active
+        )
+        invite_table = f'<h3 style="margin-top:1.2rem;margin-bottom:.5rem">Active Invite Links ({len(active)})</h3><table style="width:100%;border-collapse:collapse">{rows}</table>'
+    else:
+        invite_table = '<p class="hint" style="margin-top:1rem">No active invite links.</p>'
+
+    return _page('Guest Admin', f"""<div class="card" style="width:480px;max-width:100%">
+  <div class="logo">Coin <span>Hub</span></div>
+  <h3>Create Guest Invite Link</h3>
+  <p class="hint" style="margin:.4rem 0 .8rem">Guests can browse all coins but cannot edit, add, delete, run stocktake, or sync with Notion.</p>
+  <div class="field">
+    <label>Access Duration</label>
+    <select id="dur" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:var(--r);background:var(--paper);font-family:inherit;font-size:.75rem;color:var(--ink)">{opts}</select>
+  </div>
+  <button class="btn" onclick="create()">Generate Invite Link</button>
+  <div id="result" style="display:none;margin-top:.8rem">
+    <label>Share this link with your guest:</label>
+    <div id="linkBox" style="margin-top:.3rem;background:var(--paper);border:1px solid var(--bdr);border-radius:var(--r);padding:.5rem .6rem;font-size:.58rem;word-break:break-all;font-family:'DM Mono',monospace;cursor:pointer;line-height:1.5" onclick="copy()" title="Click to copy"></div>
+    <p class="hint" style="margin-top:.3rem" id="expHint"></p>
+    <p class="hint" style="color:var(--gold2);margin-top:.2rem">Click the link above to copy it.</p>
+  </div>
+  <p class="err" id="err"></p>
+  {invite_table}
+  <a href="/CoinHub.html" style="font-size:.6rem;color:var(--list);text-decoration:none;margin-top:1rem;display:block">← Back to CoinHub</a>
+  <script>
+  async function create() {{
+    document.getElementById('err').textContent='';
+    document.getElementById('result').style.display='none';
+    const r=await fetch('/admin/guest-invite',{{method:'POST',body:JSON.stringify({{hours:+document.getElementById('dur').value}}),headers:{{'Content-Type':'application/json'}}}});
+    const d=await r.json();
+    if(d.error){{document.getElementById('err').textContent=d.error;return;}}
+    const url=location.origin+'/guest?t='+d.token;
+    document.getElementById('linkBox').textContent=url;
+    document.getElementById('expHint').textContent='Expires: '+new Date(d.expires).toLocaleString();
+    document.getElementById('result').style.display='block';
+  }}
+  function copy(){{
+    navigator.clipboard.writeText(document.getElementById('linkBox').textContent);
+    const b=document.getElementById('linkBox');
+    b.style.color='var(--got)';setTimeout(()=>b.style.color='',1500);
+  }}
+  async function revoke(t){{
+    if(!confirm('Revoke this invite link?'))return;
+    await fetch('/admin/guest-revoke',{{method:'POST',body:JSON.stringify({{token:t}}),headers:{{'Content-Type':'application/json'}}}});
+    location.reload();
+  }}
+  </script>
+</div>""")
+
 # ── REQUEST HANDLER ───────────────────────────────────────────────────────────
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
@@ -482,7 +776,59 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_resp(result)
             return
 
-        if self._authed():
+        if path == 'api/notion-pull':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            qs = urllib.parse.parse_qs(self.path.split('?', 1)[1] if '?' in self.path else '')
+            since = (qs.get('since') or [None])[0]
+            try:
+                instances = _notion_pull_instances(since)
+                pulled_at = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                print(f'[CoinHub] Notion pull: {len(instances)} instances (since={since})')
+                self._json_resp({'instances': instances, 'pulledAt': pulled_at})
+            except Exception as e:
+                print(f'[CoinHub] Notion pull error: {e}')
+                self._json_resp({'error': str(e)}, 500)
+            return
+
+        # ── Guest invite entry point ──────────────────────────────────────────
+        if path == 'guest':
+            qs = urllib.parse.parse_qs(self.path.split('?', 1)[1] if '?' in self.path else '')
+            token = (qs.get('t') or [None])[0]
+            expiry = guest_invite_use(token) if token else None
+            if not expiry:
+                self._html(_page('Access Denied', '<div class="card"><div class="logo">Coin <span>Hub</span></div><p class="err" style="text-align:center;margin-top:.5rem">This invite link is invalid or has expired.</p><a href="/" style="font-size:.6rem;color:var(--list);display:block;text-align:center;margin-top:.8rem">← Back to login</a></div>'))
+                return
+            gsid = guest_session_new(expiry)
+            max_age = int(expiry - time.time())
+            print(f'[CoinHub] Guest session created (expires in {max_age//3600}h {(max_age%3600)//60}m)')
+            self._redirect('/CoinHub.html',
+                cookie=f'chgsid={gsid}; Max-Age={max_age}; Path=/; HttpOnly; SameSite=Strict')
+            return
+
+        # ── Session info (for guest-mode detection) ───────────────────────────
+        if path == 'api/whoami':
+            cookie_hdr = self.headers.get('Cookie', '')
+            role = _get_role(cookie_hdr)
+            if not role:
+                self._json_resp({'role': None}, 401); return
+            resp: dict = {'role': role}
+            if role == 'guest':
+                gsid = guest_session_from_cookie(cookie_hdr)
+                exp = _GUEST_SESSIONS.get(gsid or '')
+                if exp:
+                    resp['guestExpires'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(exp))
+            self._json_resp(resp)
+            return
+
+        # ── Admin panel (owner only) ──────────────────────────────────────────
+        if path == 'admin':
+            if not self._authed():
+                self._redirect('/'); return
+            self._html(admin_page())
+            return
+
+        if self._authed() or guest_session_valid(guest_session_from_cookie(self.headers.get('Cookie', ''))):
             super().do_GET()
         else:
             self._redirect('/')
@@ -498,6 +844,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             result = _process_queue()
             print(f'[CoinHub] Queue processed: {result}')
             self._json_resp(result)
+            return
+
+        if path == 'api/notion-stocktake-push':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            try:
+                body = json.loads(self._raw_body())
+                checks = body.get('checks', {})
+                result = _notion_push_stocktake(checks)
+                print(f'[CoinHub] Stocktake push: {result}')
+                self._json_resp(result)
+            except Exception as e:
+                print(f'[CoinHub] Stocktake push error: {e}')
+                self._json_resp({'error': str(e)}, 500)
             return
 
         if path == 'api/save-audit-log':
@@ -583,6 +943,35 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             else:
                 print(f'[CoinHub] Login: {email}')
             self._redirect('/CoinHub.html', cookie=cookies)
+
+        elif path == 'admin/guest-invite':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            try:
+                body = json.loads(self._raw_body())
+                hours = float(body.get('hours', 24))
+                if hours <= 0 or hours > 24 * 30:
+                    raise ValueError('Duration must be between 1 hour and 30 days')
+                token = guest_invite_new(hours)
+                expiry = _GUEST_INVITES[token]
+                print(f'[CoinHub] Guest invite created (expires {time.strftime("%d %b %Y %H:%M UTC", time.gmtime(expiry))})')
+                self._json_resp({
+                    'token': token,
+                    'expires': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(expiry)),
+                })
+            except Exception as e:
+                self._json_resp({'error': str(e)}, 400)
+
+        elif path == 'admin/guest-revoke':
+            if not self._authed():
+                self._json_resp({'error': 'unauthorized'}, 401); return
+            try:
+                body = json.loads(self._raw_body())
+                guest_invite_revoke(body.get('token', ''))
+                self._json_resp({'ok': True})
+            except Exception as e:
+                self._json_resp({'error': str(e)}, 400)
+
         else:
             self.send_response(404); self.end_headers()
 

@@ -35,8 +35,23 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);mi
 /* ── GRAIN OVERLAY ── */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
 
+/* ── GUEST BANNER ── */
+#guestBanner{display:none;background:var(--list-bg);border-bottom:1px solid var(--list);padding:.45rem 2rem;font-size:.6rem;font-family:'DM Mono',monospace;letter-spacing:.06em;color:var(--list);align-items:center;gap:1rem;position:sticky;top:0;z-index:101}
+#guestBanner b{font-weight:600}
+#guestBanner .guest-expiry{color:var(--muted);margin-left:auto}
+body.guest-mode #guestBanner{display:flex}
+/* Hide all write controls in guest mode */
+body.guest-mode .inst-edit-btn,
+body.guest-mode .inst-remove-btn,
+body.guest-mode .edit-variant-btn,
+body.guest-mode .add-inst-btn,
+body.guest-mode #syncBtn,
+body.guest-mode .log-btn[onclick*="showStockCheck"],
+body.guest-mode .log-btn[onclick*="showChangeLog"]{display:none!important}
+
 /* ── HEADER ── */
-header{border-bottom:1px solid var(--border);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);position:sticky;top:0;z-index:100}
+header{border-bottom:1px solid var(--border);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);position:sticky;top:52px;z-index:100}
+body:not(.guest-mode) header{top:0}
 .logo{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .logo span{color:var(--ink);font-weight:400;font-style:italic}
 .header-stats{display:flex;gap:1.5rem;font-size:.62rem;letter-spacing:.08em}
@@ -258,7 +273,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sc-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--got);flex-shrink:0;cursor:pointer}
 .sc-item-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-item-meta{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0}
+.sc-item-date{font-size:.65rem;font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0;min-width:7.5rem;text-align:right;color:var(--got)}
+.sc-item:not(.checked) .sc-item-date{color:var(--need);opacity:.5}
 .sc-item.checked .sc-item-name{color:var(--got)}
+#scUncheckedBtn.active{border-color:var(--need)!important;color:var(--need)!important;background:var(--need-bg)!important}
+.sc-progress-wrap{padding:.3rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;display:none;align-items:center;gap:.75rem}
+.sc-progress-bar{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.sc-progress-bar-fill{height:100%;background:var(--got);border-radius:3px;transition:width .25s ease}
+.sc-loc-sum{display:flex;flex-direction:column;gap:0;padding:.2rem 0}
+.sc-loc-heading{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .3rem .4rem;font-family:'DM Mono',monospace;font-weight:600;border-bottom:1px solid var(--border)}
+.sc-loc-row{display:flex;align-items:center;gap:.65rem;padding:.45rem .3rem;border-bottom:1px solid transparent;cursor:pointer;border-radius:var(--r)}
+.sc-loc-row:hover{background:var(--paper2)}
+.sc-loc-name{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink);min-width:5.5rem;flex-shrink:0}
+.sc-loc-bar{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.sc-loc-bar-fill{height:100%;background:var(--got);border-radius:3px}
+.sc-loc-count{font-size:.65rem;font-family:'DM Mono',monospace;color:var(--muted);min-width:4.5rem;text-align:right;flex-shrink:0}
+.sc-loc-date{font-size:.62rem;font-family:'DM Mono',monospace;color:var(--muted);min-width:7rem;text-align:right;flex-shrink:0;opacity:.7}
+.sc-loc-row.sc-loc-done .sc-loc-name{color:var(--got)}
+.sc-loc-row.sc-loc-done .sc-loc-bar-fill{background:var(--got)}
+.sc-loc-row.sc-loc-pristine .sc-loc-bar-fill{background:var(--need);opacity:.3}
 .sc-empty{font-size:.65rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0;font-family:'Cormorant Garamond',serif}
 .sc-print-header{display:none}
 
@@ -308,6 +341,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sync-dismiss-btn:hover{border-color:var(--need);color:var(--need)}
 @keyframes syncPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 .sync-badge{display:inline-block;background:var(--need);color:#fff;font-size:.48rem;font-weight:600;border-radius:20px;padding:1px 5px;margin-left:.3rem;vertical-align:middle;font-family:'DM Mono',monospace;animation:syncPulse 1.6s ease-in-out infinite}
+.sync-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-tab{flex:1;padding:.4rem .6rem;font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;text-align:center;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;transition:all .12s}
+.sync-tab.active{color:var(--gold2);border-bottom-color:var(--gold2)}
+.sync-tab .tab-badge{display:inline-block;background:var(--need);color:#fff;font-size:.42rem;font-weight:600;border-radius:20px;padding:1px 4px;margin-left:.25rem;vertical-align:middle}
+.sync-push-actions{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;padding:.4rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-pull-body{display:flex;flex-direction:column;gap:.7rem;padding:.7rem .8rem}
+.sync-pull-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.sync-pull-label{font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.sync-pull-val{font-size:.62rem;color:var(--ink);font-family:'DM Mono',monospace}
+.sync-interval-row{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.sync-interval-btn{padding:.2rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted);transition:all .12s}
+.sync-interval-btn.active{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.07)}
+.sync-action-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.sync-pull-btn{padding:.28rem .75rem;border:1px solid var(--gold2);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold2);transition:all .12s}
+.sync-pull-btn:hover{background:var(--gold2);color:#fff}
+.sync-pull-btn:disabled{opacity:.5;cursor:default}
+.sync-sc-btn{padding:.28rem .75rem;border:1px solid var(--list);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--list);transition:all .12s}
+.sync-sc-btn:hover{background:var(--list);color:#fff}
+.sync-sc-btn:disabled{opacity:.5;cursor:default}
+.sync-pull-log{font-size:.56rem;color:var(--muted);font-family:'DM Mono',monospace;max-height:100px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:.35rem .5rem;background:var(--paper2);display:flex;flex-direction:column;gap:.2rem}
+.sync-pull-log-entry{display:flex;gap:.5rem;line-height:1.4}
+.sync-pull-log-time{color:var(--muted);flex-shrink:0}
+.sync-hint{font-size:.52rem;color:var(--muted);font-style:italic}
 
 /* ── STATS DASHBOARD ── */
 .stats-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:64px 1rem 1rem}
@@ -406,6 +462,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="load-error" id="loadError"></div>
 </div>
 
+<div id="guestBanner">
+  <b>Guest View</b> — Read only. You can browse the collection but cannot make any changes.
+  <span class="guest-expiry" id="guestExpiry"></span>
+</div>
 <header style="display:none" id="mainHeader">
   <div class="logo">Coin <span>Hub</span></div>
   <div class="header-stats">
@@ -446,14 +506,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <option>Box 1</option><option>Box 2</option>
         <option>Folder 1</option><option>Folder 2</option><option>Folder 3</option>
         <option>Folder 4</option><option>Folder 5</option><option>Folder 6</option>
-        <option>Folder 7</option><option>Folder 8</option><option>Folder 9</option>
+        <option>Folder 7</option><option>Folder 8</option><option>Folder 9</option><option>Folder 10</option>
       </select>
       <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
       <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
+      <button id="scUncheckedBtn" class="log-reinstate-btn" onclick="scToggleUnchecked()" style="margin-top:0">◌ Unchecked</button>
       <button class="log-reinstate-btn" onclick="window.print()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ All</button>
       <button class="log-reinstate-btn" onclick="scPrintUnchecked()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ Unchecked</button>
       <button class="log-reinstate-btn" onclick="scPrintNeeded()" style="margin-top:0;border-color:var(--need);color:var(--need)">⎙ Needed</button>
       <span class="sc-progress" id="scProgress"></span>
+    </div>
+    <div class="sc-progress-wrap" id="scProgressWrap">
+      <div class="sc-progress-bar"><div class="sc-progress-bar-fill" id="scProgressBarFill" style="width:0%"></div></div>
     </div>
     <div class="sc-list" id="scList">
       <div class="sc-print-header" id="scPrintHeader"></div>
@@ -466,14 +530,47 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div class="sync-modal-bg" id="syncModalBg" onclick="if(event.target===this)closeSyncQueue()">
   <div class="sync-modal">
     <div class="sync-modal-head">
-      <span class="sync-modal-title">Notion Sync Queue</span>
-      <div style="display:flex;align-items:center;gap:.5rem">
+      <span class="sync-modal-title">Notion Sync</span>
+      <button class="log-modal-close" onclick="closeSyncQueue()">✕</button>
+    </div>
+    <div class="sync-tabs">
+      <button class="sync-tab active" id="syncTabPush" onclick="_syncShowTab('push')">Push to Notion<span class="tab-badge" id="syncPushBadge" style="display:none">0</span></button>
+      <button class="sync-tab" id="syncTabPull" onclick="_syncShowTab('pull')">Pull from Notion</button>
+    </div>
+    <!-- PUSH PANEL -->
+    <div id="syncPushPanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <div class="sync-push-actions">
         <button class="log-reinstate-btn" id="approveAllBtn" onclick="approveAllSync()" style="margin-top:0">✓ Approve All</button>
         <button class="log-reinstate-btn" id="processNowBtn" onclick="processQueueNow()" style="margin-top:0;border-color:var(--got);color:var(--got)">⚡ Process Now</button>
-        <button class="log-modal-close" onclick="closeSyncQueue()">✕</button>
+      </div>
+      <div class="sync-body" id="syncBody"></div>
+    </div>
+    <!-- PULL PANEL -->
+    <div id="syncPullPanel" style="display:none;flex:1;overflow-y:auto;min-height:0">
+      <div class="sync-pull-body">
+        <div class="sync-pull-row">
+          <span class="sync-pull-label">Last pull</span>
+          <span class="sync-pull-val" id="syncLastPull">Never</span>
+          <span class="sync-pull-label" id="syncNextLabel" style="display:none">Next in</span>
+          <span class="sync-pull-val" id="syncNextPull" style="display:none">—</span>
+        </div>
+        <div>
+          <div class="sync-pull-label" style="margin-bottom:.35rem">Auto-sync interval</div>
+          <div class="sync-interval-row">
+            <button class="sync-interval-btn" data-mins="15" onclick="_syncSetInterval(15)">15 min</button>
+            <button class="sync-interval-btn" data-mins="30" onclick="_syncSetInterval(30)">30 min</button>
+            <button class="sync-interval-btn" data-mins="60" onclick="_syncSetInterval(60)">1 hr</button>
+            <button class="sync-interval-btn active" data-mins="0" onclick="_syncSetInterval(0)">Off</button>
+          </div>
+        </div>
+        <div class="sync-action-bar">
+          <button class="sync-pull-btn" id="syncPullNowBtn" onclick="_syncPullNow(false)">⇩ Pull Now</button>
+          <button class="sync-sc-btn" id="syncStocktakePushBtn" onclick="_scSyncToNotion()">⇧ Push Stocktake Dates</button>
+        </div>
+        <div class="sync-hint">Pull updates instance condition, storage &amp; stocktake dates from Notion into the app.<br>Push Stocktake Dates writes your check dates back to Notion.</div>
+        <div class="sync-pull-log" id="syncPullLog" style="display:none"></div>
       </div>
     </div>
-    <div class="sync-body" id="syncBody"></div>
   </div>
 </div>
 
@@ -1546,7 +1643,6 @@ function buildCoinData() {
     ['UK-D-50P-2025-VE80-','The 80th Anniversary of VE Day 2025','50p','Military','King Charles III',2025,'Got','https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2025-launches/ve-day/product-images/uk25vebu-tthe-80th-anniversary-of-ve-day-2025-uk-50p-brilliant-uncirculated-coin-reverse-with-edge-1500x1500-f3a2c67.jpg',1],
     ['UK-D-50P-2025-WW2S-','WW2 Stories','50p','Military','King Charles III',2025,'Got','https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2025-launches/stories-of-ww2/stories-of-the-second-world-war-2025-uk-50p-brilliant-uncirculated-coin-reverse---uk25swbu-100x100-a093e65.png',1],
     // ── UK ANNIVERSARY ──
-    ['','','50p','UK Anniversary','',0,'','',0],
     ['UK-D-50P-1998-NHS-','The 50th Anniversary of the Creation of the National Health Service','50p','UK Anniversary','Queen Elizabeth II',1998,'Got','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/376_1998-nhs-50p_coin_thumb.jpg',2],
     ['UK-D-50P-2000-LIB-','The 150th Anniversary of the Public Libraries Act','50p','UK Anniversary','Queen Elizabeth II',2000,'Got','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/377_2000-public-libraries-50p_coin_thumb.jpg',12],
     ['UK-D-50P-2003-WSPU-','The 100th Anniversary of the Formation of the Women\'s Social and Political Un...','50p','UK Anniversary','Queen Elizabeth II',2003,'Got','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/378_2003-womens-social-and-political-union-50p_coin_thumb.jpg',4],
@@ -1620,7 +1716,6 @@ function buildCoinData() {
     ['UK-D-£2-2007-TECH-','Technology Advances','£2','2007 Proof Set','Queen Elizabeth II',2007,'Got','',1],
     ['UK-D-£5-2007-DIAM-','Diamond Wedding Crown','£5','2007 Proof Set','Queen Elizabeth II',2007,'Got','',1],
     // ── BRITANNIA ──
-    ['','','50p','Britannia','',0,'','',0],
     ['UK-D-50P-1969-BRIT-','Britannia','50p','Britannia','Queen Elizabeth II',1969,'','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/50_pence_1969.jpg',0],
     ['UK-D-50P-1970-BRIT-','Britannia','50p','Britannia','Queen Elizabeth II',1970,'','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/50_pence_1969.jpg',0],
     ['UK-D-50P-1971-BRIT-','Britannia','50p','Britannia','Queen Elizabeth II',1971,'','https://www.royalmint.com/globalassets/the-royal-mint/images/pages/discover/uk-coins/coins-designs-and-specifications/fifty-pence-coin/50_pence_1969.jpg',0],
@@ -2215,6 +2310,7 @@ function init() {
   const deleted = JSON.parse(localStorage.getItem('coinhub_deleted_variants') || '[]');
   if (deleted.length) ALL_COINS = ALL_COINS.filter(c => !deleted.includes(c.variantCode));
   restorePendingData();
+  _applyNotionOverrides();
 
   // Stats
   document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
@@ -2227,6 +2323,7 @@ function init() {
   buildMonarchFilter();
   buildCollectionFilter();
   updateSyncBadge();
+  setTimeout(_syncRestoreAutoSync, 0);
 
   applyFilters();
 
@@ -2234,6 +2331,32 @@ function init() {
   document.getElementById('loadScreen').style.display = 'none';
   document.getElementById('mainHeader').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'grid';
+
+  // ── Guest mode detection ────────────────────────────────────────────────
+  _applyGuestMode();
+}
+
+let GUEST_MODE = false;
+
+async function _applyGuestMode() {
+  try {
+    const r = await fetch('/api/whoami');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.role !== 'guest') return;
+    GUEST_MODE = true;
+    document.body.classList.add('guest-mode');
+    if (d.guestExpires) {
+      const exp = new Date(d.guestExpires);
+      const fmt = exp.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'}) + ' ' + exp.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('guestExpiry').textContent = 'Access until ' + fmt;
+    }
+    // Check periodically if guest session has expired
+    setInterval(async () => {
+      const cr = await fetch('/api/whoami').catch(()=>null);
+      if (!cr || !cr.ok) { location.href = '/'; }
+    }, 60000);
+  } catch(e) { /* not a guest, carry on */ }
 }
 
 // Denomination order
@@ -2528,7 +2651,7 @@ function buildInstItemHTML(coin, inst) {
   const condOpts = ['BUNC','BUNC.KC','BUNC.WM','VF','F','G','O','P'];
   const COND_LABELS = {'BUNC':'Brand New Uncirculated','BUNC.KC':'Brand New Uncirculated – Koin Club','BUNC.WM':'Brand New Uncirculated – Westminster Collection','VF':'Very Fine','F':'Fine','G':'Good','O':'Other','P':'Poor'};
   const ptypeOpts = ['Capsule','Date Stamp Coin','Folder Collection','IOM Carded','Koin Club','Proof','Royal Mint','Sleeve','Westminster'];
-  const s1Opts = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9'];
+  const s1Opts = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
   const s2Opts = ['Page 1','Page 2','Page 3','Page 4','Page 5','Page 6','Page 7','Page 8','Page 9','Page 10','Page 11','Capsule','Capsule Case 01','Capsule Case 02','Carded','Collection Box 01','Olympic Folder','Presentation Case 01','Presentation Case 02','2023 Annual Set','2023 Annual Set 2','2024 Annual Set','2025 Annual Set','Farthings Folder 1860 - 1901','Farthings Folder 1902 - 1936','Farthings Folder 1937 - 1956','Florins Folder 1911 - 1940','Florins Folder 1941 -','Half Crowns Folder - 1911 - 1940','Half Crowns Folder - 1941 -','Halfpennies Folder 1860 - 1901','Halfpennies Folder 1902 - 1936','Halfpennies Folder 1937 -','Pennies Folder 1860 - 1880','Pennies Folder 1881 - 1901','Pennies Folder 1902 - 1929','Pennies Folder 1930 - 1966','Shillings Folder 1902 - 1936','Shillings Folder 1937 - 1951','Shillings Folder 1953 -','Sixpence Folder 1902 - 1936','Sixpence Folder 1937 -','Threepence Folder 1838 - 1901','Threepence Folder 1902 - 1945','Threepence Folder 1937 -'];
   const s3Opts = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','Obverse'];
   let h = `<div class="inst-item">
@@ -2640,7 +2763,7 @@ function buildDetailHTML(coin) {
         <div><label>Preservation Type</label><select name="ptype"><option value="">— select —</option><option>Capsule</option><option>Date Stamp Coin</option><option>Folder Collection</option><option>IOM Carded</option><option>Koin Club</option><option>Proof</option><option>Royal Mint</option><option>Sleeve</option><option>Westminster</option></select></div>
       </div>
       <div class="add-inst-form-row">
-        <div><label>Storage 1</label><select name="s1"><option value="">— select —</option><option>Box 1</option><option>Box 2</option><option>Folder 1</option><option>Folder 2</option><option>Folder 3</option><option>Folder 4</option><option>Folder 5</option><option>Folder 6</option><option>Folder 7</option><option>Folder 8</option><option>Folder 9</option></select></div>
+        <div><label>Storage 1</label><select name="s1"><option value="">— select —</option><option>Box 1</option><option>Box 2</option><option>Folder 1</option><option>Folder 2</option><option>Folder 3</option><option>Folder 4</option><option>Folder 5</option><option>Folder 6</option><option>Folder 7</option><option>Folder 8</option><option>Folder 9</option><option>Folder 10</option></select></div>
         <div><label>Storage 2</label><select name="s2"><option value="">— select —</option><option>Page 1</option><option>Page 2</option><option>Page 3</option><option>Page 4</option><option>Page 5</option><option>Page 6</option><option>Page 7</option><option>Page 8</option><option>Page 9</option><option>Page 10</option><option>Page 11</option><option>Capsule</option><option>Capsule Case 01</option><option>Capsule Case 02</option><option>Carded</option><option>Collection Box 01</option><option>Olympic Folder</option><option>Presentation Case 01</option><option>Presentation Case 02</option><option>2023 Annual Set</option><option>2023 Annual Set 2</option><option>2024 Annual Set</option><option>2025 Annual Set</option><option>Farthings Folder 1860 - 1901</option><option>Farthings Folder 1902 - 1936</option><option>Farthings Folder 1937 - 1956</option><option>Florins Folder 1911 - 1940</option><option>Florins Folder 1941 -</option><option>Half Crowns Folder - 1911 - 1940</option><option>Half Crowns Folder - 1941 -</option><option>Halfpennies Folder 1860 - 1901</option><option>Halfpennies Folder 1902 - 1936</option><option>Halfpennies Folder 1937 -</option><option>Pennies Folder 1860 - 1880</option><option>Pennies Folder 1881 - 1901</option><option>Pennies Folder 1902 - 1929</option><option>Pennies Folder 1930 - 1966</option><option>Shillings Folder 1902 - 1936</option><option>Shillings Folder 1937 - 1951</option><option>Shillings Folder 1953 -</option><option>Sixpence Folder 1902 - 1936</option><option>Sixpence Folder 1937 -</option><option>Threepence Folder 1838 - 1901</option><option>Threepence Folder 1902 - 1945</option><option>Threepence Folder 1937 -</option></select></div>
       </div>
       <div class="add-inst-form-row">
@@ -2680,6 +2803,7 @@ function cancelAddInst(variantCode) {
 }
 
 function saveInstance(variantCode) {
+  if (GUEST_MODE) return;
   const fid = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
   const form = document.getElementById('add-inst-form-' + fid);
   const nextId = getNextInstId();
@@ -2798,10 +2922,25 @@ function closeChangeLog() {
 }
 
 // ── STOCK CHECK ───────────────────────────────────────────────────────────────
-const _scChecked = {};
+const _scChecked = JSON.parse(localStorage.getItem('coinhub_stockcheck') || '{}');
+let _scUncheckedOnly = false;
+
+function _scSave() {
+  try { localStorage.setItem('coinhub_stockcheck', JSON.stringify(_scChecked)); } catch(e) {}
+}
+
+function _scFmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(d,10)} ${months[parseInt(m,10)-1]} ${y}`;
+}
 
 function showStockCheck() {
+  if (GUEST_MODE) return;
   document.getElementById('scModalBg').classList.add('open');
+  const loc = document.getElementById('scLocationSelect').value;
+  if (!loc && !document.querySelector('#scList .sc-loc-sum')) _scBuildSummary();
 }
 
 function closeStockCheck() {
@@ -2814,16 +2953,19 @@ function loadStockCheck() {
   const emptyEl = document.getElementById('scEmptyMsg');
   const printHdr = document.getElementById('scPrintHeader');
 
-  // Clear previous coin rows (keep print header + empty msg elements)
-  listEl.querySelectorAll('.sc-group-label, .sc-item').forEach(el => el.remove());
+  // Clear previous coin rows
+  listEl.querySelectorAll('.sc-group-label, .sc-item, .sc-loc-sum').forEach(el => el.remove());
   printHdr.innerHTML = '';
-  if (emptyEl) emptyEl.style.display = '';
+  const wrap = document.getElementById('scProgressWrap');
 
   if (!loc) {
-    if (emptyEl) emptyEl.textContent = 'Select a storage location above.';
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (wrap) wrap.style.display = 'none';
     document.getElementById('scProgress').textContent = '';
+    _scBuildSummary();
     return;
   }
+  if (emptyEl) emptyEl.style.display = '';
 
   const items = [];
   Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
@@ -2864,7 +3006,8 @@ function loadStockCheck() {
       lastS2 = grp;
     }
     const iid = inst.id || inst.insId;
-    const checkedCls = _scChecked[iid] ? ' checked' : '';
+    const checkedDate = _scChecked[iid] || '';
+    const checkedCls = checkedDate ? ' checked' : '';
     const metaParts = [
       coin ? coin.year : null,
       coin ? coin.denom : null,
@@ -2875,30 +3018,47 @@ function loadStockCheck() {
     const row = document.createElement('label');
     row.className = `sc-item${checkedCls}`;
     row.id = `sc-row-${iid}`;
-    row.innerHTML = `<input type="checkbox" ${_scChecked[iid]?'checked':''} onchange="scToggle('${iid}',this.checked)">
+    row.innerHTML = `<input type="checkbox" ${checkedDate?'checked':''} onchange="scToggle('${iid}',this.checked)">
       <span class="sc-item-name">${coinName}</span>
-      <span class="sc-item-meta">${metaParts.join(' · ')}</span>`;
+      <span class="sc-item-meta">${metaParts.join(' · ')}</span>
+      <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>`;
     listEl.appendChild(row);
   });
 
   _scUpdateProgress();
+  _scApplyUncheckedFilter();
 }
 
 function scToggle(iid, checked) {
-  _scChecked[iid] = checked;
+  if (checked) {
+    _scChecked[iid] = new Date().toISOString().slice(0, 10);
+  } else {
+    delete _scChecked[iid];
+  }
+  _scSave();
   const row = document.getElementById('sc-row-' + iid);
-  if (row) row.classList.toggle('checked', checked);
+  if (row) {
+    row.classList.toggle('checked', checked);
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = checked ? _scFmtDate(_scChecked[iid]) : '';
+    if (_scUncheckedOnly && checked) { row.style.display = 'none'; _scApplyUncheckedFilter(); }
+  }
   _scUpdateProgress();
 }
 
 function scCheckAll() {
+  const today = new Date().toISOString().slice(0, 10);
   document.querySelectorAll('#scList .sc-item').forEach(row => {
     const iid = row.id.replace('sc-row-', '');
     const cb = row.querySelector('input[type=checkbox]');
     if (cb) cb.checked = true;
-    _scChecked[iid] = true;
+    _scChecked[iid] = today;
     row.classList.add('checked');
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = _scFmtDate(today);
   });
+  _scSave();
+  _scApplyUncheckedFilter();
   _scUpdateProgress();
 }
 
@@ -2907,18 +3067,104 @@ function scClearAll() {
     const iid = row.id.replace('sc-row-', '');
     const cb = row.querySelector('input[type=checkbox]');
     if (cb) cb.checked = false;
-    _scChecked[iid] = false;
+    delete _scChecked[iid];
     row.classList.remove('checked');
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = '';
+    row.style.display = '';
   });
+  _scSave();
   _scUpdateProgress();
 }
 
 function _scUpdateProgress() {
   const items = document.querySelectorAll('#scList .sc-item');
-  if (!items.length) { document.getElementById('scProgress').textContent = ''; return; }
+  const wrap = document.getElementById('scProgressWrap');
+  if (!items.length) {
+    document.getElementById('scProgress').textContent = '';
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
   const total = items.length;
   const done = [...items].filter(el => el.classList.contains('checked')).length;
-  document.getElementById('scProgress').textContent = `${done} / ${total} checked`;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('scProgress').textContent = `${done} / ${total} · ${pct}%`;
+  if (wrap) wrap.style.display = 'flex';
+  const fill = document.getElementById('scProgressBarFill');
+  if (fill) fill.style.width = pct + '%';
+}
+
+function _scApplyUncheckedFilter() {
+  document.querySelectorAll('#scList .sc-item').forEach(row => {
+    row.style.display = (_scUncheckedOnly && row.classList.contains('checked')) ? 'none' : '';
+  });
+  document.querySelectorAll('#scList .sc-group-label').forEach(grp => {
+    let next = grp.nextElementSibling;
+    let allHidden = true;
+    while (next && !next.classList.contains('sc-group-label')) {
+      if (next.classList.contains('sc-item') && next.style.display !== 'none') { allHidden = false; break; }
+      next = next.nextElementSibling;
+    }
+    grp.style.display = allHidden ? 'none' : '';
+  });
+}
+
+function _scBuildSummary() {
+  const locations = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
+  const listEl = document.getElementById('scList');
+  const div = document.createElement('div');
+  div.className = 'sc-loc-sum';
+  const hdr = document.createElement('div');
+  hdr.className = 'sc-loc-heading';
+  hdr.textContent = 'All Locations — Stocktake Progress';
+  div.appendChild(hdr);
+  let anyFound = false;
+  locations.forEach(loc => {
+    const iids = [];
+    Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
+      records.forEach(inst => { if (inst.s1 === loc) iids.push(inst.id || inst.insId); });
+    });
+    anyFound = true;
+    if (!iids.length) {
+      const row = document.createElement('div');
+      row.className = 'sc-loc-row sc-loc-pristine';
+      row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+        <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:0%"></div></div>
+        <span class="sc-loc-count" style="opacity:.4">empty</span>
+        <span class="sc-loc-date">—</span>`;
+      div.appendChild(row);
+      return;
+    }
+    const total = iids.length;
+    const checkedDates = iids.map(iid => _scChecked[iid]).filter(Boolean).sort();
+    const done = checkedDates.length;
+    const pct = Math.round(done / total * 100);
+    const lastDate = checkedDates.length ? checkedDates[checkedDates.length - 1] : null;
+    const cls = done === total ? ' sc-loc-done' : done === 0 ? ' sc-loc-pristine' : '';
+    const row = document.createElement('div');
+    row.className = 'sc-loc-row' + cls;
+    row.title = 'Click to open ' + loc;
+    row.onclick = () => { document.getElementById('scLocationSelect').value = loc; loadStockCheck(); };
+    row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+      <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:${pct}%"></div></div>
+      <span class="sc-loc-count">${done}/${total} · ${pct}%</span>
+      <span class="sc-loc-date">${lastDate ? _scFmtDate(lastDate) : '—'}</span>`;
+    div.appendChild(row);
+  });
+  if (!anyFound) {
+    const empty = document.createElement('div');
+    empty.className = 'sc-empty';
+    empty.textContent = 'No coins found in any location.';
+    div.appendChild(empty);
+  }
+  listEl.appendChild(div);
+}
+
+function scToggleUnchecked() {
+  _scUncheckedOnly = !_scUncheckedOnly;
+  const btn = document.getElementById('scUncheckedBtn');
+  if (btn) btn.classList.toggle('active', _scUncheckedOnly);
+  _scApplyUncheckedFilter();
 }
 
 function scPrintUnchecked() {
@@ -3048,6 +3294,7 @@ function cancelEditInstance(instId) {
   if (form) form.classList.remove('open');
 }
 function saveEditInstance(variantCode, instId) {
+  if (GUEST_MODE) return;
   const fid = instId.replace(/-/g,'_');
   const form = document.getElementById('edit-inst-form-' + fid);
   if (!form) return;
@@ -3082,6 +3329,7 @@ function cancelRemoveConfirm(instId) {
   if (el) el.style.display = 'none';
 }
 function removeInstance(variantCode, instId) {
+  if (GUEST_MODE) return;
   const records = INSTANCE_DATA[variantCode];
   if (!records) return;
   const idx = records.findIndex(r => r.id === instId);
@@ -3124,6 +3372,7 @@ function cancelEditVariant(variantCode) {
   if (form) form.classList.remove('open');
 }
 function saveEditVariant(variantCode) {
+  if (GUEST_MODE) return;
   const fid = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
   const form = document.getElementById('edit-variant-form-' + fid);
   if (!form) return;
@@ -3159,12 +3408,14 @@ function saveEditVariant(variantCode) {
 
 // ── DELETE VARIANT ───────────────────────────────────────────────────────────
 function confirmDeleteVariant(variantCode) {
+  if (GUEST_MODE) return;
   const vcSafe = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
   const el = document.getElementById('delete-variant-confirm-' + vcSafe);
   if (el) el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
 }
 
 function deleteVariant(variantCode) {
+  if (GUEST_MODE) return;
   const coin = ALL_COINS.find(c => c.variantCode === variantCode);
   if (!coin) return;
   if (coin.instCount > 0) {
@@ -3205,14 +3456,16 @@ function getPendingCount() {
 function updateSyncBadge() {
   const count = getPendingCount();
   const badge = document.getElementById('syncBadge');
-  if (!badge) return;
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'inline-block' : 'none';
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-block' : 'none'; }
+  const tabBadge = document.getElementById('syncPushBadge');
+  if (tabBadge) { tabBadge.textContent = count; tabBadge.style.display = count > 0 ? 'inline-block' : 'none'; }
 }
 
 function showSyncQueue() {
+  if (GUEST_MODE) return;
   document.getElementById('syncModalBg').classList.add('open');
   renderSyncQueue();
+  _syncRefreshPullUI();
 }
 
 function closeSyncQueue() {
@@ -3396,6 +3649,192 @@ function approveAllSync() {
   updateSyncBadge();
   renderSyncQueue();
   _saveAuditLogToServer();
+}
+
+// ── BIDIRECTIONAL NOTION SYNC ─────────────────────────────────────────────────
+
+// Build a one-time index: instance ID → variant code (avoid O(n) scan per pull)
+let _iidIndex = null;
+function _getIidIndex() {
+  if (_iidIndex) return _iidIndex;
+  _iidIndex = {};
+  for (const vc in INSTANCE_DATA) {
+    INSTANCE_DATA[vc].forEach(r => { _iidIndex[r.id] = vc; });
+  }
+  return _iidIndex;
+}
+
+// Apply locally-cached Notion overrides to in-memory INSTANCE_DATA (called on init)
+function _applyNotionOverrides() {
+  const overrides = JSON.parse(localStorage.getItem('coinhub_notion_overrides') || '{}');
+  const idx = _getIidIndex();
+  Object.entries(overrides).forEach(([iid, d]) => {
+    const vc = idx[iid];
+    if (!vc) return;
+    const rec = (INSTANCE_DATA[vc] || []).find(r => r.id === iid);
+    if (!rec) return;
+    if (d.cond)  rec.cond  = d.cond;
+    if (d.s1  !== undefined) rec.s1   = d.s1;
+    if (d.s2  !== undefined) rec.s2   = d.s2;
+    if (d.s3  !== undefined) rec.s3   = d.s3;
+    if (d.notes !== undefined) rec.notes = d.notes;
+    if (d.ptype) rec.ptype = d.ptype;
+  });
+}
+
+// Switch tabs in sync modal
+function _syncShowTab(tab) {
+  const isPush = tab === 'push';
+  document.getElementById('syncTabPush').classList.toggle('active', isPush);
+  document.getElementById('syncTabPull').classList.toggle('active', !isPush);
+  document.getElementById('syncPushPanel').style.display = isPush ? 'flex' : 'none';
+  document.getElementById('syncPullPanel').style.display = isPush ? 'none' : '';
+  if (!isPush) _syncRefreshPullUI();
+}
+
+// Restore pull UI state from localStorage
+function _syncRefreshPullUI() {
+  const last = localStorage.getItem('coinhub_last_pull_display') || 'Never';
+  const el = document.getElementById('syncLastPull');
+  if (el) el.textContent = last;
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
+  document.querySelectorAll('.sync-interval-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
+  });
+}
+
+// Auto-sync timer state
+let _syncPullTimer = null;
+let _syncCountdownTimer = null;
+let _syncCountdownSecs = 0;
+
+function _syncSetInterval(mins) {
+  localStorage.setItem('coinhub_sync_interval', mins);
+  document.querySelectorAll('.sync-interval-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
+  });
+  // Clear existing timers
+  if (_syncPullTimer)    { clearInterval(_syncPullTimer);    _syncPullTimer    = null; }
+  if (_syncCountdownTimer) { clearInterval(_syncCountdownTimer); _syncCountdownTimer = null; }
+  const nextLabel = document.getElementById('syncNextLabel');
+  const nextEl    = document.getElementById('syncNextPull');
+  if (nextLabel) nextLabel.style.display = 'none';
+  if (nextEl)    nextEl.style.display    = 'none';
+  if (mins > 0) {
+    _syncCountdownSecs = mins * 60;
+    _syncPullTimer = setInterval(() => {
+      _syncPullNow(true);
+      _syncCountdownSecs = mins * 60;
+    }, mins * 60 * 1000);
+    _syncCountdownTimer = setInterval(() => {
+      _syncCountdownSecs = Math.max(0, _syncCountdownSecs - 1);
+      const m = Math.floor(_syncCountdownSecs / 60);
+      const s = _syncCountdownSecs % 60;
+      if (nextEl) nextEl.textContent = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }, 1000);
+    if (nextLabel) nextLabel.style.display = '';
+    if (nextEl)    nextEl.style.display    = '';
+  }
+}
+
+// Restore auto-sync on page load
+function _syncRestoreAutoSync() {
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
+  if (mins > 0) _syncSetInterval(mins);
+}
+
+function _syncAddLog(time, msg) {
+  const log = document.getElementById('syncPullLog');
+  if (!log) return;
+  log.style.display = '';
+  const entry = document.createElement('div');
+  entry.className = 'sync-pull-log-entry';
+  entry.innerHTML = `<span class="sync-pull-log-time">${time}</span><span>${msg}</span>`;
+  log.insertBefore(entry, log.firstChild);
+  while (log.children.length > 12) log.removeChild(log.lastChild);
+}
+
+async function _syncPullNow(isAuto) {
+  const btn = document.getElementById('syncPullNowBtn');
+  if (btn) { btn.textContent = '⏳ Pulling…'; btn.disabled = true; }
+  const since = localStorage.getItem('coinhub_last_notion_pull') || '';
+  try {
+    const url = '/api/notion-pull' + (since ? '?since=' + encodeURIComponent(since) : '');
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    const overrides = JSON.parse(localStorage.getItem('coinhub_notion_overrides') || '{}');
+    const idx = _getIidIndex();
+    let updated = 0, scUpdated = 0;
+
+    (data.instances || []).forEach(inst => {
+      const iid = inst.id;
+      if (!iid) return;
+      const vc = idx[iid];
+      if (vc) {
+        const rec = (INSTANCE_DATA[vc] || []).find(r => r.id === iid);
+        if (rec) {
+          if (inst.cond)  rec.cond  = inst.cond;
+          if (inst.s1  !== undefined) rec.s1   = inst.s1;
+          if (inst.s2  !== undefined) rec.s2   = inst.s2;
+          if (inst.s3  !== undefined) rec.s3   = inst.s3;
+          if (inst.notes !== undefined) rec.notes = inst.notes;
+          if (inst.ptype) rec.ptype = inst.ptype;
+          updated++;
+        }
+      }
+      // Persist override for next page load
+      overrides[iid] = { cond: inst.cond, s1: inst.s1, s2: inst.s2, s3: inst.s3, notes: inst.notes, ptype: inst.ptype, lastEdited: inst.lastEdited };
+      // Pull stocktake date only if not already set locally
+      if (inst.lastStocktake && !_scChecked[iid]) {
+        _scChecked[iid] = inst.lastStocktake;
+        scUpdated++;
+      }
+    });
+
+    localStorage.setItem('coinhub_notion_overrides', JSON.stringify(overrides));
+    localStorage.setItem('coinhub_last_notion_pull', data.pulledAt);
+    if (scUpdated) _scSave();
+
+    const now = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    localStorage.setItem('coinhub_last_pull_display', now);
+    const lastEl = document.getElementById('syncLastPull');
+    if (lastEl) lastEl.textContent = now;
+
+    const n = (data.instances || []).length;
+    _syncAddLog(now, isAuto ? `Auto: ${n} checked, ${updated} updated` : `${n} checked, ${updated} updated${scUpdated ? `, ${scUpdated} stocktake dates` : ''}`);
+    if (!isAuto) alert(`Pull complete.\n${n} records checked, ${updated} updated in app.${scUpdated ? `\n${scUpdated} stocktake dates imported.` : ''}`);
+    if (updated || scUpdated) render();
+  } catch(e) {
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    _syncAddLog(t, 'Error: ' + e.message);
+    if (!isAuto) alert('Pull failed: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '⇩ Pull Now'; btn.disabled = false; }
+  }
+}
+
+async function _scSyncToNotion() {
+  const btn = document.getElementById('syncStocktakePushBtn');
+  if (btn) { btn.textContent = '⏳ Pushing…'; btn.disabled = true; }
+  try {
+    const resp = await fetch('/api/notion-stocktake-push', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({checks: _scChecked})
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const errs = data.errors?.length ? `\n${data.errors.length} error(s): ${data.errors.slice(0,3).join('; ')}` : '';
+    alert(`Stocktake sync complete.\n${data.updated} updated, ${data.skipped} skipped.${errs}`);
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    _syncAddLog(t, `Stocktake push: ${data.updated} updated, ${data.skipped} skipped`);
+  } catch(e) {
+    alert('Stocktake push failed: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '⇧ Push Stocktake Dates'; btn.disabled = false; }
+  }
 }
 
 function _saveAuditLogToServer() {
