@@ -90,6 +90,23 @@ def _notion_resolve_name(page_id, cache):
     return cache[page_id]
 
 
+def _notion_resolve_variant_code(page_id, cache):
+    """Fetch a variant page and return its ID property (e.g. 'UK-D-50P-2026-WPKD-')."""
+    if not page_id:
+        return ''
+    cache_key = 'vc:' + page_id
+    if cache_key in cache:
+        return cache[cache_key]
+    try:
+        p = _notion_request('GET', f'/pages/{page_id}')
+        parts = p.get('properties', {}).get('ID', {}).get('title', [])
+        code = ''.join(t.get('plain_text', '') for t in parts)
+        cache[cache_key] = code
+    except Exception:
+        cache[cache_key] = ''
+    return cache[cache_key]
+
+
 def _notion_pull_instances(since_iso=None):
     """
     Query the Notion instance DB (optionally filtered to pages edited since since_iso).
@@ -136,8 +153,12 @@ def _notion_pull_instances(since_iso=None):
         notes_prop = props.get('Notes', {})
         notes = ''.join(r.get('plain_text', '') for r in notes_prop.get('rich_text', []))
 
+        variant_page_id = _notion_get_prop_str(props.get('Coin Variant', {}))
+        variant_code = _notion_resolve_variant_code(variant_page_id, cache)
+
         instances.append({
             'id': formula_id,
+            'variantCode': variant_code,
             'cond': rel('Condition'),
             's1':   rel('Storage 1'),
             's2':   rel('Storage 2'),
