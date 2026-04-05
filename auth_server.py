@@ -107,6 +107,31 @@ def _notion_resolve_variant_code(page_id, cache):
     return cache[cache_key]
 
 
+def _prefetch_lookup_table(db_id, cache):
+    """Query a small lookup DB and populate cache with {page_id: name} for all its pages."""
+    if not db_id:
+        return
+    try:
+        cursor = None
+        while True:
+            body = {'page_size': 100}
+            if cursor:
+                body['start_cursor'] = cursor
+            result = _notion_request('POST', f'/databases/{db_id}/query', body)
+            for page in result.get('results', []):
+                pid = page['id']
+                if pid not in cache:
+                    props = page.get('properties', {})
+                    name_prop = props.get('Name', {})
+                    name = ''.join(t.get('plain_text', '') for t in name_prop.get('title', []))
+                    cache[pid] = name
+            if not result.get('has_more'):
+                break
+            cursor = result.get('next_cursor')
+    except Exception:
+        pass
+
+
 def _notion_pull_instances(since_iso=None):
     """
     Query the Notion instance DB (optionally filtered to pages edited since since_iso).
@@ -116,9 +141,18 @@ def _notion_pull_instances(since_iso=None):
     if CONFIG_FILE.exists():
         try: config = json.loads(CONFIG_FILE.read_text())
         except Exception: pass
-    db_instance = config.get('notion_databases', {}).get('instance', '')
+    dbs_config  = config.get('notion_databases', {})
+    db_instance = dbs_config.get('instance', '')
     if not db_instance:
         return []
+
+    # Pre-fetch all lookup tables so relation IDs resolve from cache, not per-instance GET calls
+    cache = {}
+    _prefetch_lookup_table(dbs_config.get('storage_container', ''), cache)
+    _prefetch_lookup_table(dbs_config.get('storage_page', ''), cache)
+    _prefetch_lookup_table(dbs_config.get('storage_slot', ''), cache)
+    _prefetch_lookup_table('1d805769-e1ee-80f2-b71b-000b9932007f', cache)  # Condition
+    _prefetch_lookup_table('1d905769-e1ee-804e-8473-000b2f0e2f2f', cache)  # Preservation Type
 
     body = {'page_size': 100}
     if since_iso:
@@ -138,7 +172,6 @@ def _notion_pull_instances(since_iso=None):
             break
         cursor = result.get('next_cursor')
 
-    cache = {}
     instances = []
     for page in pages:
         props = page.get('properties', {})
