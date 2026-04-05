@@ -3779,7 +3779,9 @@ function _syncAddLog(time, msg) {
 async function _syncPullNow(isAuto) {
   const btn = document.getElementById('syncPullNowBtn');
   if (btn) { btn.textContent = '⏳ Pulling…'; btn.disabled = true; }
-  const since = localStorage.getItem('coinhub_last_notion_pull') || '';
+  // Default first-time pull to last 30 days to avoid Cloudflare timeout on full pulls
+  const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+  const since = localStorage.getItem('coinhub_last_notion_pull') || thirtyDaysAgo;
   try {
     const url = '/api/notion-pull' + (since ? '?since=' + encodeURIComponent(since) : '');
     const resp = await fetch(url);
