@@ -3719,7 +3719,7 @@ function _syncRefreshPullUI() {
   const last = localStorage.getItem('coinhub_last_pull_display') || 'Never';
   const el = document.getElementById('syncLastPull');
   if (el) el.textContent = last;
-  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') ?? '15');
   document.querySelectorAll('.sync-interval-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
   });
@@ -3761,8 +3761,8 @@ function _syncSetInterval(mins) {
 
 // Restore auto-sync on page load
 function _syncRestoreAutoSync() {
-  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
-  if (mins > 0) _syncSetInterval(mins);
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') ?? '15');
+  _syncSetInterval(mins);
 }
 
 function _syncAddLog(time, msg) {

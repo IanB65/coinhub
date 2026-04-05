@@ -305,12 +305,27 @@ def _process_queue():
                 inst = item.get('inst', {})
                 inst_formula_id = inst.get('id', '')
                 if inst_formula_id:
-                    results = _notion_request('POST', f'/databases/{db_instance}/query', {
-                        'filter': {'property': 'ID', 'formula': {'string': {'equals': inst_formula_id}}}
-                    })
+                    # Use pageid cache to avoid querying by formula ID (wrong filter type)
+                    pageid_cache = _load_pageid_cache()
+                    page_id = pageid_cache.get(inst_formula_id)
+                    if page_id:
+                        notion_pages = [{'id': page_id}]
+                    else:
+                        # Fall back: query by unique_id number (e.g. INS-303 → 303)
+                        try:
+                            num = int(inst_formula_id.split('-')[-1])
+                            res = _notion_request('POST', f'/databases/{db_instance}/query', {
+                                'filter': {'property': 'ID', 'unique_id': {'equals': num}}
+                            })
+                            notion_pages = res.get('results', [])
+                            if notion_pages:
+                                pageid_cache[inst_formula_id] = notion_pages[0]['id']
+                                _save_pageid_cache(pageid_cache)
+                        except Exception:
+                            notion_pages = []
                     db_cond  = '1d805769-e1ee-80f2-b71b-000b9932007f'
                     db_ptype = '1d905769-e1ee-804e-8473-000b2f0e2f2f'
-                    for page in results.get('results', []):
+                    for page in notion_pages:
                         props = {}
                         cond_id = _lookup_notion_page(db_cond, inst.get('cond'))
                         if cond_id:
