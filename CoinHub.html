@@ -2663,6 +2663,7 @@ function buildInstItemHTML(coin, inst) {
   let h = `<div class="inst-item">
     <div class="inst-num">#${inst.num}${inst.insId?`<br><span class="inst-id-badge">${inst.insId}</span>`:''}</div>
     <div class="inst-loc">
+      ${inst.insId?`<div class="inst-loc-row"><span class="inst-field-label">ID</span><span class="inst-id-badge" style="font-size:.68rem">${inst.insId}</span></div>`:''}
       <div class="inst-loc-row"><span class="inst-field-label">Location</span><span>${inst.loc}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Storage 1</span><span>${inst.s1}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Storage 2</span><span>${inst.s2}</span></div>

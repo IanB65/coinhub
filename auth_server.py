@@ -308,12 +308,16 @@ def _process_queue():
                     results = _notion_request('POST', f'/databases/{db_instance}/query', {
                         'filter': {'property': 'ID', 'formula': {'string': {'equals': inst_formula_id}}}
                     })
+                    db_cond  = '1d805769-e1ee-80f2-b71b-000b9932007f'
+                    db_ptype = '1d905769-e1ee-804e-8473-000b2f0e2f2f'
                     for page in results.get('results', []):
                         props = {}
-                        if inst.get('cond'):
-                            props['Condition'] = {'rich_text': [{'text': {'content': inst['cond']}}]}
-                        if inst.get('ptype'):
-                            props['Preservation Type'] = {'select': {'name': inst['ptype']}}
+                        cond_id = _lookup_notion_page(db_cond, inst.get('cond'))
+                        if cond_id:
+                            props['Condition'] = {'relation': [{'id': cond_id}]}
+                        ptype_id = _lookup_notion_page(db_ptype, inst.get('ptype'))
+                        if ptype_id:
+                            props['Preservation Type'] = {'relation': [{'id': ptype_id}]}
                         # Storage relations — look up page IDs by name
                         s1_id = _lookup_notion_page(db_s1, inst.get('s1'))
                         if s1_id:
