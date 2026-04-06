@@ -1,4 +1,32 @@
+[build]
+  functions = "netlify/functions"
+
 [[redirects]]
   from = "/"
   to = "/CoinHub.html"
   status = 200
+
+[[redirects]]
+  from = "/api/notion-pull"
+  to = "/.netlify/functions/notion-pull"
+  status = 200
+
+[[redirects]]
+  from = "/api/notion-stocktake-push"
+  to = "/.netlify/functions/notion-stocktake-push"
+  status = 200
+
+[[redirects]]
+  from = "/api/process-queue"
+  to = "/.netlify/functions/process-queue"
+  status = 200
+
+[[redirects]]
+  from = "/api/save-audit-log"
+  to = "/.netlify/functions/process-queue"
+  status = 200
+
+[[headers]]
+  for = "/CoinHub.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
