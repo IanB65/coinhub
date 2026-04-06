@@ -3844,7 +3844,12 @@ async function _syncPullNow(isAuto) {
     const newMsg = newInsts ? `, ${newInsts} new coin${newInsts > 1 ? 's' : ''} added` : '';
     _syncAddLog(now, isAuto ? `Auto: ${n} checked, ${updated} updated${newMsg}` : `${n} checked, ${updated} updated${newMsg}${scUpdated ? `, ${scUpdated} stocktake dates` : ''}`);
     if (!isAuto) alert(`Pull complete.\n${n} records checked, ${updated} updated in app.${newMsg ? '\n' + newInsts + ' new coin instance' + (newInsts > 1 ? 's' : '') + ' added from Notion.' : ''}${scUpdated ? `\n${scUpdated} stocktake dates imported.` : ''}`);
-    if (updated || newInsts || scUpdated) render();
+    if (updated || newInsts || scUpdated) {
+      document.getElementById('hGot').textContent  = ALL_COINS.filter(c=>c.status==='Got').length;
+      document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+      document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
+      applyFilters();
+    }
   } catch(e) {
     const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
     _syncAddLog(t, 'Error: ' + e.message);
