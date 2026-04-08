@@ -1,6 +1,10 @@
 [build]
   functions = "netlify/functions"
 
+[build.environment]
+  # ADMIN_EMAIL appears in markdown docs — safe to exclude from secrets scan
+  SECRETS_SCAN_OMIT_KEYS = "ADMIN_EMAIL"
+
 # ── Auth routes ───────────────────────────────────────────────────────────────
 
 [[redirects]]
