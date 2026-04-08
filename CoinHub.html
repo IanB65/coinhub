@@ -480,7 +480,8 @@ body.guest-mode .sticky-top{top:82px}
     <button class="log-btn" onclick="showChangeLog()" title="Change Log"><span class="btn-icon">◷</span><span class="btn-text">Change Log</span></button>
     <button class="log-btn" onclick="showStats()" title="Stats"><span class="btn-icon">≋</span><span class="btn-text">Stats</span></button>
     <button class="log-btn" id="syncBtn" onclick="showSyncQueue()" title="Notion Sync"><span class="btn-icon">⇅</span><span class="btn-text">Notion Sync</span><span class="sync-badge" id="syncBadge" style="display:none">0</span></button>
-    <a class="log-btn" id="adminLink" href="/admin" title="Guest Admin" style="text-decoration:none"><span class="btn-icon">⚿</span><span class="btn-text">Admin</span></a>
+    <a class="log-btn" id="adminLink" href="/admin" title="Guest Access Manager" style="text-decoration:none"><span class="btn-icon">⚿</span><span class="btn-text">Admin</span></a>
+    <button class="log-btn" id="logoutBtn" onclick="doLogout()" title="Sign Out"><span class="btn-icon">⏻</span><span class="btn-text">Sign Out</span></button>
   </div>
 </header>
 
@@ -2363,6 +2364,11 @@ async function _applyGuestMode() {
       if (!cr || !cr.ok) { location.href = '/'; }
     }, 60000);
   } catch(e) { /* not a guest, carry on */ }
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+  location.href = '/login';
 }
 
 // Denomination order

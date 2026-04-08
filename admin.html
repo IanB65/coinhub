@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoinHub — Guest Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C0C0A;--paper:#F5F2EB;--paper2:#EDE9DF;--paper3:#E4DFD2;
+  --gold:#8B6914;--gold2:#C49A2A;--gold3:#F0C84A;
+  --border:#D4C9B0;--muted:#8A7F6E;--r:3px;
+  --got:#2D6A4F;--got-bg:#D8F3DC;
+  --need:#9B2335;--need-bg:#FFE4E8;
+  --list:#7A5C1E;--list-bg:#FFF3CD;
+}
+html,body{min-height:100%;background:var(--paper)}
+body{font-family:'DM Mono',monospace;color:var(--ink);max-width:700px;margin:0 auto;padding:2rem 1rem}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.logo{font-family:'Bodoni Moda',serif;font-size:1.2rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.logo span{color:var(--ink);font-weight:400;font-style:italic}
+.logo small{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
+.hbtns{display:flex;gap:.5rem}
+.btn{padding:.35rem .8rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--muted);transition:all .12s}
+.btn:hover{border-color:var(--gold2);color:var(--gold2)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn.primary:hover{background:var(--gold2);border-color:var(--gold2)}
+.btn.danger{border-color:var(--need);color:var(--need)}
+.btn.danger:hover{background:var(--need);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+
+h2{font-family:'Bodoni Moda',serif;font-size:1rem;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-bottom:1rem}
+
+/* Create form */
+.create-card{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:2rem}
+.form-row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem}
+.field{flex:1;min-width:140px}
+label{display:block;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+input,select{width:100%;padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink);outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--gold2)}
+
+/* Token list */
+.token-list{display:flex;flex-direction:column;gap:.6rem}
+.token-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.8rem 1rem}
+.token-card.expired{opacity:.55}
+.token-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem}
+.token-label{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;flex:1}
+.badge{font-size:.44rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:20px}
+.badge.active{background:var(--got-bg);color:var(--got)}
+.badge.expired{background:var(--paper3);color:var(--muted)}
+.token-meta{font-size:.56rem;color:var(--muted);margin-bottom:.6rem;line-height:1.7}
+.token-link{font-size:.54rem;color:var(--gold2);word-break:break-all;font-family:'DM Mono',monospace;background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:.35rem .5rem;margin-bottom:.5rem;cursor:pointer;transition:background .1s;display:block}
+.token-link:hover{background:var(--paper3)}
+.token-actions{display:flex;gap:.4rem}
+
+.empty{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--muted);font-size:.88rem;padding:2rem;text-align:center;border:1px dashed var(--border);border-radius:var(--r)}
+
+.msg{font-size:.62rem;padding:.45rem .65rem;border-radius:var(--r);margin-top:.6rem;display:none}
+.msg.ok{background:var(--got-bg);color:var(--got);border:1px solid var(--got);display:block}
+.msg.err{background:var(--need-bg);color:var(--need);border:1px solid var(--need);display:block}
+
+.link-copied{font-size:.52rem;color:var(--got);margin-left:.4rem;opacity:0;transition:opacity .3s}
+.link-copied.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Coin <span>Hub</span></div>
+    <small class="logo" style="font-size:.48rem">Guest Access Manager</small>
+  </div>
+  <div class="hbtns">
+    <a href="/" class="btn">← Collection</a>
+    <button class="btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</header>
+
+<h2>Create Guest Access</h2>
+<div class="create-card">
+  <div class="form-row">
+    <div class="field" style="flex:2">
+      <label>Guest Name / Label</label>
+      <input type="text" id="newLabel" placeholder="e.g. Mum, Friend, etc." maxlength="60">
+    </div>
+    <div class="field">
+      <label>Access Duration</label>
+      <select id="newDuration">
+        <option value="3600">1 hour</option>
+        <option value="86400" selected>24 hours</option>
+        <option value="259200">3 days</option>
+        <option value="604800">1 week</option>
+        <option value="2592000">30 days</option>
+        <option value="31536000">1 year</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn primary" id="createBtn" onclick="createGuest()">Generate Guest Link</button>
+  <div class="msg" id="createMsg"></div>
+</div>
+
+<h2>Active Guest Links</h2>
+<div class="token-list" id="tokenList">
+  <div class="empty">Loading…</div>
+</div>
+
+<!-- New link modal -->
+<div id="newLinkBox" style="display:none;margin-top:1rem;background:var(--got-bg);border:1px solid var(--got);border-radius:var(--r);padding:1rem">
+  <div style="font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--got);margin-bottom:.5rem">Guest link created — share this with your guest:</div>
+  <div id="newLinkText" class="token-link" onclick="copyLink(this.textContent, this)"></div>
+  <div style="font-size:.55rem;color:var(--muted);margin-top:.4rem">Click the link to copy. The link works immediately — no password needed for the guest.</div>
+</div>
+
+<script>
+async function loadGuests() {
+  const list = document.getElementById('tokenList');
+  try {
+    const r = await fetch('/api/auth/guest');
+    if (!r.ok) { list.innerHTML = '<div class="empty">Could not load guest tokens.</div>'; return; }
+    const { guests } = await r.json();
+    if (!guests.length) { list.innerHTML = '<div class="empty">No guest links yet.</div>'; return; }
+    list.innerHTML = '';
+    guests.forEach(g => list.appendChild(renderToken(g)));
+  } catch {
+    list.innerHTML = '<div class="empty">Error loading guests.</div>';
+  }
+}
+
+function renderToken(g) {
+  const card = document.createElement('div');
+  card.className = 'token-card' + (g.expired ? ' expired' : '');
+  card.id = 'token-' + g.id;
+
+  const exp = new Date(g.exp * 1000);
+  const created = new Date(g.createdAt * 1000);
+  const expStr = exp.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'}) + ' ' + exp.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
+  const createdStr = created.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'});
+
+  card.innerHTML = `
+    <div class="token-head">
+      <span class="token-label">${esc(g.label)}</span>
+      <span class="badge ${g.expired ? 'expired' : 'active'}">${g.expired ? 'Expired' : 'Active'}</span>
+    </div>
+    <div class="token-meta">
+      Created ${esc(createdStr)} &nbsp;·&nbsp;
+      ${g.expired ? 'Expired' : 'Expires'} ${esc(expStr)}
+    </div>
+    <div class="token-actions">
+      ${!g.expired ? `<button class="btn danger" onclick="revokeGuest('${g.id}', this)">Revoke Access</button>` : ''}
+      <button class="btn" onclick="removeExpired('${g.id}', this)" ${!g.expired ? 'style="display:none"' : ''}>Remove</button>
+    </div>
+  `;
+  return card;
+}
+
+async function createGuest() {
+  const btn = document.getElementById('createBtn');
+  const msg = document.getElementById('createMsg');
+  const label = document.getElementById('newLabel').value.trim();
+  const expiresInSeconds = parseInt(document.getElementById('newDuration').value);
+
+  if (!label) { showMsg(msg, 'err', 'Enter a name for this guest.'); return; }
+
+  msg.className = 'msg';
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  try {
+    const r = await fetch('/api/auth/guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label, expiresInSeconds }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showMsg(msg, 'err', d.error || 'Failed to create guest link.'); }
+    else {
+      document.getElementById('newLabel').value = '';
+      const box = document.getElementById('newLinkBox');
+      document.getElementById('newLinkText').textContent = d.link;
+      box.style.display = 'block';
+      box.scrollIntoView({ behavior: 'smooth' });
+      loadGuests();
+    }
+  } catch {
+    showMsg(msg, 'err', 'Network error.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate Guest Link';
+}
+
+async function revokeGuest(id, btn) {
+  if (!confirm('Revoke this guest\'s access immediately?')) return;
+  btn.disabled = true;
+  btn.textContent = 'Revoking…';
+  try {
+    const r = await fetch('/api/auth/guest', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (r.ok) { document.getElementById('token-' + id)?.remove(); loadGuests(); }
+    else { btn.disabled = false; btn.textContent = 'Revoke Access'; }
+  } catch { btn.disabled = false; btn.textContent = 'Revoke Access'; }
+}
+
+async function removeExpired(id, btn) {
+  btn.disabled = true;
+  await fetch('/api/auth/guest', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  document.getElementById('token-' + id)?.remove();
+  if (!document.querySelector('.token-card')) {
+    document.getElementById('tokenList').innerHTML = '<div class="empty">No guest links yet.</div>';
+  }
+}
+
+function copyLink(text, el) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = el.style.background;
+    el.style.background = 'var(--got-bg)';
+    setTimeout(() => el.style.background = orig, 800);
+  });
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+  location.href = '/login';
+}
+
+function showMsg(el, type, text) {
+  el.className = 'msg ' + type;
+  el.textContent = text;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+loadGuests();
+</script>
+</body>
+</html>

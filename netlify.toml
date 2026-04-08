@@ -1,10 +1,52 @@
 [build]
   functions = "netlify/functions"
 
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+[[redirects]]
+  from = "/api/auth/login"
+  to = "/.netlify/functions/auth-login"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/guest"
+  to = "/.netlify/functions/auth-guest"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/guest-login"
+  to = "/.netlify/functions/auth-guest-login"
+  status = 200
+
+# /api/whoami — used by CoinHub.html directly
+[[redirects]]
+  from = "/api/whoami"
+  to = "/.netlify/functions/auth-whoami"
+  status = 200
+
+# ── Page routes ───────────────────────────────────────────────────────────────
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
 [[redirects]]
   from = "/"
   to = "/CoinHub.html"
   status = 200
+
+# ── Notion API routes ─────────────────────────────────────────────────────────
 
 [[redirects]]
   from = "/api/notion-pull"
@@ -26,7 +68,19 @@
   to = "/.netlify/functions/process-queue"
   status = 200
 
+# ── Headers ───────────────────────────────────────────────────────────────────
+
 [[headers]]
   for = "/CoinHub.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/login.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/admin.html"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoinHub — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C0C0A;--paper:#F5F2EB;--paper2:#EDE9DF;--paper3:#E4DFD2;
+  --gold:#8B6914;--gold2:#C49A2A;--gold3:#F0C84A;
+  --border:#D4C9B0;--muted:#8A7F6E;--r:3px;
+  --need:#9B2335;--need-bg:#FFE4E8;
+}
+html,body{height:100%;background:var(--paper)}
+body{font-family:'DM Mono',monospace;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+
+.card{
+  background:var(--paper);border:1px solid var(--border);border-radius:var(--r);
+  width:100%;max-width:380px;padding:2.5rem 2rem;
+  box-shadow:0 2px 20px rgba(0,0,0,.08);
+}
+
+.logo{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:.25rem}
+.logo span{color:var(--ink);font-weight:400;font-style:italic}
+.subtitle{text-align:center;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem}
+
+.field{margin-bottom:1.1rem}
+label{display:block;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+input{
+  width:100%;padding:.55rem .7rem;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--paper2);font-family:'DM Mono',monospace;font-size:.78rem;color:var(--ink);
+  outline:none;transition:border-color .15s;
+}
+input:focus{border-color:var(--gold2)}
+input::placeholder{color:var(--muted)}
+
+.btn{
+  width:100%;padding:.65rem;margin-top:.5rem;
+  background:var(--gold);color:#fff;border:none;border-radius:var(--r);
+  font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;transition:background .15s;
+}
+.btn:hover{background:var(--gold2)}
+.btn:disabled{opacity:.5;cursor:default}
+
+.error{
+  font-size:.62rem;color:var(--need);background:var(--need-bg);border:1px solid var(--need);
+  border-radius:var(--r);padding:.5rem .7rem;margin-top:1rem;display:none;
+}
+.error.show{display:block}
+
+.divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+
+.guest-notice{
+  font-size:.6rem;color:var(--muted);font-family:'Cormorant Garamond',serif;font-style:italic;
+  text-align:center;line-height:1.5;
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="loginCard">
+  <div class="logo">Coin <span>Hub</span></div>
+  <div class="subtitle">Personal Collection</div>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="your@email.com" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <div class="field">
+    <label>Authenticator Code</label>
+    <input type="text" id="totp" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+  </div>
+
+  <button class="btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+  <div class="error" id="errorMsg"></div>
+</div>
+
+<div class="card" id="guestCard" style="display:none">
+  <div class="logo">Coin <span>Hub</span></div>
+  <div class="subtitle">Guest Access</div>
+  <p style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:1.5rem">
+    You have been invited to view Ian's coin collection.<br>
+    Click below to enter as a read-only guest.
+  </p>
+  <button class="btn" id="guestBtn" onclick="doGuestLogin()">Enter as Guest</button>
+  <div class="error" id="guestError"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const guestToken = params.get('guest');
+const reason = params.get('reason');
+
+// Auto-detect guest link
+if (guestToken) {
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('guestCard').style.display = 'block';
+}
+
+// Pre-fill email if available
+const savedEmail = localStorage.getItem('coinhub_email');
+if (savedEmail) document.getElementById('email').value = savedEmail;
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (guestToken) doGuestLogin();
+    else doLogin();
+  }
+});
+
+async function doLogin() {
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errorMsg');
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const totp = document.getElementById('totp').value.trim();
+
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, totp }),
+    });
+    if (r.ok) {
+      localStorage.setItem('coinhub_email', email);
+      const dest = params.get('from') || '/';
+      location.href = dest;
+    } else {
+      const d = await r.json().catch(() => ({}));
+      err.textContent = d.error || 'Sign in failed. Check your email, password, and authenticator code.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      document.getElementById('totp').value = '';
+      document.getElementById('totp').focus();
+    }
+  } catch {
+    err.textContent = 'Network error — please try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function doGuestLogin() {
+  const btn = document.getElementById('guestBtn');
+  const err = document.getElementById('guestError');
+
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Entering…';
+
+  try {
+    const r = await fetch('/api/auth/guest-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: guestToken }),
+    });
+    if (r.ok) {
+      location.href = '/';
+    } else {
+      const d = await r.json().catch(() => ({}));
+      err.textContent = d.error || 'This guest link is invalid or has expired.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Enter as Guest';
+    }
+  } catch {
+    err.textContent = 'Network error — please try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Enter as Guest';
+  }
+}
+</script>
+</body>
+</html>
