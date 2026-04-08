@@ -279,6 +279,14 @@ body.guest-mode .sticky-top{top:82px}
 .sc-item-date{font-size:.65rem;font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0;min-width:7.5rem;text-align:right;color:var(--got)}
 .sc-item:not(.checked) .sc-item-date{color:var(--need);opacity:.5}
 .sc-item.checked .sc-item-name{color:var(--got)}
+.sc-info-btn{flex-shrink:0;width:18px;height:18px;border:1px solid var(--border);border-radius:50%;background:transparent;cursor:pointer;font-size:.55rem;color:var(--muted);display:flex;align-items:center;justify-content:center;line-height:1;transition:all .12s;font-family:'DM Mono',monospace}
+.sc-info-btn:hover,.sc-info-btn.open{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.08)}
+.sc-detail{display:none;background:var(--paper2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:.5rem .75rem;font-size:.6rem;font-family:'DM Mono',monospace;color:var(--muted);line-height:1.9}
+.sc-detail.open{display:block}
+.sc-detail-row{display:flex;gap:.5rem}
+.sc-detail-label{min-width:5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.52rem}
+.sc-detail-val{color:var(--ink);font-size:.62rem}
+.sc-detail-val.mono{font-family:'DM Mono',monospace}
 #scUncheckedBtn.active{border-color:var(--need)!important;color:var(--need)!important;background:var(--need-bg)!important}
 .sc-progress-wrap{padding:.3rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;display:none;align-items:center;gap:.75rem}
 .sc-progress-bar{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
@@ -3034,12 +3042,35 @@ function loadStockCheck() {
     row.innerHTML = `<input type="checkbox" ${checkedDate?'checked':''} onchange="scToggle('${iid}',this.checked)">
       <span class="sc-item-name">${coinName}</span>
       <span class="sc-item-meta">${metaParts.join(' · ')}</span>
-      <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>`;
+      <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>
+      <button class="sc-info-btn" onclick="event.preventDefault();scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
     listEl.appendChild(row);
+
+    const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+    const variantCode = inst.vc || (coin ? coin.variantCode : '');
+    const detail = document.createElement('div');
+    detail.className = 'sc-detail';
+    detail.id = `sc-detail-${iid}`;
+    detail.innerHTML = [
+      `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val mono">${iid}</span></div>`,
+      storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Location</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
+      inst.cond ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
+      inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
+      variantCode ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val mono">${variantCode}</span></div>` : '',
+    ].join('');
+    listEl.appendChild(detail);
   });
 
   _scUpdateProgress();
   _scApplyUncheckedFilter();
+}
+
+function scToggleDetail(iid) {
+  const detail = document.getElementById('sc-detail-' + iid);
+  const btn = document.querySelector(`#sc-row-${iid} .sc-info-btn`);
+  if (!detail) return;
+  const open = detail.classList.toggle('open');
+  if (btn) btn.classList.toggle('open', open);
 }
 
 function scToggle(iid, checked) {
