@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinHub GS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C0C0A;--paper:#F5F2EB;--paper2:#EDE9DF;--paper3:#E4DFD2;
+  --gold:#8B6914;--gold2:#C49A2A;--gold3:#F0C84A;
+  --got:#2D6A4F;--got-bg:#D8F3DC;
+  --need:#9B2335;--need-bg:#FFE4E8;
+  --list:#1A3A6B;--list-bg:#DBEAFE;
+  --border:#C8BFA8;--muted:#4A4438;
+  --r:2px;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+/* ── CONSOLIDATED ROW ── */
+.main-cell{padding:.55rem .8rem .55rem .4rem}
+.main-cell-top{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.25rem;flex-wrap:wrap}
+.coin-name-inline{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;line-height:1;color:var(--ink)}
+.inline-qty{font-family:'DM Mono',monospace;font-size:.72rem;font-weight:600;padding:1px 6px;border-radius:3px;flex-shrink:0}
+.inline-qty.has-inst{color:var(--got);background:var(--got-bg)}
+.inline-qty.zero-qty{color:var(--muted);font-weight:400;font-size:.62rem}
+.main-cell-bottom{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;line-height:1}
+.dot-sep{color:var(--border);font-size:.6rem}
+.inline-collection{font-size:.6rem;color:var(--muted);font-family:'DM Mono',monospace}
+.hide-mobile{}
+@media(max-width:600px){.hide-mobile{display:none}}
+
+/* ── GRAIN OVERLAY ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+
+/* ── GUEST BANNER ── */
+#guestBanner{display:none;background:var(--list-bg);border-bottom:1px solid var(--list);padding:.45rem 2rem;height:30px;font-size:.6rem;font-family:'DM Mono',monospace;letter-spacing:.06em;color:var(--list);align-items:center;gap:1rem;position:sticky;top:0;z-index:101}
+#guestBanner b{font-weight:600}
+#guestBanner .guest-expiry{color:var(--muted);margin-left:auto}
+body.guest-mode #guestBanner{display:flex}
+/* Hide all write controls in guest mode */
+body.guest-mode .inst-edit-btn,
+body.guest-mode .inst-remove-btn,
+body.guest-mode .edit-variant-btn,
+body.guest-mode .add-inst-btn,
+body.guest-mode #syncBtn,
+body.guest-mode #adminLink,
+body.guest-mode .log-btn[onclick*="showStockCheck"],
+body.guest-mode .log-btn[onclick*="showChangeLog"]{display:none!important}
+
+/* ── HEADER ── */
+header{border-bottom:1px solid var(--border);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);position:sticky;top:0;z-index:100}
+body.guest-mode header{top:30px}
+.logo{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.logo span{color:var(--ink);font-weight:400;font-style:italic}
+.header-stats{display:flex;gap:1.5rem;font-size:.62rem;letter-spacing:.08em}
+.hstat{display:flex;align-items:center;gap:.3rem;color:var(--muted)}
+.hstat b{font-weight:500}
+.hstat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ── LOADING ── */
+#loadScreen{position:fixed;inset:0;background:var(--paper);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.load-logo{font-family:'Bodoni Moda',serif;font-size:3rem;font-weight:900;color:var(--gold);letter-spacing:.2em}
+.load-sub{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.load-bar{width:200px;height:1px;background:var(--border);position:relative;overflow:hidden}
+.load-bar::after{content:'';position:absolute;inset:0;background:var(--gold2);transform:translateX(-100%);animation:loadBar 1.8s ease forwards}
+@keyframes loadBar{to{transform:translateX(0)}}
+.load-error{color:var(--need);font-size:.7rem;text-align:center;max-width:300px;margin-top:.5rem;display:none}
+
+/* ── TWO COLUMN LAYOUT ── */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 52px)}
+
+/* ── LEFT PANEL: FILTERS ── */
+.filters{border-right:1px solid var(--border);padding:1.5rem 1.2rem;background:var(--paper2);position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;display:flex;flex-direction:column;gap:1.5rem}
+body.guest-mode .filters{top:82px;height:calc(100vh - 82px)}
+.filters::-webkit-scrollbar{width:3px}.filters::-webkit-scrollbar-thumb{background:var(--border)}
+
+.filter-section{}
+.filter-label{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem}
+.filter-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Denomination pills - primary filter */
+.denom-grid{display:grid;grid-template-columns:1fr 1fr;gap:.3rem}
+.denom-btn{padding:.4rem .3rem .3rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);transition:all .12s;text-align:center;line-height:1.1;overflow:hidden}
+.denom-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.denom-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
+.denom-btn .denom-count{display:block;font-size:.52rem;opacity:.6;margin-top:.1rem}
+.denom-btn .denom-bar-wrap{height:3px;background:rgba(0,0,0,.08);margin:.3rem -.3rem -.3rem;overflow:hidden}
+.denom-btn.active .denom-bar-wrap{background:rgba(255,255,255,.15)}
+.denom-btn .denom-bar-fill{height:100%;background:var(--got);transition:width .3s}
+.denom-btn.active .denom-bar-fill{background:var(--gold3)}
+
+/* Secondary filters */
+.filter-row{margin-bottom:.5rem}
+.filter-row label{display:block;font-size:.57rem;color:var(--muted);margin-bottom:.25rem;letter-spacing:.06em}
+select,input[type=text]{width:100%;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.35rem .5rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink);outline:none;appearance:none;-webkit-appearance:none}
+select:focus,input:focus{border-color:var(--gold2)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7060' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .5rem center;padding-right:1.5rem}
+
+/* Status toggles */
+.status-row{display:flex;gap:.3rem}
+.status-toggle{flex:1;padding:.35rem .2rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;text-align:center;transition:all .12s;color:var(--muted)}
+.status-toggle:hover{border-color:currentColor}
+.status-toggle[data-s=Got]{color:var(--got)}
+.status-toggle[data-s=Got].active{background:var(--got-bg);border-color:var(--got)}
+.status-toggle[data-s=Need]{color:var(--need)}
+.status-toggle[data-s=Need].active{background:var(--need-bg);border-color:var(--need)}
+.status-toggle[data-s=List]{color:var(--list)}
+.status-toggle[data-s=List].active{background:var(--list-bg);border-color:var(--list)}
+
+/* Clear btn */
+.clear-btn{width:100%;padding:.4rem;border:1px dashed var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);transition:all .12s;margin-top:auto}
+.clear-btn:hover{border-color:var(--gold2);color:var(--ink)}
+
+/* Collection progress */
+.coll-list{display:flex;flex-direction:column;gap:.18rem;max-height:200px;overflow-y:auto}
+.coll-list::-webkit-scrollbar{width:2px}.coll-list::-webkit-scrollbar-thumb{background:var(--border)}
+.coll-row{padding:.28rem .4rem;border-radius:var(--r);cursor:pointer;transition:background .1s}
+.coll-row:hover{background:var(--paper3)}
+.coll-row.active{background:var(--paper3);outline:1px solid var(--gold)}
+.coll-top{display:flex;justify-content:space-between;align-items:baseline;gap:.3rem}
+.coll-name{font-size:.6rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coll-frac{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--muted);flex-shrink:0}
+.coll-bar-wrap{height:5px;background:var(--paper3);border-radius:3px;margin-top:.25rem;overflow:hidden}
+.coll-bar-fill{height:100%;border-radius:3px;background:var(--got)}
+.coll-bar-fill.complete{background:var(--gold)}
+
+/* ── RIGHT PANEL: TABLE ── */
+.main{padding:0;min-width:0}
+.sticky-top{position:sticky;top:52px;z-index:50}
+body.guest-mode .sticky-top{top:82px}
+.results-bar{padding:.8rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;background:var(--paper)}
+.results-count{font-size:.62rem;color:var(--muted);letter-spacing:.06em}
+.results-count b{color:var(--ink)}
+.sort-row{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:.62rem;color:var(--muted)}
+.sort-btn{padding:.25rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);transition:all .12s}
+.sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* ── TABLE ── */
+.coin-table{width:100%;border-collapse:collapse}
+.coin-table th{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400;padding:.6rem 1rem;text-align:left;border-bottom:1px solid var(--border);background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
+.coin-table th:hover{color:var(--ink)}
+.coin-table th .sort-icon{opacity:.4;font-size:.5rem}
+.coin-table th.sorted .sort-icon{opacity:1;color:var(--gold)}
+.coin-table td{padding:.88rem 1rem;border-bottom:1px solid rgba(200,191,168,.35);vertical-align:middle;font-size:.78rem}
+.coin-table tr:hover td{background:rgba(200,191,168,.15)}
+.coin-table tr.expanded td{background:rgba(200,191,168,.2)}
+
+/* variant cell */
+.var-code{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.04em}
+.var-code .part-type{color:var(--muted)}
+.var-code .part-denom{color:var(--gold)}
+.var-code .part-year{color:var(--ink);font-weight:500}
+.var-code .part-id{color:var(--got)}
+
+/* name cell */
+.coin-name{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;line-height:1.1}
+.coin-collection{font-size:.6rem;color:var(--muted);font-family:'DM Mono',monospace;margin-top:.1rem}
+
+/* status badge */
+.sbadge{display:inline-block;font-size:.52rem;letter-spacing:.07em;padding:2px 7px;border-radius:20px;font-family:'DM Mono',monospace;font-weight:500;text-transform:uppercase}
+.sbadge.Got{background:var(--got-bg);color:var(--got)}
+.sbadge.Need{background:var(--need-bg);color:var(--need)}
+.sbadge.List{background:var(--list-bg);color:var(--list)}
+.sbadge.Unknown{background:var(--paper3);color:var(--muted)}
+
+/* monarch */
+.monarch-tag{font-size:.6rem;color:var(--muted)}
+
+/* instance count */
+.qty-wrap{display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:36px}
+.qty-num{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700;line-height:1;color:var(--ink)}
+.qty-num.zero{color:var(--border);font-size:.9rem}
+.qty-label{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.qty-wrap.has-inst .qty-num{color:var(--got)}
+.qty-wrap.has-inst .qty-label{color:var(--got);opacity:.7}
+
+/* expand row */
+.expand-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:2px 6px;border-radius:2px;transition:transform .15s}
+.expand-btn:hover{color:var(--ink)}
+.expand-btn.open{transform:rotate(90deg)}
+
+/* detail row */
+.detail-row td{padding:0;border-bottom:1px solid var(--border)}
+.detail-panel{padding:1rem 1.5rem 1.2rem 3rem;background:var(--paper3);display:none;animation:slideDown .15s ease}
+.detail-row.open .detail-panel{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:.8rem}
+.detail-field label{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.15rem}
+.detail-field p{font-size:.72rem;color:var(--ink);line-height:1.4}
+.detail-field p.mono{font-family:'DM Mono',monospace;font-size:.65rem}
+.instances-section{margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--border)}
+.instances-label{font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.inst-list{display:flex;flex-direction:column;gap:.3rem}
+.inst-item{display:grid;grid-template-columns:2rem 1fr;align-items:start;gap:.6rem;padding:.5rem .7rem;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);font-size:.65rem}
+.inst-loc-row{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;line-height:1.6}
+.inst-field-label{font-size:.55rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);min-width:3.5rem}
+.inst-field-sep{color:var(--border);margin:0 .15rem}
+.inst-loc-path{color:var(--ink)}
+.inst-slot{font-family:'DM Mono',monospace;font-size:.58rem;background:var(--paper3);padding:1px 4px;border-radius:2px}
+.inst-id-badge{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);font-weight:500}
+.inst-num{font-size:.55rem;color:var(--gold);font-weight:500;text-align:center}
+.inst-loc{color:var(--muted)}
+.inst-loc b{color:var(--ink);font-weight:500}
+.inst-loc .sep{margin:0 .2rem;opacity:.4}
+.inst-cond{font-size:.58rem;padding:1px 6px;background:var(--paper3);border-radius:20px;color:var(--muted);white-space:nowrap}
+.no-inst{font-size:.68rem;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond',serif}
+/* add-instance */
+.add-inst-btn{margin-top:.6rem;padding:.3rem .7rem;border:1px solid var(--gold);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);transition:all .12s}
+.add-inst-btn:hover{background:var(--gold);color:#fff}
+.add-inst-form{margin-top:.6rem;padding:.7rem;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);display:none;flex-direction:column;gap:.45rem}
+.add-inst-form.open{display:flex}
+.add-inst-form label{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.15rem}
+.add-inst-form select,.add-inst-form input[type=text]{width:100%;padding:.3rem .4rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);font-family:'DM Mono',monospace;font-size:.62rem;color:var(--ink)}
+.add-inst-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.add-inst-id-preview{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);font-weight:500}
+.add-inst-actions{display:flex;gap:.4rem;margin-top:.1rem}
+.add-inst-save{padding:.3rem .8rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--got);transition:all .12s}
+.add-inst-save:hover{background:var(--got);color:#fff}
+.add-inst-cancel{padding:.3rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.add-inst-pending{font-size:.55rem;color:var(--gold);font-style:italic;margin-top:.3rem}
+/* edit/remove instance */
+.inst-actions{display:flex;gap:.3rem;margin-top:.35rem}
+.inst-edit-btn,.inst-remove-btn{padding:.2rem .5rem;border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;transition:all .12s}
+.inst-edit-btn{border:1px solid var(--gold);color:var(--gold)}
+.inst-edit-btn:hover{background:var(--gold);color:#fff}
+.inst-remove-btn{border:1px solid var(--need);color:var(--need)}
+.inst-remove-btn:hover{background:var(--need);color:#fff}
+.inst-confirm{margin-top:.35rem;padding:.35rem .5rem;background:var(--need-bg);border:1px solid var(--need);border-radius:var(--r);font-size:.58rem;color:var(--need);display:none;align-items:center;gap:.4rem;flex-wrap:wrap}
+.inst-confirm-yes{padding:.2rem .6rem;border:none;border-radius:var(--r);background:var(--need);color:#fff;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem}
+.inst-confirm-no{padding:.2rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem}
+/* edit variant */
+.edit-variant-btn{padding:.25rem .6rem;border:1px dashed var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted);transition:all .12s;margin-top:.5rem;display:block}
+.edit-variant-btn:hover{border-color:var(--gold2);color:var(--ink)}
+
+/* change log */
+.log-btn{padding:.2rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);transition:all .12s;margin-left:.8rem;white-space:nowrap}
+.log-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.log-btn .btn-icon{display:none;font-style:normal}
+@media(max-width:960px){.log-btn .btn-text{display:none}.log-btn .btn-icon{display:inline}.log-btn{margin-left:.4rem;padding:.2rem .5rem}}
+.log-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:flex-end;padding:64px 1rem 1rem}
+.log-modal-bg.open{display:flex}
+.log-modal{background:var(--paper);border:1px solid var(--border);border-radius:3px;width:420px;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.log-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.log-modal-title{font-family:'Bodoni Moda',serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;color:var(--gold)}
+.log-modal-close{background:transparent;border:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:0;line-height:1}
+.log-list{overflow-y:auto;flex:1;padding:.5rem .8rem;display:flex;flex-direction:column;gap:.45rem}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border)}
+.log-entry{padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2)}
+.log-entry-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.2rem}
+.log-entry-type{font-size:.5rem;text-transform:uppercase;letter-spacing:.12em;font-weight:500}
+.log-entry-type.inst_remove{color:var(--need)}.log-entry-type.inst_edit{color:var(--gold)}.log-entry-type.variant_edit{color:var(--list)}
+.log-entry-ts{font-size:.5rem;color:var(--muted)}
+.log-entry-coin{font-family:'Cormorant Garamond',serif;font-size:.75rem;font-weight:600;color:var(--ink)}
+.log-entry-detail{font-size:.55rem;color:var(--muted);margin-top:.15rem;line-height:1.4}
+.log-reinstate-btn{margin-top:.35rem;padding:.2rem .6rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);transition:all .12s}
+.log-reinstate-btn:hover{background:var(--got);color:#fff}
+.log-empty{font-size:.65rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0;font-family:'Cormorant Garamond',serif}
+
+/* stock check modal */
+.sc-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:64px 1rem 1rem}
+.sc-modal-bg.open{display:flex}
+.sc-modal{background:var(--paper);border:1px solid var(--border);border-radius:3px;width:660px;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.sc-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sc-modal-title{font-family:'Bodoni Moda',serif;font-size:1.05rem;font-weight:700;letter-spacing:.08em;color:var(--gold)}
+.sc-controls{display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sc-progress{font-size:.8rem;color:var(--muted);font-family:'DM Mono',monospace;margin-left:auto}
+.sc-list{overflow-y:auto;flex:1;padding:.4rem .8rem .8rem;display:flex;flex-direction:column;gap:0}
+.sc-list::-webkit-scrollbar{width:3px}.sc-list::-webkit-scrollbar-thumb{background:var(--border)}
+.sc-group-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.7rem 0 .25rem;border-bottom:1px solid var(--border);margin-top:.4rem;font-weight:600}
+.sc-item{display:flex;align-items:center;gap:.6rem;padding:.4rem .3rem;border-radius:var(--r);transition:background .1s;cursor:pointer;border-bottom:1px solid transparent}
+.sc-item:hover{background:var(--paper2)}
+.sc-item.checked{background:rgba(45,106,79,.07)}
+.sc-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--got);flex-shrink:0;cursor:pointer}
+.sc-item-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-item-meta{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0}
+.sc-item-date{font-size:.65rem;font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0;min-width:7.5rem;text-align:right;color:var(--got)}
+.sc-item:not(.checked) .sc-item-date{color:var(--need);opacity:.5}
+.sc-item.checked .sc-item-name{color:var(--got)}
+.sc-info-btn{flex-shrink:0;width:18px;height:18px;border:1px solid var(--border);border-radius:50%;background:transparent;cursor:pointer;font-size:.55rem;color:var(--muted);display:flex;align-items:center;justify-content:center;line-height:1;transition:all .12s;font-family:'DM Mono',monospace}
+.sc-info-btn:hover,.sc-info-btn.open{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.08)}
+.sc-detail{display:none;background:var(--paper2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:.5rem .75rem;font-size:.6rem;font-family:'DM Mono',monospace;color:var(--muted);line-height:1.9}
+.sc-detail.open{display:block}
+.sc-detail-row{display:flex;gap:.5rem}
+.sc-detail-label{min-width:5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.52rem}
+.sc-detail-val{color:var(--ink);font-size:.62rem}
+.sc-detail-val.mono{font-family:'DM Mono',monospace}
+#scUncheckedBtn.active{border-color:var(--need)!important;color:var(--need)!important;background:var(--need-bg)!important}
+.sc-progress-wrap{padding:.3rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;display:none;align-items:center;gap:.75rem}
+.sc-progress-bar{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.sc-progress-bar-fill{height:100%;background:var(--got);border-radius:3px;transition:width .25s ease}
+.sc-loc-sum{display:flex;flex-direction:column;gap:0;padding:.2rem 0}
+.sc-loc-heading{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .3rem .4rem;font-family:'DM Mono',monospace;font-weight:600;border-bottom:1px solid var(--border)}
+.sc-loc-row{display:flex;align-items:center;gap:.65rem;padding:.45rem .3rem;border-bottom:1px solid transparent;cursor:pointer;border-radius:var(--r)}
+.sc-loc-row:hover{background:var(--paper2)}
+.sc-loc-name{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink);min-width:5.5rem;flex-shrink:0}
+.sc-loc-bar{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.sc-loc-bar-fill{height:100%;background:var(--got);border-radius:3px}
+.sc-loc-count{font-size:.65rem;font-family:'DM Mono',monospace;color:var(--muted);min-width:4.5rem;text-align:right;flex-shrink:0}
+.sc-loc-date{font-size:.62rem;font-family:'DM Mono',monospace;color:var(--muted);min-width:7rem;text-align:right;flex-shrink:0;opacity:.7}
+.sc-loc-row.sc-loc-done .sc-loc-name{color:var(--got)}
+.sc-loc-row.sc-loc-done .sc-loc-bar-fill{background:var(--got)}
+.sc-loc-row.sc-loc-pristine .sc-loc-bar-fill{background:var(--need);opacity:.3}
+.sc-empty{font-size:.65rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0;font-family:'Cormorant Garamond',serif}
+.sc-print-header{display:none}
+
+@media print {
+  body > *:not(#scModalBg){display:none!important}
+  #scModalBg{display:block!important;position:static!important;background:none!important;padding:0!important}
+  .sc-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important}
+  .sc-modal-head .log-modal-close,.sc-controls button,.sc-controls select{display:none!important}
+  .sc-progress{display:block!important;font-size:.7rem}
+  .sc-print-header{display:block;margin-bottom:.8rem}
+  .sc-print-title{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700}
+  .sc-print-date{font-size:.6rem;color:#666;font-family:monospace;margin-top:.2rem}
+  .sc-list{overflow:visible!important;max-height:none!important}
+  .sc-item{page-break-inside:avoid;border-bottom:1px solid #ddd!important}
+  .sc-item.checked .sc-item-name{color:inherit!important}
+  .sc-item input[type=checkbox]{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .sc-group-label{page-break-after:avoid;background:#f0ece4!important;padding:.3rem .4rem!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  /* print unchecked only */
+  .sc-modal.sc-print-unchecked .sc-item.checked{display:none!important}
+  /* print needed */
+  .sc-modal.sc-print-needed .sc-list{display:none!important}
+  .sc-modal.sc-print-needed #scNeededSection{display:flex!important;flex-direction:column}
+}
+
+/* ── NOTION SYNC MODAL ── */
+.sync-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:64px 1rem 1rem}
+.sync-modal-bg.open{display:flex}
+.sync-modal{background:var(--paper);border:1px solid var(--border);border-radius:3px;width:680px;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.sync-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-modal-title{font-family:'Bodoni Moda',serif;font-size:1.05rem;font-weight:700;letter-spacing:.08em;color:var(--gold)}
+.sync-body{overflow-y:auto;flex:1;padding:.6rem .8rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+.sync-body::-webkit-scrollbar{width:3px}.sync-body::-webkit-scrollbar-thumb{background:var(--border)}
+.sync-empty{font-size:.68rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem;font-family:'Cormorant Garamond',serif}
+.sync-item{border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);padding:.55rem .7rem}
+.sync-item-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.sync-type-badge{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:20px}
+.sync-type-badge.add{background:var(--got-bg);color:var(--got)}
+.sync-type-badge.edit{background:var(--list-bg);color:var(--list)}
+.sync-type-badge.remove{background:var(--need-bg);color:var(--need)}
+.sync-type-badge.delete{background:var(--need-bg);color:var(--need)}
+.sync-item-coin{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-weight:600;color:var(--ink);flex:1}
+.sync-item-detail{font-size:.58rem;color:var(--muted);line-height:1.5;margin-bottom:.35rem;font-family:'DM Mono',monospace}
+.sync-item-actions{display:flex;gap:.35rem}
+.sync-approve-btn{padding:.22rem .65rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--got);transition:all .12s}
+.sync-approve-btn:hover{background:var(--got);color:#fff}
+.sync-dismiss-btn{padding:.22rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--muted)}
+.sync-dismiss-btn:hover{border-color:var(--need);color:var(--need)}
+@keyframes syncPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.sync-badge{display:inline-block;background:var(--need);color:#fff;font-size:.48rem;font-weight:600;border-radius:20px;padding:1px 5px;margin-left:.3rem;vertical-align:middle;font-family:'DM Mono',monospace;animation:syncPulse 1.6s ease-in-out infinite}
+.sync-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-tab{flex:1;padding:.4rem .6rem;font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;text-align:center;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;transition:all .12s}
+.sync-tab.active{color:var(--gold2);border-bottom-color:var(--gold2)}
+.sync-tab .tab-badge{display:inline-block;background:var(--need);color:#fff;font-size:.42rem;font-weight:600;border-radius:20px;padding:1px 4px;margin-left:.25rem;vertical-align:middle}
+.sync-push-actions{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;padding:.4rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-pull-body{display:flex;flex-direction:column;gap:.7rem;padding:.7rem .8rem}
+.sync-pull-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.sync-pull-label{font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.sync-pull-val{font-size:.62rem;color:var(--ink);font-family:'DM Mono',monospace}
+.sync-interval-row{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.sync-interval-btn{padding:.2rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted);transition:all .12s}
+.sync-interval-btn.active{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.07)}
+.sync-action-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.sync-pull-btn{padding:.28rem .75rem;border:1px solid var(--gold2);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold2);transition:all .12s}
+.sync-pull-btn:hover{background:var(--gold2);color:#fff}
+.sync-pull-btn:disabled{opacity:.5;cursor:default}
+.sync-sc-btn{padding:.28rem .75rem;border:1px solid var(--list);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--list);transition:all .12s}
+.sync-sc-btn:hover{background:var(--list);color:#fff}
+.sync-sc-btn:disabled{opacity:.5;cursor:default}
+.sync-pull-log{font-size:.56rem;color:var(--muted);font-family:'DM Mono',monospace;max-height:100px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:.35rem .5rem;background:var(--paper2);display:flex;flex-direction:column;gap:.2rem}
+.sync-pull-log-entry{display:flex;gap:.5rem;line-height:1.4}
+.sync-pull-log-time{color:var(--muted);flex-shrink:0}
+.sync-hint{font-size:.52rem;color:var(--muted);font-style:italic}
+
+/* ── STATS DASHBOARD ── */
+.stats-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:64px 1rem 1rem}
+.stats-modal-bg.open{display:flex}
+.stats-modal{background:var(--paper);border:1px solid var(--border);border-radius:3px;width:820px;max-height:calc(100vh - 80px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12)}
+.stats-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.stats-modal-title{font-family:'Bodoni Moda',serif;font-size:1.05rem;font-weight:700;letter-spacing:.08em;color:var(--gold)}
+.stats-body{overflow-y:auto;flex:1;padding:1.2rem;display:flex;flex-direction:column;gap:1.6rem}
+.stats-body::-webkit-scrollbar{width:3px}.stats-body::-webkit-scrollbar-thumb{background:var(--border)}
+.stats-section-title{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.stats-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.stats-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:0}
+.stats-big{padding:.8rem .9rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);text-align:center}
+.stats-big-num{font-family:'Bodoni Moda',serif;font-size:2.4rem;font-weight:700;line-height:1}
+.stats-big-label{font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:.3rem}
+.stats-big.s-got .stats-big-num{color:var(--got)}
+.stats-big.s-need .stats-big-num{color:var(--need)}
+.stats-big.s-list .stats-big-num{color:var(--list)}
+.stat-bar-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.28rem}
+.stat-bar-label{font-size:.75rem;color:var(--ink);flex:0 0 160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Cormorant Garamond',serif}
+.stat-bar-label.mono{font-family:'DM Mono',monospace;font-size:.62rem;flex:0 0 70px}
+.stat-bar-track{flex:1;height:6px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:3px;background:var(--got)}
+.stat-bar-fill.complete{background:var(--gold2)}
+.stat-bar-fill.gold{background:var(--gold2)}
+.stat-bar-frac{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted);flex:0 0 52px;text-align:right}
+.stats-two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.decade-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:.4rem}
+.decade-block{padding:.5rem .4rem .35rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);text-align:center}
+.decade-block-num{font-family:'Bodoni Moda',serif;font-size:1.4rem;font-weight:700;color:var(--got);line-height:1}
+.decade-block-label{font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.15rem}
+
+/* coin image */
+.coin-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);background:var(--paper3);flex-shrink:0}
+.coin-thumb-ph{width:48px;height:48px;flex-shrink:0}
+
+#tableWrap{transition:opacity .1s ease}
+.empty-state{padding:4rem 2rem;text-align:center}
+.empty-state h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;font-style:italic;color:var(--muted);margin-bottom:.5rem}
+.empty-state p{font-size:.65rem;color:var(--muted)}
+
+/* ── SEARCH REFINE BAR ── */
+.search-refine-bar{padding:.75rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;background:var(--paper);flex-wrap:wrap}
+.search-refine-bar input[type=text]{flex:1;min-width:140px;max-width:320px}
+.refine-selects{display:flex;align-items:center;gap:.35rem;flex-shrink:0;flex-wrap:wrap}
+.refine-selects select{width:auto;min-width:80px;max-width:140px}
+.refine-label{font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+
+/* ── TABLET ── */
+@media(max-width:1024px){
+  header{padding:0 1.2rem}
+  .header-stats{gap:.8rem}
+  #hTotal{display:none}
+}
+@media(max-width:860px){
+  .hstat{display:none}
+}
+
+/* ── MOBILE FILTER TOGGLE ── */
+.mobile-filter-btn{display:none;align-items:center;gap:.35rem;padding:.3rem .65rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);transition:all .12s;flex-shrink:0;white-space:nowrap}
+.mobile-filter-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.mobile-filter-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.mobile-filter-close{display:none;position:fixed;top:max(.8rem,env(safe-area-inset-top) + .3rem);right:max(.8rem,env(safe-area-inset-right) + .3rem);background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:1rem;color:var(--muted);padding:.3rem .6rem;line-height:1;z-index:151}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  html{font-size:18px}
+  .app{grid-template-columns:1fr}
+  .filters{position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;height:100dvh;border-right:none;border-bottom:1px solid var(--border);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding-top:max(3.5rem,env(safe-area-inset-top) + 2.5rem);padding-bottom:max(1.5rem,env(safe-area-inset-bottom));padding-left:max(1.2rem,env(safe-area-inset-left));padding-right:max(1.2rem,env(safe-area-inset-right))}
+  .filters.mobile-open{display:flex}
+  .mobile-filter-btn{display:flex}
+  .mobile-filter-close{display:block}
+  .mobile-filter-overlay{display:none;position:fixed;inset:0;z-index:149;background:rgba(12,12,10,.35)}
+  .mobile-filter-overlay.open{display:block}
+  .coin-table th:nth-child(n+4),.coin-table td:nth-child(n+4){display:none}
+  /* iOS safe input size to prevent auto-zoom on focus */
+  select,input[type=text],input[type=email],input[type=password]{font-size:16px}
+  .search-refine-bar{flex-wrap:wrap;gap:.4rem}
+  .refine-selects{flex-wrap:wrap}
+}
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.open{display:flex}
+#lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.7)}
+.coin-thumb{cursor:zoom-in}
+</style>
+</head>
+<body>
+
+<div id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src="" alt=""></div>
+
+<div id="loadScreen">
+  <div class="load-logo">COIN HUB</div>
+  <div class="load-sub">Connecting to Google Sheets…</div>
+  <div id="loadMsg" style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:1rem">Connecting to Google Sheets…</div>
+  <div class="load-bar"></div>
+  <div class="load-error" id="loadError"></div>
+</div>
+
+<div id="guestBanner">
+  <b>Guest View</b> — Read only. You can browse the collection but cannot make any changes.
+  <span class="guest-expiry" id="guestExpiry"></span>
+</div>
+<header style="display:none" id="mainHeader">
+  <div class="logo">Coin <span>Hub</span> <span style="font-family:'DM Mono',monospace;font-size:.45rem;letter-spacing:.15em;color:var(--gold2);vertical-align:super">GS</span></div>
+  <small style="font-family:'DM Mono',monospace;font-size:.42rem;letter-spacing:.12em;color:var(--muted);display:block;margin-top:2px">LIVE · GOOGLE SHEETS</small>
+  <div class="header-stats">
+    <div class="hstat"><span class="hstat-dot" style="background:var(--got)"></span><b id="hGot">–</b>&nbsp;Got</div>
+    <div class="hstat"><span class="hstat-dot" style="background:var(--need)"></span><b id="hNeed">–</b>&nbsp;Need</div>
+    <div class="hstat"><span class="hstat-dot" style="background:var(--list)"></span><b id="hList">–</b>&nbsp;List</div>
+    <div class="hstat" id="hTotal" style="border-left:1px solid var(--border);padding-left:1.5rem"><b id="hTotalN">–</b>&nbsp;variants</div>
+    <button class="log-btn" onclick="showStockCheck()" title="Stock Check"><span class="btn-icon">⊙</span><span class="btn-text">Stock Check</span></button>
+    <button class="log-btn" onclick="showChangeLog()" title="Change Log"><span class="btn-icon">◷</span><span class="btn-text">Change Log</span></button>
+    <button class="log-btn" onclick="showStats()" title="Stats"><span class="btn-icon">≋</span><span class="btn-text">Stats</span></button>
+    <a class="log-btn" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" title="Edit data in Google Sheets" style="text-decoration:none"><span class="btn-icon">⊞</span><span class="btn-text">Sheets</span></a>
+    <button class="log-btn" id="logoutBtn" onclick="doLogout()" title="Sign Out"><span class="btn-icon">⏻</span><span class="btn-text">Sign Out</span></button>
+  </div>
+</header>
+
+<div class="log-modal-bg" id="logModalBg" onclick="if(event.target===this)closeChangeLog()">
+  <div class="log-modal">
+    <div class="log-modal-head">
+      <span class="log-modal-title">Change Log</span>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <button class="log-reinstate-btn" onclick="_saveAuditLogToServer();this.textContent='✓ Saved';setTimeout(()=>this.textContent='💾 Save to Server',2000)" style="margin-top:0">💾 Save to Server</button>
+        <button class="log-reinstate-btn" onclick="exportChangeLogCSV()" style="margin-top:0">↓ Export CSV</button>
+        <button class="log-modal-close" onclick="closeChangeLog()">✕</button>
+      </div>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+</div>
+
+<div class="sc-modal-bg" id="scModalBg" onclick="if(event.target===this)closeStockCheck()">
+  <div class="sc-modal">
+    <div class="sc-modal-head">
+      <span class="sc-modal-title">Stock Check</span>
+      <button class="log-modal-close" onclick="closeStockCheck()">✕</button>
+    </div>
+    <div class="sc-controls">
+      <select id="scLocationSelect" onchange="loadStockCheck()" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer">
+        <option value="">— Select location —</option>
+        <option>Box 1</option><option>Box 2</option>
+        <option>Folder 1</option><option>Folder 2</option><option>Folder 3</option>
+        <option>Folder 4</option><option>Folder 5</option><option>Folder 6</option>
+        <option>Folder 7</option><option>Folder 8</option><option>Folder 9</option><option>Folder 10</option>
+      </select>
+      <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
+      <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
+      <button id="scUncheckedBtn" class="log-reinstate-btn" onclick="scToggleUnchecked()" style="margin-top:0">◌ Unchecked</button>
+      <button class="log-reinstate-btn" onclick="window.print()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ All</button>
+      <button class="log-reinstate-btn" onclick="scPrintUnchecked()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ Unchecked</button>
+      <button class="log-reinstate-btn" onclick="scPrintNeeded()" style="margin-top:0;border-color:var(--need);color:var(--need)">⎙ Needed</button>
+      <span class="sc-progress" id="scProgress"></span>
+    </div>
+    <div class="sc-progress-wrap" id="scProgressWrap">
+      <div class="sc-progress-bar"><div class="sc-progress-bar-fill" id="scProgressBarFill" style="width:0%"></div></div>
+    </div>
+    <div class="sc-list" id="scList">
+      <div class="sc-print-header" id="scPrintHeader"></div>
+      <div class="sc-empty" id="scEmptyMsg">Select a storage location above.</div>
+    </div>
+    <div id="scNeededSection" style="display:none"></div>
+  </div>
+</div>
+
+<div class="sync-modal-bg" id="syncModalBg" onclick="if(event.target===this)closeSyncQueue()">
+  <div class="sync-modal">
+    <div class="sync-modal-head">
+      <span class="sync-modal-title">Notion Sync</span>
+      <button class="log-modal-close" onclick="closeSyncQueue()">✕</button>
+    </div>
+    <div class="sync-tabs">
+      <button class="sync-tab active" id="syncTabPush" onclick="_syncShowTab('push')">Push to Notion<span class="tab-badge" id="syncPushBadge" style="display:none">0</span></button>
+      <button class="sync-tab" id="syncTabPull" onclick="_syncShowTab('pull')">Pull from Notion</button>
+    </div>
+    <!-- PUSH PANEL -->
+    <div id="syncPushPanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <div class="sync-push-actions">
+        <button class="log-reinstate-btn" id="approveAllBtn" onclick="approveAllSync()" style="margin-top:0">✓ Approve All</button>
+        <button class="log-reinstate-btn" id="processNowBtn" onclick="processQueueNow()" style="margin-top:0;border-color:var(--got);color:var(--got)">⚡ Process Now</button>
+      </div>
+      <div class="sync-body" id="syncBody"></div>
+    </div>
+    <!-- PULL PANEL -->
+    <div id="syncPullPanel" style="display:none;flex:1;overflow-y:auto;min-height:0">
+      <div class="sync-pull-body">
+        <div class="sync-pull-row">
+          <span class="sync-pull-label">Last pull</span>
+          <span class="sync-pull-val" id="syncLastPull">Never</span>
+          <span class="sync-pull-label" id="syncNextLabel" style="display:none">Next in</span>
+          <span class="sync-pull-val" id="syncNextPull" style="display:none">—</span>
+        </div>
+        <div>
+          <div class="sync-pull-label" style="margin-bottom:.35rem">Auto-sync interval</div>
+          <div class="sync-interval-row">
+            <button class="sync-interval-btn" data-mins="15" onclick="_syncSetInterval(15)">15 min</button>
+            <button class="sync-interval-btn" data-mins="30" onclick="_syncSetInterval(30)">30 min</button>
+            <button class="sync-interval-btn" data-mins="60" onclick="_syncSetInterval(60)">1 hr</button>
+            <button class="sync-interval-btn active" data-mins="0" onclick="_syncSetInterval(0)">Off</button>
+          </div>
+        </div>
+        <div class="sync-action-bar">
+          <button class="sync-pull-btn" id="syncPullNowBtn" onclick="_syncPullNow(false)">⇩ Pull Now</button>
+          <button class="sync-sc-btn" id="syncStocktakePushBtn" onclick="_scSyncToNotion()">⇧ Push Stocktake Dates</button>
+        </div>
+        <div class="sync-hint">Pull updates instance condition, storage &amp; stocktake dates from Notion into the app.<br>Push Stocktake Dates writes your check dates back to Notion.</div>
+        <div class="sync-pull-log" id="syncPullLog" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-modal-bg" id="statsModalBg" onclick="if(event.target===this)closeStats()">
+  <div class="stats-modal">
+    <div class="stats-modal-head">
+      <span class="stats-modal-title">Statistics</span>
+      <button class="log-modal-close" onclick="closeStats()">✕</button>
+    </div>
+    <div class="stats-body" id="statsBody"></div>
+  </div>
+</div>
+
+<div class="mobile-filter-overlay" id="mobileFilterOverlay" onclick="closeMobileFilters()"></div>
+
+<div class="app" id="mainApp" style="display:none">
+  <!-- LEFT: FILTERS -->
+  <aside class="filters" id="filterPanel">
+    <button class="mobile-filter-close" onclick="closeMobileFilters()" aria-label="Close filters">✕</button>
+    <div class="filter-section">
+      <div class="filter-label">Denomination</div>
+      <div class="denom-grid" id="denomGrid"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Status</div>
+      <div class="status-row">
+        <button class="status-toggle" data-s="Got" onclick="toggleStatus('Got')">Got</button>
+        <button class="status-toggle" data-s="Need" onclick="toggleStatus('Need')">Need</button>
+        <button class="status-toggle" data-s="List" onclick="toggleStatus('List')">List</button>
+      </div>
+    </div>
+
+    <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
+  </aside>
+
+  <!-- RIGHT: TABLE -->
+  <div class="main">
+    <div class="sticky-top">
+    <div class="search-refine-bar">
+      <button class="mobile-filter-btn" id="mobileFilterBtn" onclick="toggleMobileFilters()" aria-expanded="false" aria-controls="filterPanel">⊞ Filters</button>
+      <input type="text" id="searchInput" placeholder="Search name, variant, year…" oninput="applyFilters()" inputmode="search">
+      <div class="refine-selects">
+        <span class="refine-label">Year</span>
+        <select id="yearSel" onchange="applyFilters()"><option value="">All</option></select>
+        <span class="refine-label">Monarch</span>
+        <select id="monarchSel" onchange="applyFilters()"><option value="">All</option></select>
+        <span class="refine-label">Collection</span>
+        <select id="collectionSel" onchange="applyFilters()"><option value="">All</option></select>
+      </div>
+    </div>
+    <div class="results-bar">
+      <div class="results-count">Showing <b id="countShown">–</b> of <b id="countTotal">–</b></div>
+      <div class="sort-row">
+        Sort:
+        <button class="sort-btn active" data-sort="year" onclick="setSort('year')">Year</button>
+        <button class="sort-btn" data-sort="name" onclick="setSort('name')">Name</button>
+        <button class="sort-btn" data-sort="qty" onclick="setSort('qty')">Qty</button>
+        <button class="sort-btn" data-sort="status" onclick="setSort('status')">Status</button>
+      </div>
+    </div>
+    </div><!-- /sticky-top -->
+    <div id="tableWrap">
+      <table class="coin-table" id="coinTable">
+        <thead>
+          <tr>
+            <th style="width:32px"></th>
+            <th style="width:56px"></th>
+            <th onclick="setSort('name')">Name · Variant · Collection <span class="sort-icon">↕</span></th>
+            <th class="hide-mobile" onclick="setSort('year')">Year <span class="sort-icon">↕</span></th>
+            <th class="hide-mobile" onclick="setSort('monarch')">Monarch <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="coinBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <h3>No coins match</h3>
+        <p>Try adjusting your filters</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+
+// ── Image sources ────────────────────────────────────────────────────────────
+// Primary: coins-of-the-uk.co.uk (Tony Clayton's comprehensive archive)
+// Fallback: existing Royal Mint URL stored in RAW[7]
+// Final fallback: denomination placeholder
+
+const SHEET_ID = '1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4';
+const GS_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=`;
+
+// These are populated by loadFromSheets() before init() runs
+const COTUK_MAP = {};
+// ALL_COINS is built from fetched variants data
+
+function parseCSV(text) {
+  // Proper RFC 4180 CSV parser -- handles quoted fields, commas in values, escaped quotes
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i], next = text[i+1];
+    if (inQuotes) {
+      if (ch === '"' && next === '"') { field += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { field += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { row.push(field); field = ''; }
+      else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+        row.push(field); field = '';
+        if (row.some(f => f !== '')) rows.push(row);
+        row = [];
+        if (ch === '\r') i++;
+      } else { field += ch; }
+    }
+  }
+  if (field || row.length) { row.push(field); if (row.some(f => f !== '')) rows.push(row); }
+  return rows;
+}
+
+async function loadFromSheets() {
+  const showStatus = msg => {
+    const el = document.getElementById('loadMsg');
+    if (el) el.textContent = msg;
+  };
+  try {
+    showStatus('Fetching coin data from Google Sheets…');
+    const [varRes, instRes, imgRes] = await Promise.all([
+      fetch(GS_BASE + 'Variants'),
+      fetch(GS_BASE + 'Instances'),
+      fetch(GS_BASE + 'Images'),
+    ]);
+    if (!varRes.ok || !instRes.ok || !imgRes.ok) throw new Error('Sheet fetch failed — check sharing is set to “Anyone with link can view”');
+
+    showStatus('Parsing variants…');
+    const varRows = parseCSV(await varRes.text());
+    const iVC=0,iName=1,iDenom=2,iColl=3,iMon=4,iYear=5,iStat=6,iImg=7;
+
+    showStatus('Parsing instances…');
+    const instRows = parseCSV(await instRes.text());
+
+    showStatus('Parsing images…');
+    const imgRows = parseCSV(await imgRes.text());
+
+    // Build COTUK_MAP
+    for (let i = 1; i < imgRows.length; i++) {
+      const r = imgRows[i];
+      if (r[0] && r[1]) COTUK_MAP[r[0].trim()] = r[1].trim();
+    }
+
+    // Build INSTANCE_DATA
+    for (let i = 1; i < instRows.length; i++) {
+      const r = instRows[i];
+      const vc = r[1]?.trim();
+      if (!vc) continue;
+      if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+      INSTANCE_DATA[vc].push({
+        id: r[0]?.trim() || '',
+        loc: r[2]?.trim() || 'Office',
+        s1: r[3]?.trim() || '',
+        s2: r[4]?.trim() || '',
+        s3: r[5]?.trim() || '',
+        cond: r[6]?.trim() || '',
+        ptype: r[7]?.trim() || '',
+        desc: r[8]?.trim() || '',
+        notes: r[9]?.trim() || '',
+        lastStocktake: r[11]?.trim() || '',
+        lastEdited: r[13]?.trim() || '',
+      });
+    }
+
+    // Build ALL_COINS from variants
+    const coins = [];
+    for (let i = 1; i < varRows.length; i++) {
+      const r = varRows[i];
+      const vc = r[iVC]?.trim();
+      if (!vc) continue;
+      const instCount = (INSTANCE_DATA[vc] || []).length;
+      const status = instCount > 0 ? 'Got' : (r[iStat]?.trim() || 'Need');
+      coins.push({
+        variantCode: vc,
+        name: r[iName]?.trim() || '',
+        denom: r[iDenom]?.trim() || '',
+        collection: r[iColl]?.trim() || '',
+        monarch: r[iMon]?.trim() || '',
+        year: parseInt(r[iYear]) || 0,
+        status,
+        imgUrl: r[iImg]?.trim() || '',
+        instCount,
+        parsed: parseVariant(vc),
+      });
+    }
+    return coins;
+  } catch(e) {
+    document.getElementById('loadScreen').innerHTML = `
+      <div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif">
+        <div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load Google Sheets data</div>
+        <div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${e.message}</div>
+        <div style="color:#888;font-size:.8rem">Make sure the Google Sheet is shared as “Anyone with the link can view”</div>
+      </div>`;
+    throw e;
+  }
+}
+
+  function openLightbox(e, el) { e.stopPropagation(); var lb=document.getElementById('lightbox'); document.getElementById('lightboxImg').src=el.src; lb.classList.add('open'); }
+  function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeLightbox();closeMobileFilters();}
+    if(e.key==='/'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      var s=document.getElementById('searchInput');if(s){s.focus();s.select();}
+    }
+  });
+
+  // ── MOBILE FILTER DRAWER ──
+  function toggleMobileFilters() {
+    var panel = document.getElementById('filterPanel');
+    var btn   = document.getElementById('mobileFilterBtn');
+    var ovl   = document.getElementById('mobileFilterOverlay');
+    var open  = panel.classList.toggle('mobile-open');
+    btn.classList.toggle('active', open);
+    ovl.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  function closeMobileFilters() {
+    var panel = document.getElementById('filterPanel');
+    if (!panel) return;
+    panel.classList.remove('mobile-open');
+    document.getElementById('mobileFilterBtn').classList.remove('active');
+    document.getElementById('mobileFilterOverlay').classList.remove('open');
+    document.getElementById('mobileFilterBtn').setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  function imgFallback(el) {
+    if (el.src === el.dataset.cotuk && el.dataset.rm) {
+      el.src = el.dataset.rm;
+    } else {
+      el.style.display = 'none';
+      var ph = el.parentElement && el.parentElement.querySelector('.coin-thumb-ph');
+      if (ph) ph.style.display = 'flex';
+    }
+  }
+
+
+// Resolve image for a coin: try COTUK first, then RAW imgUrl, then null
+function resolveImage(coin) {
+  return COTUK_MAP[coin.variantCode] || coin.imgUrl || null;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let ALL_COINS = [];
+let FILTERED = [];
+let INSTANCE_MAP = {}; // variantUrl -> [{num, loc, cond, ptype}]
+let STATE = {
+  denom: null,
+  status: new Set(),
+  year: '',
+  monarch: '',
+  collection: '',
+  search: '',
+  sort: 'year',
+  sortDir: 1,
+  openId: null,
+};
+
+// ── VARIANT CODE PARSER ────────────────────────────────────────────────────────
+// UK-D-50P-2025-ZOG1- → {type:'D', denom:'50P', year:2025, id:'ZOG1'}
+// UK-PD-SHIL-1967- → {type:'PD', denom:'SHIL', year:1967, id:''}
+function parseVariant(code) {
+  if (!code) return null;
+  const parts = code.replace(/^UK-/, '').split('-');
+  // parts[0]=type(D/PD/etc), parts[1]=denom, parts[2]=year or id, parts[3]=id
+  const type = parts[0] || '';
+  const denom = parts[1] || '';
+  const yearRaw = parseInt(parts[2]);
+  const year = isNaN(yearRaw) ? null : yearRaw;
+  const id = year ? (parts[3] || '') : (parts[2] || '');
+  return { type, denom, year, id };
+}
+
+// ── DATA LOADER ───────────────────────────────────────────────────────────────
+// Embedded data — variant code is the canonical ID.
+
+const INSTANCE_DATA = {};
+
+
+// ── STORAGE MAP (approximate locations per collection) ────────────────────────
+function getStorageInfo(coin) {
+  const loc = {
+    'London 2012 Olympics': ['Office','Box 1','Olympic Folder'],
+    'Shield': ['Office','Box 2','Shield Page'],
+    'Definitives': ['Office','Box 1','Page 1'],
+    'Beatrix Potter': ['Office','Box 2','BP Page'],
+    'Winnie the Pooh': ['Office','Box 2','Page 2'],
+    'Paddington Bear': ['Office','Box 2','Page 2'],
+    '10p Alphabet': ['Office','Box 2','Page 8'],
+    'Harry Potter': ['Office','Box 2','Page 3'],
+    'Starwars': ['Office','Box 2','Page 3'],
+    'Snowman': ['Office','Box 2','Page 4'],
+    'Disney': ['Office','Box 2','Page 4'],
+    '2007 Proof Set': ['Office','Box 2','Proof Set Case'],
+    'Pre Decimal': ['Office','Box 2','Page 6'],
+  };
+  return loc[coin.collection] || ['Office','Box 2','Page 5'];
+}
+
+// ── BUILD UI ──────────────────────────────────────────────────────────────────
+function restorePendingData() {
+  // Re-apply pending new instances so they survive page refresh
+  const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  pending.forEach(inst => {
+    const vc = inst.variantCode;
+    if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+    if (!INSTANCE_DATA[vc].find(r => r.id === inst.id)) {
+      INSTANCE_DATA[vc].push(inst);
+      const coin = ALL_COINS.find(c => c.variantCode === vc);
+      if (coin) { coin.instCount++; coin.status = 'Got'; }
+    }
+  });
+
+  // Re-apply pending edits
+  const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+  edits.forEach(edit => {
+    const records = INSTANCE_DATA[edit.variantCode];
+    if (records) {
+      const idx = records.findIndex(r => r.id === edit.id);
+      if (idx >= 0) records[idx] = edit;
+    }
+  });
+
+  // Re-apply pending removals
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+  removals.forEach(removal => {
+    const records = INSTANCE_DATA[removal.variantCode];
+    if (records) {
+      const idx = records.findIndex(r => r.id === removal.id);
+      if (idx >= 0) {
+        records.splice(idx, 1);
+        const coin = ALL_COINS.find(c => c.variantCode === removal.variantCode);
+        if (coin) { coin.instCount = Math.max(0, coin.instCount - 1); if (coin.instCount === 0) coin.status = 'Need'; }
+      }
+    }
+  });
+}
+
+async function init() {
+  ALL_COINS = await loadFromSheets();
+  // Filter out locally-deleted variants
+  const deleted = JSON.parse(localStorage.getItem('coinhub_deleted_variants') || '[]');
+  if (deleted.length) ALL_COINS = ALL_COINS.filter(c => !deleted.includes(c.variantCode));
+  restorePendingData();
+  _applyNotionOverrides();
+  _applyNotionNewInstances();
+
+  // Stats
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+  document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
+  document.getElementById('hTotalN').textContent = ALL_COINS.length;
+
+  buildDenomFilter();
+  buildYearFilter();
+  buildMonarchFilter();
+  buildCollectionFilter();
+
+  applyFilters();
+
+  // Show UI
+  document.getElementById('loadScreen').style.display = 'none';
+  document.getElementById('mainHeader').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'grid';
+
+  // ── Guest mode detection ────────────────────────────────────────────────
+  _applyGuestMode();
+}
+
+let GUEST_MODE = false;
+
+async function _applyGuestMode() {
+  try {
+    const r = await fetch('/api/whoami');
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.role === 'owner') return;
+    if (d.role !== 'guest') return;
+    GUEST_MODE = true;
+    document.body.classList.add('guest-mode');
+    if (d.guestExpires) {
+      const exp = new Date(d.guestExpires);
+      const fmt = exp.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'}) + ' ' + exp.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('guestExpiry').textContent = 'Access until ' + fmt;
+    }
+    // Check periodically if guest session has expired
+    setInterval(async () => {
+      const cr = await fetch('/api/whoami').catch(()=>null);
+      if (!cr || !cr.ok) { location.href = '/'; }
+    }, 60000);
+  } catch(e) { /* not a guest, carry on */ }
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+  location.href = '/login';
+}
+
+// Denomination order
+const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
+
+function buildDenomFilter() {
+  const counts = {}, got = {};
+  ALL_COINS.forEach(c => {
+    counts[c.denom] = (counts[c.denom]||0)+1;
+    if (c.status === 'Got') got[c.denom] = (got[c.denom]||0)+1;
+  });
+  const denoms = Object.keys(counts).sort((a,b)=>{
+    const ai = DENOM_ORDER.indexOf(a), bi = DENOM_ORDER.indexOf(b);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+
+  const grid = document.getElementById('denomGrid');
+  const allGot = ALL_COINS.filter(c=>c.status==='Got').length;
+  const allPct = Math.round(allGot/ALL_COINS.length*100);
+  const allBtn = document.createElement('button');
+  allBtn.className = 'denom-btn active';
+  allBtn.dataset.d = '';
+  allBtn.style.gridColumn = '1/-1';
+  allBtn.innerHTML = 'All<span class="denom-count">'+ALL_COINS.length+'</span><div class="denom-bar-wrap"><div class="denom-bar-fill" style="width:'+allPct+'%"></div></div>';
+  allBtn.onclick = () => { STATE.denom = null; updateDenomBtns(); applyFilters(); };
+  grid.appendChild(allBtn);
+
+  denoms.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'denom-btn';
+    btn.dataset.d = d;
+    const pct = Math.round((got[d]||0)/counts[d]*100);
+    btn.innerHTML = d+'<span class="denom-count">'+counts[d]+'</span><div class="denom-bar-wrap"><div class="denom-bar-fill" style="width:'+pct+'%"></div></div>';
+    btn.onclick = () => { STATE.denom = d; updateDenomBtns(); applyFilters(); };
+    grid.appendChild(btn);
+  });
+}
+
+function updateDenomBtns() {
+  document.querySelectorAll('.denom-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.d === (STATE.denom||''));
+  });
+}
+
+function buildYearFilter() {
+  const years = [...new Set(ALL_COINS.map(c=>c.year).filter(Boolean))].sort((a,b)=>b-a);
+  const sel = document.getElementById('yearSel');
+  years.forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  });
+}
+
+function buildMonarchFilter() {
+  const monarchs = [...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))].sort();
+  const sel = document.getElementById('monarchSel');
+  monarchs.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    sel.appendChild(o);
+  });
+}
+
+function buildCollectionFilter() {
+  const cols = [...new Set(ALL_COINS.map(c=>c.collection).filter(Boolean))].sort();
+  const sel = document.getElementById('collectionSel');
+  cols.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
+
+function buildCollectionProgress() {
+  const colls = {};
+  ALL_COINS.forEach(c => {
+    if (!c.variantCode || !c.collection) return;
+    if (!colls[c.collection]) colls[c.collection] = {got:0, total:0};
+    colls[c.collection].total++;
+    if (c.status === 'Got') colls[c.collection].got++;
+  });
+  const sorted = Object.entries(colls).sort((a,b) => a[0].localeCompare(b[0]));
+  const container = document.getElementById('collProgress');
+  sorted.forEach(([name, {got, total}]) => {
+    const pct = total > 0 ? Math.round(got/total*100) : 0;
+    const complete = got === total && total > 0;
+    const row = document.createElement('div');
+    row.className = 'coll-row';
+    row.dataset.c = name;
+    row.innerHTML = `<div class="coll-top"><span class="coll-name">${name}</span><span class="coll-frac">${got}/${total}</span></div><div class="coll-bar-wrap"><div class="coll-bar-fill${complete?' complete':''}" style="width:${pct}%"></div></div>`;
+    row.onclick = () => {
+      const sel = document.getElementById('collectionSel');
+      const isActive = STATE.collection === name;
+      sel.value = isActive ? '' : name;
+      applyFilters();
+    };
+    container.appendChild(row);
+  });
+}
+
+function updateCollProgress() {
+  document.querySelectorAll('.coll-row').forEach(r => {
+    r.classList.toggle('active', r.dataset.c === STATE.collection);
+  });
+  document.querySelectorAll('.coll-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.c === STATE.collection);
+  });
+}
+
+function buildCollectionStrip() {
+  const EXCLUDE = new Set(['Definitives', 'Pre Decimal']);
+  const colls = {};
+  ALL_COINS.forEach(c => {
+    if (!c.collection || EXCLUDE.has(c.collection)) return;
+    if (!colls[c.collection]) colls[c.collection] = {got:0, total:0};
+    colls[c.collection].total++;
+    if (c.status === 'Got') colls[c.collection].got++;
+  });
+  const strip = document.getElementById('collStrip');
+  Object.keys(colls).sort().forEach(name => {
+    const {got, total} = colls[name];
+    const pct = total > 0 ? Math.round(got/total*100) : 0;
+    const complete = got === total && total > 0;
+    const card = document.createElement('div');
+    card.className = 'coll-card';
+    card.dataset.c = name;
+    card.innerHTML = `<span class="coll-card-name">${name}</span><span class="coll-card-frac">${got}/${total} &middot; ${pct}%</span><div class="coll-card-bar-wrap"><div class="coll-card-bar-fill${complete?' complete':''}" style="width:${pct}%"></div></div>`;
+    card.onclick = () => {
+      const sel = document.getElementById('collectionSel');
+      const isActive = STATE.collection === name;
+      sel.value = isActive ? '' : name;
+      applyFilters();
+    };
+    strip.appendChild(card);
+  });
+}
+
+window.toggleStatus = function(s) {
+  if (STATE.status.has(s)) STATE.status.delete(s); else STATE.status.add(s);
+  document.querySelectorAll('.status-toggle').forEach(b => b.classList.toggle('active', STATE.status.has(b.dataset.s)));
+  applyFilters();
+};
+
+window.clearFilters = function() {
+  STATE.denom = null; STATE.status.clear(); STATE.year=''; STATE.monarch=''; STATE.collection=''; STATE.search='';
+  document.getElementById('yearSel').value = '';
+  document.getElementById('monarchSel').value = '';
+  document.getElementById('collectionSel').value = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.status-toggle').forEach(b=>b.classList.remove('active'));
+  updateDenomBtns();
+  applyFilters();
+};
+
+function applyFilters() {
+  STATE.year = document.getElementById('yearSel').value;
+  STATE.monarch = document.getElementById('monarchSel').value;
+  STATE.collection = document.getElementById('collectionSel').value;
+  STATE.search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  FILTERED = ALL_COINS.filter(c => {
+    if (STATE.denom && c.denom !== STATE.denom) return false;
+    if (STATE.status.size > 0 && !STATE.status.has(c.status)) return false;
+    if (STATE.year && String(c.year) !== STATE.year) return false;
+    if (STATE.monarch && c.monarch !== STATE.monarch) return false;
+    if (STATE.collection && c.collection !== STATE.collection) return false;
+    if (STATE.search) {
+      const hay = [c.variantCode, c.name, c.collection, c.monarch, String(c.year), c.parsed?.id||''].join(' ').toLowerCase();
+      if (!hay.includes(STATE.search)) return false;
+    }
+    return true;
+  });
+
+  sortCoins();
+  const wrap = document.getElementById('tableWrap');
+  wrap.style.opacity = '0';
+  setTimeout(() => { renderTable(); updateCollProgress(); wrap.style.opacity = '1'; }, 80);
+}
+
+function sortCoins() {
+  FILTERED.sort((a,b) => {
+    let av, bv;
+    switch(STATE.sort) {
+      case 'year': av=a.year||0; bv=b.year||0; break;
+      case 'name': av=a.name; bv=b.name; break;
+      case 'denom': av=DENOM_ORDER.indexOf(a.denom); bv=DENOM_ORDER.indexOf(b.denom); break;
+      case 'variant': av=a.variantCode; bv=b.variantCode; break;
+      case 'monarch': av=a.monarch||''; bv=b.monarch||''; break;
+      case 'qty': av=a.instCount; bv=b.instCount; break;
+      default: av=a.year||0; bv=b.year||0;
+    }
+    if (av < bv) return -STATE.sortDir;
+    if (av > bv) return STATE.sortDir;
+    return 0;
+  });
+}
+
+window.setSort = function(s) {
+  if (STATE.sort === s) STATE.sortDir *= -1; else { STATE.sort = s; STATE.sortDir = 1; }
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===s));
+  document.querySelectorAll('.coin-table th').forEach(th=>{
+    const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
+    const col = th.getAttribute('onclick')?.match(/setSort\('(\w+)'\)/)?.[1];
+    th.classList.toggle('sorted', col===s);
+    if (icon) icon.textContent = col===s ? (STATE.sortDir>0?'↑':'↓') : '↕';
+  });
+  sortCoins(); renderTable();
+};
+
+function variantCodeHTML(code) {
+  if (!code) return '<span class="var-code">—</span>';
+  // Colour-code each segment
+  const p = parseVariant(code);
+  if (!p) return `<span class="var-code">${code}</span>`;
+  const prefix = code.startsWith('IOM-') ? 'IOM-' : 'UK-';
+  return `<span class="var-code"><span class="part-type">${prefix}${p.type}-</span><span class="part-denom">${p.denom}-</span><span class="part-year">${p.year||''}-</span><span class="part-id">${p.id}-</span></span>`;
+}
+
+function renderTable() {
+  const body = document.getElementById('coinBody');
+  document.getElementById('countShown').textContent = FILTERED.length;
+  document.getElementById('countTotal').textContent = ALL_COINS.length;
+
+  const empty = document.getElementById('emptyState');
+  if (!FILTERED.length) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  body.innerHTML = FILTERED.map((c,i) => {
+    const parsed = c.parsed || {};
+    const cotukUrl = COTUK_MAP?.[c.variantCode] || null;
+    const rmUrl = c.imgUrl || null;
+    const imgSrc = cotukUrl || rmUrl;
+    const thumb = imgSrc
+      ? `<img class="coin-thumb" src="${imgSrc}" data-cotuk="${cotukUrl||''}" data-rm="${rmUrl||''}" alt="" onerror="imgFallback(this)" onclick="openLightbox(event,this)">`
+      : `<svg class="coin-thumb-ph" viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="24" cy="24" r="19" fill="none" stroke="#C8BFA8" stroke-width="0.75" stroke-dasharray="2.5 2"/><text x="24" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#8B6914">${c.denom}</text></svg>`;
+    const badge = `<span class="sbadge ${c.status||'Unknown'}">${c.status||'?'}</span>`;
+    const qtyDisplay = c.instCount > 0
+      ? `<div class="qty-wrap has-inst"><span class="qty-num">${c.instCount}</span><span class="qty-label">owned</span></div>`
+      : `<div class="qty-wrap"><span class="qty-num zero">–</span><span class="qty-label">${c.status==='Need'?'need':c.status==='List'?'list':'none'}</span></div>`;
+    const monarchShort = (c.monarch||'').replace('Queen Elizabeth II','QEII').replace('King Charles III','KCIII').replace('Queen Victoria','QVic').replace('King Edward VII','KVII');
+
+    return `<tr class="coin-row" id="row-${i}">
+      <td style="padding-left:.6rem;width:28px"><button class="expand-btn" id="btn-${i}" onclick="toggleDetail(${i})">›</button></td>
+      <td style="width:56px">${thumb}</td>
+      <td class="main-cell">
+        <div class="main-cell-top">
+          <span class="coin-name-inline">${c.name}</span>
+          <span class="inline-qty ${c.instCount > 0 ? 'has-inst' : 'zero-qty'}">${c.instCount > 0 ? '×'+c.instCount : (c.status==='Need'?'need':c.status==='List'?'want':'–')}</span>
+        </div>
+        <div class="main-cell-bottom">
+          ${variantCodeHTML(c.variantCode)}
+          <span class="dot-sep">·</span>
+          <span class="inline-collection">${c.collection}</span>
+          <span class="dot-sep">·</span>
+          ${badge}
+        </div>
+      </td>
+      <td class="hide-mobile" style="white-space:nowrap;font-size:.7rem">${c.year||'—'}</td>
+      <td class="hide-mobile"><span class="monarch-tag">${monarchShort}</span></td>
+    </tr>
+    <tr class="detail-row" id="detail-${i}">
+      <td colspan="5"><div class="detail-panel" id="panel-${i}"></div></td>
+    </tr>`;
+  }).join('');
+}
+
+window.toggleDetail = function(i) {
+  const coin = FILTERED[i];
+  const btn = document.getElementById('btn-'+i);
+  const detRow = document.getElementById('detail-'+i);
+  const panel = document.getElementById('panel-'+i);
+  const isOpen = detRow.classList.contains('open');
+
+  // close any open
+  document.querySelectorAll('.detail-row.open').forEach(r=>r.classList.remove('open'));
+  document.querySelectorAll('.expand-btn.open').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.coin-row.expanded').forEach(r=>r.classList.remove('expanded'));
+
+  if (!isOpen) {
+    detRow.classList.add('open');
+    btn.classList.add('open');
+    document.getElementById('row-'+i).classList.add('expanded');
+    panel.innerHTML = buildDetailHTML(coin);
+  }
+};
+
+function buildInstItemHTML(coin, inst) {
+  const fid = inst.insId ? inst.insId.replace(/-/g,'_') : null;
+  const vc = coin.variantCode;
+  const condOpts = ['BUNC','BUNC.KC','BUNC.WM','VF','F','G','O','P'];
+  const COND_LABELS = {'BUNC':'Brand New Uncirculated','BUNC.KC':'Brand New Uncirculated – Koin Club','BUNC.WM':'Brand New Uncirculated – Westminster Collection','VF':'Very Fine','F':'Fine','G':'Good','O':'Other','P':'Poor'};
+  const ptypeOpts = ['Capsule','Date Stamp Coin','Folder Collection','IOM Carded','Koin Club','Proof','Royal Mint','Sleeve','Westminster'];
+  const s1Opts = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
+  const s2Opts = ['Page 1','Page 2','Page 3','Page 4','Page 5','Page 6','Page 7','Page 8','Page 9','Page 10','Page 11','Capsule','Capsule Case 01','Capsule Case 02','Carded','Collection Box 01','Olympic Folder','Presentation Case 01','Presentation Case 02','2023 Annual Set','2023 Annual Set 2','2024 Annual Set','2025 Annual Set','Farthings Folder 1860 - 1901','Farthings Folder 1902 - 1936','Farthings Folder 1937 - 1956','Florins Folder 1911 - 1940','Florins Folder 1941 -','Half Crowns Folder - 1911 - 1940','Half Crowns Folder - 1941 -','Halfpennies Folder 1860 - 1901','Halfpennies Folder 1902 - 1936','Halfpennies Folder 1937 -','Pennies Folder 1860 - 1880','Pennies Folder 1881 - 1901','Pennies Folder 1902 - 1929','Pennies Folder 1930 - 1966','Shillings Folder 1902 - 1936','Shillings Folder 1937 - 1951','Shillings Folder 1953 -','Sixpence Folder 1902 - 1936','Sixpence Folder 1937 -','Threepence Folder 1838 - 1901','Threepence Folder 1902 - 1945','Threepence Folder 1937 -'];
+  const s3Opts = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','Obverse'];
+  let h = `<div class="inst-item">
+    <div class="inst-num">#${inst.num}${inst.insId?`<br><span class="inst-id-badge">${inst.insId}</span>`:''}</div>
+    <div class="inst-loc">
+      ${inst.insId?`<div class="inst-loc-row"><span class="inst-field-label">ID</span><span class="inst-id-badge" style="font-size:.68rem">${inst.insId}</span></div>`:''}
+      <div class="inst-loc-row"><span class="inst-field-label">Location</span><span>${inst.loc}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Storage 1</span><span>${inst.s1}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Storage 2</span><span>${inst.s2}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Storage 3</span><span>${inst.s3||'—'}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Condition</span><span>${inst.cond}${COND_LABELS[inst.cond]?' – '+COND_LABELS[inst.cond]:''}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Preservation</span><span>${inst.ptype}</span></div>
+      ${inst.desc?`<div class="inst-loc-row"><span class="inst-field-label">Description</span><span>${inst.desc}</span></div>`:''}
+    </div>`;
+  if (fid) {
+    const cSel = condOpts.map(c=>`<option${inst.cond===c?' selected':''}>${c}</option>`).join('');
+    const pSel = ptypeOpts.map(p=>`<option${inst.ptype===p?' selected':''}>${p}</option>`).join('');
+    const sSel = s1Opts.map(s=>`<option${inst.s1===s?' selected':''}>${s}</option>`).join('');
+    const s2v = (inst.s2 && inst.s2!=='—') ? inst.s2 : '';
+    const s3v = inst.s3||'';
+    const s2Sel = s2Opts.map(s=>`<option${s2v===s?' selected':''}>${s}</option>`).join('');
+    const s3Sel = s3Opts.map(s=>`<option${s3v===s?' selected':''}>${s}</option>`).join('');
+    const descv = inst.desc||'';
+    h += `<div class="inst-actions">
+      <button class="inst-edit-btn" onclick="toggleEditInstForm('${vc}','${inst.insId}')">Edit</button>
+      <button class="inst-remove-btn" onclick="showRemoveConfirm('${inst.insId}')">Remove</button>
+    </div>
+    <div class="add-inst-form" id="edit-inst-form-${fid}">
+      <div class="add-inst-form-row">
+        <div><label>Condition</label><select name="cond"><option value="">— select —</option>${cSel}</select></div>
+        <div><label>Preservation Type</label><select name="ptype"><option value="">— select —</option>${pSel}</select></div>
+      </div>
+      <div class="add-inst-form-row">
+        <div><label>Storage 1</label><select name="s1"><option value="">— select —</option>${sSel}</select></div>
+        <div><label>Storage 2</label><select name="s2"><option value="">— select —</option>${s2Sel}</select></div>
+      </div>
+      <div class="add-inst-form-row">
+        <div><label>Storage 3 (slot)</label><select name="s3"><option value="">— select —</option>${s3Sel}</select></div>
+        <div><label>Description (optional)</label><input type="text" name="desc" value="${descv}" placeholder="e.g. Proof set"></div>
+      </div>
+      <div class="add-inst-actions">
+        <button class="add-inst-save" onclick="saveEditInstance('${vc}','${inst.insId}')">Save</button>
+        <button class="add-inst-cancel" onclick="cancelEditInstance('${inst.insId}')">Cancel</button>
+      </div>
+    </div>
+    <div class="inst-confirm" id="remove-confirm-${fid}">Remove ${inst.insId}?
+      <button class="inst-confirm-yes" onclick="removeInstance('${vc}','${inst.insId}')">Yes, remove</button>
+      <button class="inst-confirm-no" onclick="cancelRemoveConfirm('${inst.insId}')">Cancel</button>
+    </div>`;
+  }
+  h += '</div>';
+  return h;
+}
+
+function buildDetailHTML(coin) {
+  const instRecords = INSTANCE_DATA[coin.variantCode] || [];
+  const instances = instRecords.length > 0
+    ? instRecords.map((r,j) => ({
+        num: j+1, insId: r.id,
+        loc: r.loc || '—', s1: r.s1 || '—', s2: r.s2 || '—', s3: r.s3 || '',
+        cond: r.cond || '—', ptype: r.ptype || '—', desc: r.desc || '',
+      }))
+    : Array.from({length: coin.instCount}, (_,j) => ({
+        num: j+1, insId: null,
+        loc: '—', s1: '—', s2: '—', s3: '', cond: '—', ptype: '—',
+      }));
+
+  const instHTML = instances.length === 0
+    ? '<p class="no-inst">No instances in collection</p>'
+    : `<div class="inst-list">${instances.map(inst => buildInstItemHTML(coin, inst)).join('')}</div>`;
+
+  const p = coin.parsed || {};
+  const vcSafe = coin.variantCode.replace(/[^a-zA-Z0-9]/g,'_');
+  const statusOpts = ['Got','Need','List'].map(s=>`<option${coin.status===s?' selected':''}>${s}</option>`).join('');
+  const nameEsc = coin.name.replace(/"/g,'&quot;');
+  const collEsc = (coin.collection||'').replace(/"/g,'&quot;');
+
+  return `<div class="detail-grid">
+    <div class="detail-field"><label>Full Variant Code</label><p class="mono">${coin.variantCode}</p></div>
+    <div class="detail-field"><label>Type</label><p>${p.type==='D'?'Decimal':'Pre-decimal'}</p></div>
+    <div class="detail-field"><label>Variant ID</label><p class="mono" style="color:var(--got)">${p.id||'—'}</p></div>
+    <div class="detail-field"><label>Denomination</label><p>${coin.denom}</p></div>
+    <div class="detail-field"><label>Year</label><p>${coin.year||'—'}</p></div>
+    <div class="detail-field"><label>Monarch</label><p>${coin.monarch||'—'}</p></div>
+  </div>
+  <button class="edit-variant-btn" onclick="toggleEditVariantForm('${coin.variantCode}')">✎ Edit variant details</button>
+  <div class="add-inst-form" id="edit-variant-form-${vcSafe}">
+    <div><label>Name</label><input type="text" name="name" value="${nameEsc}"></div>
+    <div><label>Collection</label><input type="text" name="collection" value="${collEsc}"></div>
+    <div><label>Status</label><select name="status"><option value=""></option>${statusOpts}</select></div>
+    <div class="add-inst-actions">
+      <button class="add-inst-save" onclick="saveEditVariant('${coin.variantCode}')">Save</button>
+      <button class="add-inst-cancel" onclick="cancelEditVariant('${coin.variantCode}')">Cancel</button>
+      <button class="inst-remove-btn" style="margin-left:auto" onclick="confirmDeleteVariant('${coin.variantCode}')">Delete variant</button>
+    </div>
+    <div class="inst-confirm" id="delete-variant-confirm-${vcSafe}">
+      Delete <b>${coin.name}</b> permanently?
+      <button class="inst-confirm-yes" onclick="deleteVariant('${coin.variantCode}')">Yes, delete</button>
+      <button class="inst-confirm-no" onclick="document.getElementById('delete-variant-confirm-${vcSafe}').style.display='none'">No</button>
+    </div>
+  </div>
+  <div class="instances-section">
+    <div class="instances-label">Physical instances — <b style="color:var(--ink);font-size:.75rem">${coin.instCount}</b> total</div>
+    ${instHTML}
+    <button class="add-inst-btn" onclick="toggleAddInstForm('${coin.variantCode}')">+ Add Instance</button>
+    <div class="add-inst-form" id="add-inst-form-${vcSafe}">
+      <div><span class="add-inst-id-preview">INS-…</span></div>
+      <div class="add-inst-form-row">
+        <div><label>Condition</label><select name="cond"><option value="">— select —</option><option>BUNC</option><option>BUNC.KC</option><option>BUNC.WM</option><option>VF</option><option>F</option><option>O</option><option>P</option></select></div>
+        <div><label>Preservation Type</label><select name="ptype"><option value="">— select —</option><option>Capsule</option><option>Date Stamp Coin</option><option>Folder Collection</option><option>IOM Carded</option><option>Koin Club</option><option>Proof</option><option>Royal Mint</option><option>Sleeve</option><option>Westminster</option></select></div>
+      </div>
+      <div class="add-inst-form-row">
+        <div><label>Storage 1</label><select name="s1"><option value="">— select —</option><option>Box 1</option><option>Box 2</option><option>Folder 1</option><option>Folder 2</option><option>Folder 3</option><option>Folder 4</option><option>Folder 5</option><option>Folder 6</option><option>Folder 7</option><option>Folder 8</option><option>Folder 9</option><option>Folder 10</option></select></div>
+        <div><label>Storage 2</label><select name="s2"><option value="">— select —</option><option>Page 1</option><option>Page 2</option><option>Page 3</option><option>Page 4</option><option>Page 5</option><option>Page 6</option><option>Page 7</option><option>Page 8</option><option>Page 9</option><option>Page 10</option><option>Page 11</option><option>Capsule</option><option>Capsule Case 01</option><option>Capsule Case 02</option><option>Carded</option><option>Collection Box 01</option><option>Olympic Folder</option><option>Presentation Case 01</option><option>Presentation Case 02</option><option>2023 Annual Set</option><option>2023 Annual Set 2</option><option>2024 Annual Set</option><option>2025 Annual Set</option><option>Farthings Folder 1860 - 1901</option><option>Farthings Folder 1902 - 1936</option><option>Farthings Folder 1937 - 1956</option><option>Florins Folder 1911 - 1940</option><option>Florins Folder 1941 -</option><option>Half Crowns Folder - 1911 - 1940</option><option>Half Crowns Folder - 1941 -</option><option>Halfpennies Folder 1860 - 1901</option><option>Halfpennies Folder 1902 - 1936</option><option>Halfpennies Folder 1937 -</option><option>Pennies Folder 1860 - 1880</option><option>Pennies Folder 1881 - 1901</option><option>Pennies Folder 1902 - 1929</option><option>Pennies Folder 1930 - 1966</option><option>Shillings Folder 1902 - 1936</option><option>Shillings Folder 1937 - 1951</option><option>Shillings Folder 1953 -</option><option>Sixpence Folder 1902 - 1936</option><option>Sixpence Folder 1937 -</option><option>Threepence Folder 1838 - 1901</option><option>Threepence Folder 1902 - 1945</option><option>Threepence Folder 1937 -</option></select></div>
+      </div>
+      <div class="add-inst-form-row">
+        <div><label>Storage 3 (slot, optional)</label><select name="s3"><option value="">— select —</option><option>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option><option>24</option><option>25</option><option>26</option><option>27</option><option>28</option><option>29</option><option>30</option><option>Obverse</option></select></div>
+        <div><label>Description (optional)</label><input type="text" name="desc" placeholder="e.g. Proof set"></div>
+      </div>
+      <div class="add-inst-actions">
+        <button class="add-inst-save" onclick="saveInstance('${coin.variantCode}')">Save</button>
+        <button class="add-inst-cancel" onclick="cancelAddInst('${coin.variantCode}')">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Start
+// ── ADD INSTANCE ─────────────────────────────────────────────────────────────
+let NEXT_INST_ID = 1520; // last used is INS-1519
+
+function getNextInstId() {
+  // Also account for any pending additions stored in localStorage
+  const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  const maxPending = pending.length > 0 ? Math.max(...pending.map(p => parseInt(p.id.replace('INS-','')))) : 0;
+  return Math.max(NEXT_INST_ID, maxPending + 1);
+}
+
+function toggleAddInstForm(variantCode) {
+  const form = document.getElementById('add-inst-form-' + variantCode.replace(/[^a-zA-Z0-9]/g,'_'));
+  if (!form) return;
+  const nextId = getNextInstId();
+  form.querySelector('.add-inst-id-preview').textContent = 'INS-' + nextId;
+  form.classList.toggle('open');
+}
+
+function cancelAddInst(variantCode) {
+  const form = document.getElementById('add-inst-form-' + variantCode.replace(/[^a-zA-Z0-9]/g,'_'));
+  if (form) form.classList.remove('open');
+}
+
+function saveInstance(variantCode) {
+  if (GUEST_MODE) return;
+  const fid = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
+  const form = document.getElementById('add-inst-form-' + fid);
+  const nextId = getNextInstId();
+  const instId = 'INS-' + nextId;
+
+  const inst = {
+    id: instId,
+    loc: 'Office',
+    s1: form.querySelector('[name=s1]').value,
+    s2: form.querySelector('[name=s2]').value,
+    s3: form.querySelector('[name=s3]').value,
+    cond: form.querySelector('[name=cond]').value,
+    ptype: form.querySelector('[name=ptype]').value,
+    desc: form.querySelector('[name=desc]').value,
+    variantCode: variantCode,
+    addedAt: new Date().toISOString()
+  };
+
+  // Validate required fields
+  if (!inst.cond || !inst.ptype || !inst.s1) {
+    alert('Please fill in Condition, Preservation Type, and Storage 1.');
+    return;
+  }
+
+  // Add to in-memory INSTANCE_DATA
+  if (!INSTANCE_DATA[variantCode]) INSTANCE_DATA[variantCode] = [];
+  INSTANCE_DATA[variantCode].push(inst);
+
+  // Update NEXT_INST_ID so subsequent additions increment correctly
+  NEXT_INST_ID = nextId + 1;
+
+  // Update in-memory coin object
+  const coin = ALL_COINS.find(c => c.variantCode === variantCode);
+  if (coin) {
+    coin.instCount++;
+    coin.status = 'Got';
+  }
+
+  // Queue for Notion sync in localStorage
+  const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  pending.push(inst);
+  localStorage.setItem('coinhub_pending_instances', JSON.stringify(pending));
+
+
+  // Close form and re-render detail panel
+  form.classList.remove('open');
+
+  // Re-open detail panel for this coin
+  if (coin) {
+    const idx = ALL_COINS.indexOf(coin);
+    const panel = document.getElementById('panel-' + idx);
+    if (panel) panel.innerHTML = buildDetailHTML(coin);
+  }
+
+  // Refresh header counts
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+
+  // Show pending notice
+  const notice = document.createElement('div');
+  notice.className = 'add-inst-pending';
+  notice.textContent = instId + ' saved locally — sync to Notion when ready.';
+  const panel2 = document.getElementById('panel-' + (coin ? ALL_COINS.indexOf(coin) : -1));
+  if (panel2) panel2.appendChild(notice);
+}
+
+// ── AUDIT LOG ─────────────────────────────────────────────────────────────────
+const AUDIT_MAX = 200;
+function addAuditLog(entry) {
+  const log = JSON.parse(localStorage.getItem('coinhub_audit_log') || '[]');
+  log.unshift({...entry, timestamp: new Date().toISOString()});
+  if (log.length > AUDIT_MAX) log.length = AUDIT_MAX;
+  localStorage.setItem('coinhub_audit_log', JSON.stringify(log));
+}
+
+function showChangeLog() {
+  const log = JSON.parse(localStorage.getItem('coinhub_audit_log') || '[]');
+  const listEl = document.getElementById('logList');
+  if (!log.length) {
+    listEl.innerHTML = '<p class="log-empty">No changes recorded yet.</p>';
+  } else {
+    listEl.innerHTML = log.map((e, i) => {
+      const ts = new Date(e.timestamp).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const typeLabel = e.type==='inst_remove' ? 'Instance removed' : e.type==='inst_edit' ? 'Instance edited' : 'Variant edited';
+      let detail = '';
+      if (e.type==='inst_remove') {
+        detail = `${e.before.id} · ${e.before.cond} · ${e.before.s1}${e.before.s2&&e.before.s2!=='—'?' / '+e.before.s2:''}`;
+      } else if (e.type==='inst_edit') {
+        const parts = [];
+        if (e.before.cond!==e.after.cond) parts.push(`cond: ${e.before.cond}→${e.after.cond}`);
+        if (e.before.s1!==e.after.s1) parts.push(`s1: ${e.before.s1}→${e.after.s1}`);
+        if (e.before.s2!==e.after.s2) parts.push(`s2: ${e.before.s2}→${e.after.s2}`);
+        if (e.before.ptype!==e.after.ptype) parts.push(`ptype: ${e.before.ptype}→${e.after.ptype}`);
+        detail = (e.before.id||'') + (parts.length ? ': '+parts.join(', ') : '');
+      } else {
+        const parts = [];
+        if (e.before.name!==e.after.name) parts.push(`name: "${e.before.name}"→"${e.after.name}"`);
+        if (e.before.collection!==e.after.collection) parts.push(`collection: ${e.before.collection}→${e.after.collection}`);
+        if (e.before.status!==e.after.status) parts.push(`status: ${e.before.status}→${e.after.status}`);
+        detail = parts.join(', ') || 'No changes';
+      }
+      return `<div class="log-entry">
+        <div class="log-entry-head"><span class="log-entry-type ${e.type}">${typeLabel}</span><span class="log-entry-ts">${ts}</span></div>
+        <div class="log-entry-coin">${e.coinName}</div>
+        <div class="log-entry-detail">${detail}</div>
+        <button class="log-reinstate-btn" onclick="reinstateChange(${i})">↩ Reinstate</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('logModalBg').classList.add('open');
+}
+
+function closeChangeLog() {
+  document.getElementById('logModalBg').classList.remove('open');
+}
+
+// ── STOCK CHECK ───────────────────────────────────────────────────────────────
+const _scChecked = JSON.parse(localStorage.getItem('coinhub_stockcheck') || '{}');
+let _scUncheckedOnly = false;
+
+function _scSave() {
+  try { localStorage.setItem('coinhub_stockcheck', JSON.stringify(_scChecked)); } catch(e) {}
+}
+
+function _scFmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(d,10)} ${months[parseInt(m,10)-1]} ${y}`;
+}
+
+function showStockCheck() {
+  if (GUEST_MODE) return;
+  document.getElementById('scModalBg').classList.add('open');
+  const loc = document.getElementById('scLocationSelect').value;
+  if (!loc && !document.querySelector('#scList .sc-loc-sum')) _scBuildSummary();
+}
+
+function closeStockCheck() {
+  document.getElementById('scModalBg').classList.remove('open');
+}
+
+function loadStockCheck() {
+  const loc = document.getElementById('scLocationSelect').value;
+  const listEl = document.getElementById('scList');
+  const emptyEl = document.getElementById('scEmptyMsg');
+  const printHdr = document.getElementById('scPrintHeader');
+
+  // Clear previous coin rows
+  listEl.querySelectorAll('.sc-group-label, .sc-item, .sc-loc-sum').forEach(el => el.remove());
+  printHdr.innerHTML = '';
+  const wrap = document.getElementById('scProgressWrap');
+
+  if (!loc) {
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (wrap) wrap.style.display = 'none';
+    document.getElementById('scProgress').textContent = '';
+    _scBuildSummary();
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = '';
+
+  const items = [];
+  Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
+    records.forEach(inst => {
+      if (inst.s1 === loc) {
+        const coin = ALL_COINS.find(c => c.variantCode === vc);
+        items.push({ inst, vc, coin, coinName: coin ? coin.name : vc });
+      }
+    });
+  });
+
+  items.sort((a, b) => {
+    const s2 = (a.inst.s2 || '').localeCompare(b.inst.s2 || '');
+    if (s2 !== 0) return s2;
+    return (a.inst.s3 || '').localeCompare(b.inst.s3 || '');
+  });
+
+  if (!items.length) {
+    if (emptyEl) emptyEl.textContent = `No coins found in ${loc}.`;
+    document.getElementById('scProgress').textContent = '';
+    return;
+  }
+
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  // Print header
+  const printDate = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  printHdr.innerHTML = `<div class="sc-print-title">Stock Check — ${loc}</div><div class="sc-print-date">Printed ${printDate} · ${items.length} items</div>`;
+
+  let lastS2 = null;
+  items.forEach(({ inst, coin, coinName }) => {
+    const grp = inst.s2 || '(no sub-location)';
+    if (grp !== lastS2) {
+      const g = document.createElement('div');
+      g.className = 'sc-group-label';
+      g.textContent = grp;
+      listEl.appendChild(g);
+      lastS2 = grp;
+    }
+    const iid = inst.id || inst.insId;
+    const checkedDate = _scChecked[iid] || '';
+    const checkedCls = checkedDate ? ' checked' : '';
+    const metaParts = [
+      coin ? coin.year : null,
+      coin ? coin.denom : null,
+      inst.cond,
+      inst.ptype,
+      inst.s3
+    ].filter(Boolean);
+    const row = document.createElement('label');
+    row.className = `sc-item${checkedCls}`;
+    row.id = `sc-row-${iid}`;
+    row.innerHTML = `<input type="checkbox" ${checkedDate?'checked':''} onchange="scToggle('${iid}',this.checked)">
+      <span class="sc-item-name">${coinName}</span>
+      <span class="sc-item-meta">${metaParts.join(' · ')}</span>
+      <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>
+      <button class="sc-info-btn" onclick="event.preventDefault();scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
+    listEl.appendChild(row);
+
+    const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+    const variantCode = inst.vc || (coin ? coin.variantCode : '');
+    const detail = document.createElement('div');
+    detail.className = 'sc-detail';
+    detail.id = `sc-detail-${iid}`;
+    detail.innerHTML = [
+      `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val mono">${iid}</span></div>`,
+      storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Location</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
+      inst.cond ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
+      inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
+      variantCode ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val mono">${variantCode}</span></div>` : '',
+    ].join('');
+    listEl.appendChild(detail);
+  });
+
+  _scUpdateProgress();
+  _scApplyUncheckedFilter();
+}
+
+function scToggleDetail(iid) {
+  const detail = document.getElementById('sc-detail-' + iid);
+  const btn = document.querySelector(`#sc-row-${iid} .sc-info-btn`);
+  if (!detail) return;
+  const open = detail.classList.toggle('open');
+  if (btn) btn.classList.toggle('open', open);
+}
+
+function scToggle(iid, checked) {
+  if (checked) {
+    _scChecked[iid] = new Date().toISOString().slice(0, 10);
+  } else {
+    delete _scChecked[iid];
+  }
+  _scSave();
+  const row = document.getElementById('sc-row-' + iid);
+  if (row) {
+    row.classList.toggle('checked', checked);
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = checked ? _scFmtDate(_scChecked[iid]) : '';
+    if (_scUncheckedOnly && checked) { row.style.display = 'none'; _scApplyUncheckedFilter(); }
+  }
+  _scUpdateProgress();
+}
+
+function scCheckAll() {
+  const today = new Date().toISOString().slice(0, 10);
+  document.querySelectorAll('#scList .sc-item').forEach(row => {
+    const iid = row.id.replace('sc-row-', '');
+    const cb = row.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = true;
+    _scChecked[iid] = today;
+    row.classList.add('checked');
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = _scFmtDate(today);
+  });
+  _scSave();
+  _scApplyUncheckedFilter();
+  _scUpdateProgress();
+}
+
+function scClearAll() {
+  document.querySelectorAll('#scList .sc-item').forEach(row => {
+    const iid = row.id.replace('sc-row-', '');
+    const cb = row.querySelector('input[type=checkbox]');
+    if (cb) cb.checked = false;
+    delete _scChecked[iid];
+    row.classList.remove('checked');
+    const dateEl = row.querySelector('.sc-item-date');
+    if (dateEl) dateEl.textContent = '';
+    row.style.display = '';
+  });
+  _scSave();
+  _scUpdateProgress();
+}
+
+function _scUpdateProgress() {
+  const items = document.querySelectorAll('#scList .sc-item');
+  const wrap = document.getElementById('scProgressWrap');
+  if (!items.length) {
+    document.getElementById('scProgress').textContent = '';
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  const total = items.length;
+  const done = [...items].filter(el => el.classList.contains('checked')).length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('scProgress').textContent = `${done} / ${total} · ${pct}%`;
+  if (wrap) wrap.style.display = 'flex';
+  const fill = document.getElementById('scProgressBarFill');
+  if (fill) fill.style.width = pct + '%';
+}
+
+function _scApplyUncheckedFilter() {
+  document.querySelectorAll('#scList .sc-item').forEach(row => {
+    row.style.display = (_scUncheckedOnly && row.classList.contains('checked')) ? 'none' : '';
+  });
+  document.querySelectorAll('#scList .sc-group-label').forEach(grp => {
+    let next = grp.nextElementSibling;
+    let allHidden = true;
+    while (next && !next.classList.contains('sc-group-label')) {
+      if (next.classList.contains('sc-item') && next.style.display !== 'none') { allHidden = false; break; }
+      next = next.nextElementSibling;
+    }
+    grp.style.display = allHidden ? 'none' : '';
+  });
+}
+
+function _scBuildSummary() {
+  const locations = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
+  const listEl = document.getElementById('scList');
+  const div = document.createElement('div');
+  div.className = 'sc-loc-sum';
+  const hdr = document.createElement('div');
+  hdr.className = 'sc-loc-heading';
+  hdr.textContent = 'All Locations — Stocktake Progress';
+  div.appendChild(hdr);
+  let anyFound = false;
+  locations.forEach(loc => {
+    const iids = [];
+    Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
+      records.forEach(inst => { if (inst.s1 === loc) iids.push(inst.id || inst.insId); });
+    });
+    anyFound = true;
+    if (!iids.length) {
+      const row = document.createElement('div');
+      row.className = 'sc-loc-row sc-loc-pristine';
+      row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+        <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:0%"></div></div>
+        <span class="sc-loc-count" style="opacity:.4">empty</span>
+        <span class="sc-loc-date">—</span>`;
+      div.appendChild(row);
+      return;
+    }
+    const total = iids.length;
+    const checkedDates = iids.map(iid => _scChecked[iid]).filter(Boolean).sort();
+    const done = checkedDates.length;
+    const pct = Math.round(done / total * 100);
+    const lastDate = checkedDates.length ? checkedDates[checkedDates.length - 1] : null;
+    const cls = done === total ? ' sc-loc-done' : done === 0 ? ' sc-loc-pristine' : '';
+    const row = document.createElement('div');
+    row.className = 'sc-loc-row' + cls;
+    row.title = 'Click to open ' + loc;
+    row.onclick = () => { document.getElementById('scLocationSelect').value = loc; loadStockCheck(); };
+    row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+      <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:${pct}%"></div></div>
+      <span class="sc-loc-count">${done}/${total} · ${pct}%</span>
+      <span class="sc-loc-date">${lastDate ? _scFmtDate(lastDate) : '—'}</span>`;
+    div.appendChild(row);
+  });
+  if (!anyFound) {
+    const empty = document.createElement('div');
+    empty.className = 'sc-empty';
+    empty.textContent = 'No coins found in any location.';
+    div.appendChild(empty);
+  }
+  listEl.appendChild(div);
+}
+
+function scToggleUnchecked() {
+  _scUncheckedOnly = !_scUncheckedOnly;
+  const btn = document.getElementById('scUncheckedBtn');
+  if (btn) btn.classList.toggle('active', _scUncheckedOnly);
+  _scApplyUncheckedFilter();
+}
+
+function scPrintUnchecked() {
+  const unchecked = document.querySelectorAll('#scList .sc-item:not(.checked)').length;
+  if (!unchecked) { alert('No unchecked items to print.'); return; }
+  const loc = document.getElementById('scLocationSelect').value;
+  const printHdr = document.getElementById('scPrintHeader');
+  const savedHdr = printHdr.innerHTML;
+  const printDate = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  printHdr.innerHTML = `<div class="sc-print-title">Unchecked — ${loc}</div><div class="sc-print-date">Printed ${printDate} · ${unchecked} unchecked items</div>`;
+  const modal = document.querySelector('.sc-modal');
+  modal.classList.add('sc-print-unchecked');
+  window.print();
+  modal.classList.remove('sc-print-unchecked');
+  printHdr.innerHTML = savedHdr;
+}
+
+function scPrintNeeded() {
+  const needed = ALL_COINS.filter(c => c.status === 'Need');
+  if (!needed.length) { alert('No coins needed.'); return; }
+  needed.sort((a, b) => (a.collection || '').localeCompare(b.collection || '') || (a.name || '').localeCompare(b.name || ''));
+  const printDate = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  const section = document.getElementById('scNeededSection');
+  section.innerHTML = `<div class="sc-print-header" style="display:block"><div class="sc-print-title">Coins Needed</div><div class="sc-print-date">Printed ${printDate} · ${needed.length} coins</div></div>`;
+  let lastColl = null;
+  needed.forEach(coin => {
+    const coll = coin.collection || 'Uncategorised';
+    if (coll !== lastColl) {
+      const g = document.createElement('div');
+      g.className = 'sc-group-label';
+      g.textContent = coll;
+      section.appendChild(g);
+      lastColl = coll;
+    }
+    const row = document.createElement('div');
+    row.className = 'sc-item';
+    row.innerHTML = `<span class="sc-item-name">${coin.name}</span><span class="sc-item-meta">${coin.year || ''} · ${coin.denom || ''}</span>`;
+    section.appendChild(row);
+  });
+  const modal = document.querySelector('.sc-modal');
+  modal.classList.add('sc-print-needed');
+  window.print();
+  modal.classList.remove('sc-print-needed');
+  section.innerHTML = '';
+}
+
+function exportChangeLogCSV() {
+  const log = JSON.parse(localStorage.getItem('coinhub_audit_log') || '[]');
+  if (!log.length) { alert('No changes to export.'); return; }
+  const q = v => '"' + String(v||'').replace(/"/g,'""') + '"';
+  const rows = [
+    ['Timestamp','Type','Coin Name','Variant Code','Instance ID',
+     'Before: Condition','Before: Storage 1','Before: Storage 2','Before: Storage 3','Before: Preservation','Before: Name','Before: Collection','Before: Status',
+     'After: Condition','After: Storage 1','After: Storage 2','After: Storage 3','After: Preservation','After: Name','After: Collection','After: Status'
+    ].map(q).join(',')
+  ];
+  log.forEach(e => {
+    const b = e.before || {}, a = e.after || {};
+    rows.push([
+      e.timestamp, e.type, e.coinName, e.variantCode, b.id||a.id||'',
+      b.cond||'', b.s1||'', b.s2||'', b.s3||'', b.ptype||'', b.name||'', b.collection||'', b.status||'',
+      a.cond||'', a.s1||'', a.s2||'', a.s3||'', a.ptype||'', a.name||'', a.collection||'', a.status||''
+    ].map(q).join(','));
+  });
+  const blob = new Blob([rows.join('\r\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'coinhub-changelog-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function _refreshRow(coin) {
+  const fi = FILTERED.indexOf(coin);
+  if (fi < 0) return;
+  const panel = document.getElementById('panel-'+fi);
+  if (panel && panel.innerHTML) panel.innerHTML = buildDetailHTML(coin);
+  const row = document.getElementById('row-'+fi);
+  if (row) {
+    const nameEl = row.querySelector('.coin-name-inline'); if (nameEl) nameEl.textContent = coin.name;
+    const collEl = row.querySelector('.inline-collection'); if (collEl) collEl.textContent = coin.collection;
+    const badge = row.querySelector('.sbadge'); if (badge) { badge.className='sbadge '+(coin.status||'Unknown'); badge.textContent=coin.status||'?'; }
+    const qty = row.querySelector('.inline-qty'); if (qty) { qty.className='inline-qty '+(coin.instCount>0?'has-inst':'zero-qty'); qty.textContent=coin.instCount>0?'×'+coin.instCount:(coin.status==='Need'?'need':coin.status==='List'?'want':'–'); }
+  }
+}
+
+function reinstateChange(idx) {
+  const log = JSON.parse(localStorage.getItem('coinhub_audit_log') || '[]');
+  const entry = log[idx];
+  if (!entry) return;
+  const coin = ALL_COINS.find(c => c.variantCode === entry.variantCode);
+  if (entry.type === 'inst_remove') {
+    if (!INSTANCE_DATA[entry.variantCode]) INSTANCE_DATA[entry.variantCode] = [];
+    INSTANCE_DATA[entry.variantCode].push(entry.before);
+    if (coin) { coin.instCount++; coin.status = 'Got'; }
+    addAuditLog({type:'inst_edit', variantCode:entry.variantCode, coinName:entry.coinName, before:{...entry.before, note:'(reinstated from removal)'}, after:entry.before});
+  } else if (entry.type === 'inst_edit') {
+    const records = INSTANCE_DATA[entry.variantCode];
+    if (records) {
+      const ri = records.findIndex(r => r.id === entry.before.id);
+      if (ri >= 0) {
+        const current = {...records[ri]};
+        records[ri] = {...records[ri], ...entry.before};
+        addAuditLog({type:'inst_edit', variantCode:entry.variantCode, coinName:entry.coinName, before:current, after:records[ri]});
+      }
+    }
+  } else if (entry.type === 'variant_edit') {
+    if (coin) {
+      const current = {name:coin.name, collection:coin.collection, status:coin.status};
+      coin.name = entry.before.name; coin.collection = entry.before.collection; coin.status = entry.before.status;
+      addAuditLog({type:'variant_edit', variantCode:entry.variantCode, coinName:entry.before.name, before:current, after:entry.before});
+    }
+  }
+  if (coin) _refreshRow(coin);
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+  document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
+  closeChangeLog(); setTimeout(showChangeLog, 50);
+}
+
+// ── EDIT INSTANCE ─────────────────────────────────────────────────────────────
+function toggleEditInstForm(variantCode, instId) {
+  const form = document.getElementById('edit-inst-form-' + instId.replace(/-/g,'_'));
+  if (form) form.classList.toggle('open');
+}
+function cancelEditInstance(instId) {
+  const form = document.getElementById('edit-inst-form-' + instId.replace(/-/g,'_'));
+  if (form) form.classList.remove('open');
+}
+function saveEditInstance(variantCode, instId) {
+  if (GUEST_MODE) return;
+  const fid = instId.replace(/-/g,'_');
+  const form = document.getElementById('edit-inst-form-' + fid);
+  if (!form) return;
+  const records = INSTANCE_DATA[variantCode];
+  if (!records) return;
+  const idx = records.findIndex(r => r.id === instId);
+  if (idx < 0) return;
+  const s1 = form.querySelector('[name=s1]').value;
+  const cond = form.querySelector('[name=cond]').value;
+  const ptype = form.querySelector('[name=ptype]').value;
+  if (!cond || !ptype || !s1) { alert('Please fill in Condition, Preservation Type, and Storage 1.'); return; }
+  const before = {...records[idx]};
+  records[idx] = {...records[idx], s1, s2: form.querySelector('[name=s2]').value, s3: form.querySelector('[name=s3]').value, cond, ptype, desc: form.querySelector('[name=desc]').value};
+  const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+  const ei = edits.findIndex(e => e.id === instId);
+  const edit = {...records[idx], editedAt: new Date().toISOString()};
+  if (ei >= 0) edits[ei] = edit; else edits.push(edit);
+  localStorage.setItem('coinhub_pending_inst_edits', JSON.stringify(edits));
+  updateSyncBadge();
+  const coin = ALL_COINS.find(c => c.variantCode === variantCode);
+  addAuditLog({type:'inst_edit', variantCode, coinName: coin ? coin.name : variantCode, before, after: records[idx]});
+  if (coin) { const fi = FILTERED.indexOf(coin); if (fi >= 0) { const panel = document.getElementById('panel-'+fi); if (panel) panel.innerHTML = buildDetailHTML(coin); } }
+}
+
+// ── REMOVE INSTANCE ───────────────────────────────────────────────────────────
+function showRemoveConfirm(instId) {
+  const el = document.getElementById('remove-confirm-' + instId.replace(/-/g,'_'));
+  if (el) el.style.display = 'flex';
+}
+function cancelRemoveConfirm(instId) {
+  const el = document.getElementById('remove-confirm-' + instId.replace(/-/g,'_'));
+  if (el) el.style.display = 'none';
+}
+function removeInstance(variantCode, instId) {
+  if (GUEST_MODE) return;
+  const records = INSTANCE_DATA[variantCode];
+  if (!records) return;
+  const idx = records.findIndex(r => r.id === instId);
+  if (idx < 0) return;
+  const before = {...records[idx]};
+  records.splice(idx, 1);
+  const coin = ALL_COINS.find(c => c.variantCode === variantCode);
+  if (coin) { coin.instCount = Math.max(0, coin.instCount - 1); if (coin.instCount === 0) coin.status = 'Need'; }
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+  const removal = {id: instId, variantCode, removedAt: new Date().toISOString()};
+  removals.push(removal);
+  localStorage.setItem('coinhub_pending_inst_removals', JSON.stringify(removals));
+  updateSyncBadge();
+  addAuditLog({type:'inst_remove', variantCode, coinName: coin ? coin.name : variantCode, before});
+  if (coin) {
+    const fi = FILTERED.indexOf(coin);
+    if (fi >= 0) {
+      const panel = document.getElementById('panel-'+fi);
+      if (panel) panel.innerHTML = buildDetailHTML(coin);
+      const row = document.getElementById('row-'+fi);
+      if (row) {
+        const qty = row.querySelector('.inline-qty');
+        if (qty) { qty.className = 'inline-qty '+(coin.instCount>0?'has-inst':'zero-qty'); qty.textContent = coin.instCount>0?'×'+coin.instCount:(coin.status==='Need'?'need':coin.status==='List'?'want':'–'); }
+        const badge = row.querySelector('.sbadge');
+        if (badge) { badge.className = 'sbadge '+(coin.status||'Unknown'); badge.textContent = coin.status||'?'; }
+      }
+    }
+  }
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+}
+
+// ── EDIT VARIANT ──────────────────────────────────────────────────────────────
+function toggleEditVariantForm(variantCode) {
+  const form = document.getElementById('edit-variant-form-' + variantCode.replace(/[^a-zA-Z0-9]/g,'_'));
+  if (form) form.classList.toggle('open');
+}
+function cancelEditVariant(variantCode) {
+  const form = document.getElementById('edit-variant-form-' + variantCode.replace(/[^a-zA-Z0-9]/g,'_'));
+  if (form) form.classList.remove('open');
+}
+function saveEditVariant(variantCode) {
+  if (GUEST_MODE) return;
+  const fid = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
+  const form = document.getElementById('edit-variant-form-' + fid);
+  if (!form) return;
+  const coin = ALL_COINS.find(c => c.variantCode === variantCode);
+  if (!coin) return;
+  const before = {name: coin.name, collection: coin.collection, status: coin.status};
+  coin.name = form.querySelector('[name=name]').value.trim() || coin.name;
+  coin.collection = form.querySelector('[name=collection]').value.trim() || coin.collection;
+  coin.status = form.querySelector('[name=status]').value;
+  const after = {name: coin.name, collection: coin.collection, status: coin.status};
+  const edits = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+  const ei = edits.findIndex(e => e.variantCode === variantCode);
+  const edit = {variantCode, ...after, editedAt: new Date().toISOString()};
+  if (ei >= 0) edits[ei] = edit; else edits.push(edit);
+  localStorage.setItem('coinhub_pending_variant_edits', JSON.stringify(edits));
+  addAuditLog({type:'variant_edit', variantCode, coinName: coin.name, before, after});
+  const fi = FILTERED.indexOf(coin);
+  if (fi >= 0) {
+    const panel = document.getElementById('panel-'+fi);
+    if (panel) panel.innerHTML = buildDetailHTML(coin);
+    const row = document.getElementById('row-'+fi);
+    if (row) {
+      const nameEl = row.querySelector('.coin-name-inline'); if (nameEl) nameEl.textContent = coin.name;
+      const collEl = row.querySelector('.inline-collection'); if (collEl) collEl.textContent = coin.collection;
+      const badge = row.querySelector('.sbadge'); if (badge) { badge.className = 'sbadge '+(coin.status||'Unknown'); badge.textContent = coin.status||'?'; }
+      const qty = row.querySelector('.inline-qty'); if (qty) { qty.className = 'inline-qty '+(coin.instCount>0?'has-inst':'zero-qty'); qty.textContent = coin.instCount>0?'×'+coin.instCount:(coin.status==='Need'?'need':coin.status==='List'?'want':'–'); }
+    }
+  }
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+  document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
+}
+
+// ── DELETE VARIANT ───────────────────────────────────────────────────────────
+function confirmDeleteVariant(variantCode) {
+  if (GUEST_MODE) return;
+  const vcSafe = variantCode.replace(/[^a-zA-Z0-9]/g,'_');
+  const el = document.getElementById('delete-variant-confirm-' + vcSafe);
+  if (el) el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function deleteVariant(variantCode) {
+  if (GUEST_MODE) return;
+  const coin = ALL_COINS.find(c => c.variantCode === variantCode);
+  if (!coin) return;
+  if (coin.instCount > 0) {
+    alert('Cannot delete a variant that has instances. Remove all instances first.');
+    return;
+  }
+  // Remove from ALL_COINS
+  const ai = ALL_COINS.indexOf(coin);
+  if (ai >= 0) ALL_COINS.splice(ai, 1);
+  // Persist deletion — coinhub_deleted_variants is the permanent UI filter
+  const deleted = JSON.parse(localStorage.getItem('coinhub_deleted_variants') || '[]');
+  if (!deleted.includes(variantCode)) deleted.push(variantCode);
+  localStorage.setItem('coinhub_deleted_variants', JSON.stringify(deleted));
+  // coinhub_pending_deletions is the sync queue (cleared on approve/dismiss)
+  const pending = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+  if (!pending.includes(variantCode)) pending.push(variantCode);
+  localStorage.setItem('coinhub_pending_deletions', JSON.stringify(pending));
+  updateSyncBadge();
+  addAuditLog({type:'variant_edit', variantCode, coinName: coin.name, before: {status: coin.status}, after: {status: 'DELETED'}});
+  // Re-render
+  applyFilters();
+  document.getElementById('hGot').textContent = ALL_COINS.filter(c=>c.status==='Got').length;
+  document.getElementById('hNeed').textContent = ALL_COINS.filter(c=>c.status==='Need').length;
+  document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
+  document.getElementById('hTotalN').textContent = ALL_COINS.length;
+}
+
+// ── NOTION SYNC QUEUE ────────────────────────────────────────────────────────
+function getPendingCount() {
+  const insts    = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  const edits    = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+  const vEdits   = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+  const deleted  = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+  return insts.length + edits.length + removals.length + vEdits.length + deleted.length;
+}
+
+function updateSyncBadge() {
+  const count = getPendingCount();
+  const badge = document.getElementById('syncBadge');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-block' : 'none'; }
+  const tabBadge = document.getElementById('syncPushBadge');
+  if (tabBadge) { tabBadge.textContent = count; tabBadge.style.display = count > 0 ? 'inline-block' : 'none'; }
+}
+
+function showSyncQueue() {
+  if (GUEST_MODE) return;
+  document.getElementById('syncModalBg').classList.add('open');
+  renderSyncQueue();
+  _syncRefreshPullUI();
+}
+
+function closeSyncQueue() {
+  document.getElementById('syncModalBg').classList.remove('open');
+}
+
+function renderSyncQueue() {
+  const body = document.getElementById('syncBody');
+  const insts    = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  const edits    = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+  const vEdits   = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+  const deleted  = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+
+  const total = insts.length + edits.length + removals.length + vEdits.length + deleted.length;
+  if (total === 0) {
+    body.innerHTML = '<div class="sync-empty">No pending changes — Notion is up to date.</div>';
+    document.getElementById('approveAllBtn').style.display = 'none';
+    return;
+  }
+  document.getElementById('approveAllBtn').style.display = '';
+
+  let html = '';
+
+  insts.forEach(inst => {
+    const coin = ALL_COINS.find(c => c.variantCode === inst.variantCode);
+    const name = coin ? coin.name : inst.variantCode;
+    html += `<div class="sync-item">
+      <div class="sync-item-head">
+        <span class="sync-type-badge add">Add Instance</span>
+        <span class="sync-item-coin">${name}</span>
+      </div>
+      <div class="sync-item-detail">${inst.id} · ${inst.cond||'—'} · ${inst.ptype||'—'} · ${inst.s1||'—'} ${inst.s2||''} ${inst.s3||''}</div>
+      <div class="sync-item-actions">
+        <button class="sync-approve-btn" onclick="approveSyncItem('add_instance','${inst.id}')">✓ Approve</button>
+        <button class="sync-dismiss-btn" onclick="dismissSyncItem('add_instance','${inst.id}')">Dismiss</button>
+      </div>
+    </div>`;
+  });
+
+  edits.forEach(edit => {
+    const coin = ALL_COINS.find(c => c.variantCode === edit.variantCode);
+    const name = coin ? coin.name : edit.variantCode;
+    html += `<div class="sync-item">
+      <div class="sync-item-head">
+        <span class="sync-type-badge edit">Edit Instance</span>
+        <span class="sync-item-coin">${name}</span>
+      </div>
+      <div class="sync-item-detail">${edit.id} · ${edit.cond||'—'} · ${edit.ptype||'—'} · ${edit.s1||'—'} ${edit.s2||''} ${edit.s3||''}</div>
+      <div class="sync-item-actions">
+        <button class="sync-approve-btn" onclick="approveSyncItem('edit_instance','${edit.id}')">✓ Approve</button>
+        <button class="sync-dismiss-btn" onclick="dismissSyncItem('edit_instance','${edit.id}')">Dismiss</button>
+      </div>
+    </div>`;
+  });
+
+  removals.forEach(r => {
+    const coin = ALL_COINS.find(c => c.variantCode === r.variantCode);
+    const name = coin ? coin.name : r.variantCode;
+    html += `<div class="sync-item">
+      <div class="sync-item-head">
+        <span class="sync-type-badge remove">Remove Instance</span>
+        <span class="sync-item-coin">${name}</span>
+      </div>
+      <div class="sync-item-detail">${r.id}</div>
+      <div class="sync-item-actions">
+        <button class="sync-approve-btn" onclick="approveSyncItem('remove_instance','${r.id}')">✓ Approve</button>
+        <button class="sync-dismiss-btn" onclick="dismissSyncItem('remove_instance','${r.id}')">Dismiss</button>
+      </div>
+    </div>`;
+  });
+
+  vEdits.forEach(e => {
+    html += `<div class="sync-item">
+      <div class="sync-item-head">
+        <span class="sync-type-badge edit">Edit Variant</span>
+        <span class="sync-item-coin">${e.name||e.variantCode}</span>
+      </div>
+      <div class="sync-item-detail">${e.variantCode} · status: ${e.status||'—'} · collection: ${e.collection||'—'}</div>
+      <div class="sync-item-actions">
+        <button class="sync-approve-btn" onclick="approveSyncItem('variant_edit','${e.variantCode}')">✓ Approve</button>
+        <button class="sync-dismiss-btn" onclick="dismissSyncItem('variant_edit','${e.variantCode}')">Dismiss</button>
+      </div>
+    </div>`;
+  });
+
+  deleted.forEach(vc => {
+    html += `<div class="sync-item">
+      <div class="sync-item-head">
+        <span class="sync-type-badge delete">Delete Variant</span>
+        <span class="sync-item-coin">${vc}</span>
+      </div>
+      <div class="sync-item-detail">Remove this variant from Notion entirely</div>
+      <div class="sync-item-actions">
+        <button class="sync-approve-btn" onclick="approveSyncItem('delete_variant','${vc}')">✓ Approve</button>
+        <button class="sync-dismiss-btn" onclick="dismissSyncItem('delete_variant','${vc}')">Dismiss</button>
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function postToQueue(payload) {
+  return fetch('/api/queue', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)}).catch(()=>{});
+}
+
+function approveSyncItem(type, key) {
+  if (type === 'add_instance') {
+    const insts = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+    const item = insts.find(i => i.id === key);
+    if (item) postToQueue({type:'add_instance', variantCode: item.variantCode, inst: item, newStatus:'Got'});
+    localStorage.setItem('coinhub_pending_instances', JSON.stringify(insts.filter(i => i.id !== key)));
+  } else if (type === 'edit_instance') {
+    const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+    const item = edits.find(i => i.id === key);
+    if (item) postToQueue({type:'edit_instance', variantCode: item.variantCode, inst: item});
+    localStorage.setItem('coinhub_pending_inst_edits', JSON.stringify(edits.filter(i => i.id !== key)));
+  } else if (type === 'remove_instance') {
+    const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+    const item = removals.find(i => i.id === key);
+    if (item) postToQueue({type:'remove_instance', variantCode: item.variantCode, instId: item.id});
+    localStorage.setItem('coinhub_pending_inst_removals', JSON.stringify(removals.filter(i => i.id !== key)));
+  } else if (type === 'variant_edit') {
+    const edits = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+    const item = edits.find(i => i.variantCode === key);
+    if (item) postToQueue({type:'variant_edit', ...item});
+    localStorage.setItem('coinhub_pending_variant_edits', JSON.stringify(edits.filter(i => i.variantCode !== key)));
+  } else if (type === 'delete_variant') {
+    postToQueue({type:'delete_variant', variantCode: key, deletedAt: new Date().toISOString()});
+    const pending = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+    localStorage.setItem('coinhub_pending_deletions', JSON.stringify(pending.filter(v => v !== key)));
+    // coinhub_deleted_variants is intentionally kept — it's the permanent UI filter
+  }
+  updateSyncBadge();
+  renderSyncQueue();
+}
+
+function dismissSyncItem(type, key) {
+  if (type === 'add_instance') {
+    const insts = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+    localStorage.setItem('coinhub_pending_instances', JSON.stringify(insts.filter(i => i.id !== key)));
+  } else if (type === 'edit_instance') {
+    const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+    localStorage.setItem('coinhub_pending_inst_edits', JSON.stringify(edits.filter(i => i.id !== key)));
+  } else if (type === 'remove_instance') {
+    const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+    localStorage.setItem('coinhub_pending_inst_removals', JSON.stringify(removals.filter(i => i.id !== key)));
+  } else if (type === 'variant_edit') {
+    const edits = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+    localStorage.setItem('coinhub_pending_variant_edits', JSON.stringify(edits.filter(i => i.variantCode !== key)));
+  } else if (type === 'delete_variant') {
+    const pending = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+    localStorage.setItem('coinhub_pending_deletions', JSON.stringify(pending.filter(v => v !== key)));
+    // coinhub_deleted_variants is intentionally kept — it's the permanent UI filter
+  }
+  updateSyncBadge();
+  renderSyncQueue();
+}
+
+function approveAllSync() {
+  const insts    = JSON.parse(localStorage.getItem('coinhub_pending_instances') || '[]');
+  const edits    = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits') || '[]');
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals') || '[]');
+  const vEdits   = JSON.parse(localStorage.getItem('coinhub_pending_variant_edits') || '[]');
+  const deleted  = JSON.parse(localStorage.getItem('coinhub_pending_deletions') || '[]');
+
+  insts.forEach(i => postToQueue({type:'add_instance', variantCode: i.variantCode, inst: i, newStatus:'Got'}));
+  edits.forEach(i => postToQueue({type:'edit_instance', variantCode: i.variantCode, inst: i}));
+  removals.forEach(i => postToQueue({type:'remove_instance', variantCode: i.variantCode, instId: i.id}));
+  vEdits.forEach(i => postToQueue({type:'variant_edit', ...i}));
+  deleted.forEach(vc => postToQueue({type:'delete_variant', variantCode: vc, deletedAt: new Date().toISOString()}));
+
+  localStorage.removeItem('coinhub_pending_instances');
+  localStorage.removeItem('coinhub_pending_inst_edits');
+  localStorage.removeItem('coinhub_pending_inst_removals');
+  localStorage.removeItem('coinhub_pending_variant_edits');
+  localStorage.removeItem('coinhub_pending_deletions');
+  // coinhub_deleted_variants is intentionally kept as the permanent UI filter
+
+  updateSyncBadge();
+  renderSyncQueue();
+  _saveAuditLogToServer();
+}
+
+// ── BIDIRECTIONAL NOTION SYNC ─────────────────────────────────────────────────
+
+// Build a one-time index: instance ID → variant code (avoid O(n) scan per pull)
+let _iidIndex = null;
+function _getIidIndex() {
+  if (_iidIndex) return _iidIndex;
+  _iidIndex = {};
+  for (const vc in INSTANCE_DATA) {
+    INSTANCE_DATA[vc].forEach(r => { _iidIndex[r.id] = vc; });
+  }
+  return _iidIndex;
+}
+
+// Apply locally-cached Notion overrides to in-memory INSTANCE_DATA (called on init)
+function _applyNotionOverrides() {
+  const overrides = JSON.parse(localStorage.getItem('coinhub_notion_overrides') || '{}');
+  const idx = _getIidIndex();
+  Object.entries(overrides).forEach(([iid, d]) => {
+    const vc = idx[iid];
+    if (!vc) return;
+    const rec = (INSTANCE_DATA[vc] || []).find(r => r.id === iid);
+    if (!rec) return;
+    if (d.cond)  rec.cond  = d.cond;
+    if (d.s1  !== undefined) rec.s1   = d.s1;
+    if (d.s2  !== undefined) rec.s2   = d.s2;
+    if (d.s3  !== undefined) rec.s3   = d.s3;
+    if (d.notes !== undefined) rec.notes = d.notes;
+    if (d.ptype) rec.ptype = d.ptype;
+  });
+}
+
+// Re-apply new instances pulled from Notion (persisted across page loads)
+function _applyNotionNewInstances() {
+  const stored = JSON.parse(localStorage.getItem('coinhub_notion_new_instances') || '{}');
+  Object.entries(stored).forEach(([vc, insts]) => {
+    if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+    insts.forEach(inst => {
+      if (INSTANCE_DATA[vc].find(r => r.id === inst.id)) return;
+      INSTANCE_DATA[vc].push(inst);
+      if (_iidIndex) _iidIndex[inst.id] = vc;
+      const coin = ALL_COINS.find(c => c.variantCode === vc);
+      if (coin) { coin.instCount++; coin.status = 'Got'; }
+    });
+  });
+}
+
+// Switch tabs in sync modal
+function _syncShowTab(tab) {
+  const isPush = tab === 'push';
+  document.getElementById('syncTabPush').classList.toggle('active', isPush);
+  document.getElementById('syncTabPull').classList.toggle('active', !isPush);
+  document.getElementById('syncPushPanel').style.display = isPush ? 'flex' : 'none';
+  document.getElementById('syncPullPanel').style.display = isPush ? 'none' : '';
+  if (!isPush) _syncRefreshPullUI();
+}
+
+// Restore pull UI state from localStorage
+function _syncRefreshPullUI() {
+  const last = localStorage.getItem('coinhub_last_pull_display') || 'Never';
+  const el = document.getElementById('syncLastPull');
+  if (el) el.textContent = last;
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
+  document.querySelectorAll('.sync-interval-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
+  });
+}
+
+// Auto-sync timer state
+let _syncPullTimer = null;
+let _syncCountdownTimer = null;
+let _syncCountdownSecs = 0;
+
+function _syncSetInterval(mins) {
+  localStorage.setItem('coinhub_sync_interval', mins);
+  document.querySelectorAll('.sync-interval-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.mins) === mins);
+  });
+  // Clear existing timers
+  if (_syncPullTimer)    { clearInterval(_syncPullTimer);    _syncPullTimer    = null; }
+  if (_syncCountdownTimer) { clearInterval(_syncCountdownTimer); _syncCountdownTimer = null; }
+  const nextLabel = document.getElementById('syncNextLabel');
+  const nextEl    = document.getElementById('syncNextPull');
+  if (nextLabel) nextLabel.style.display = 'none';
+  if (nextEl)    nextEl.style.display    = 'none';
+  if (mins > 0) {
+    _syncCountdownSecs = mins * 60;
+    _syncPullTimer = setInterval(() => {
+      _syncPullNow(true);
+      _syncCountdownSecs = mins * 60;
+    }, mins * 60 * 1000);
+    _syncCountdownTimer = setInterval(() => {
+      _syncCountdownSecs = Math.max(0, _syncCountdownSecs - 1);
+      const m = Math.floor(_syncCountdownSecs / 60);
+      const s = _syncCountdownSecs % 60;
+      if (nextEl) nextEl.textContent = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }, 1000);
+    if (nextLabel) nextLabel.style.display = '';
+    if (nextEl)    nextEl.style.display    = '';
+  }
+}
+
+// Restore auto-sync on page load
+function _syncRestoreAutoSync() {
+  const mins = parseInt(localStorage.getItem('coinhub_sync_interval') || '0');
+  if (mins > 0) _syncSetInterval(mins);
+}
+
+function _syncAddLog(time, msg) {
+  const log = document.getElementById('syncPullLog');
+  if (!log) return;
+  log.style.display = '';
+  const entry = document.createElement('div');
+  entry.className = 'sync-pull-log-entry';
+  entry.innerHTML = `<span class="sync-pull-log-time">${time}</span><span>${msg}</span>`;
+  log.insertBefore(entry, log.firstChild);
+  while (log.children.length > 12) log.removeChild(log.lastChild);
+}
+
+async function _syncPullNow(isAuto) {
+  const btn = document.getElementById('syncPullNowBtn');
+  if (btn) { btn.textContent = '⏳ Pulling…'; btn.disabled = true; }
+  const since = localStorage.getItem('coinhub_last_notion_pull') || '';
+  try {
+    const url = '/api/notion-pull' + (since ? '?since=' + encodeURIComponent(since) : '');
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    const overrides = JSON.parse(localStorage.getItem('coinhub_notion_overrides') || '{}');
+    const newInstsByVc = JSON.parse(localStorage.getItem('coinhub_notion_new_instances') || '{}');
+    const idx = _getIidIndex();
+    let updated = 0, scUpdated = 0, newInsts = 0;
+
+    (data.instances || []).forEach(inst => {
+      const iid = inst.id;
+      if (!iid) return;
+      const vc = idx[iid];
+      if (vc) {
+        // Known instance — update fields
+        const rec = (INSTANCE_DATA[vc] || []).find(r => r.id === iid);
+        if (rec) {
+          if (inst.cond)  rec.cond  = inst.cond;
+          if (inst.s1  !== undefined) rec.s1   = inst.s1;
+          if (inst.s2  !== undefined) rec.s2   = inst.s2;
+          if (inst.s3  !== undefined) rec.s3   = inst.s3;
+          if (inst.notes !== undefined) rec.notes = inst.notes;
+          if (inst.ptype) rec.ptype = inst.ptype;
+          updated++;
+        }
+        // Persist override for next page load
+        overrides[iid] = { cond: inst.cond, s1: inst.s1, s2: inst.s2, s3: inst.s3, notes: inst.notes, ptype: inst.ptype, lastEdited: inst.lastEdited };
+      } else if (inst.variantCode) {
+        // New instance not yet in the app — add it
+        const newVc = inst.variantCode;
+        if (!INSTANCE_DATA[newVc]) INSTANCE_DATA[newVc] = [];
+        if (!INSTANCE_DATA[newVc].find(r => r.id === iid)) {
+          const newRec = { id: iid, loc: '', s1: inst.s1 || '', s2: inst.s2 || '', s3: inst.s3 || '', cond: inst.cond || '', ptype: inst.ptype || '', notes: inst.notes || '' };
+          INSTANCE_DATA[newVc].push(newRec);
+          idx[iid] = newVc; // keep index current
+          const coin = ALL_COINS.find(c => c.variantCode === newVc);
+          if (coin) { coin.instCount++; coin.status = 'Got'; }
+          if (!newInstsByVc[newVc]) newInstsByVc[newVc] = [];
+          newInstsByVc[newVc].push(newRec);
+          newInsts++;
+        }
+      }
+      // Pull stocktake date only if not already set locally
+      if (inst.lastStocktake && !_scChecked[iid]) {
+        _scChecked[iid] = inst.lastStocktake;
+        scUpdated++;
+      }
+    });
+
+    localStorage.setItem('coinhub_notion_overrides', JSON.stringify(overrides));
+    localStorage.setItem('coinhub_notion_new_instances', JSON.stringify(newInstsByVc));
+    localStorage.setItem('coinhub_last_notion_pull', data.pulledAt);
+    if (scUpdated) _scSave();
+
+    const now = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    localStorage.setItem('coinhub_last_pull_display', now);
+    const lastEl = document.getElementById('syncLastPull');
+    if (lastEl) lastEl.textContent = now;
+
+    const n = (data.instances || []).length;
+    const newMsg = newInsts ? `, ${newInsts} new coin${newInsts > 1 ? 's' : ''} added` : '';
+    _syncAddLog(now, isAuto ? `Auto: ${n} checked, ${updated} updated${newMsg}` : `${n} checked, ${updated} updated${newMsg}${scUpdated ? `, ${scUpdated} stocktake dates` : ''}`);
+    if (!isAuto) alert(`Pull complete.\n${n} records checked, ${updated} updated in app.${newMsg ? '\n' + newInsts + ' new coin instance' + (newInsts > 1 ? 's' : '') + ' added from Notion.' : ''}${scUpdated ? `\n${scUpdated} stocktake dates imported.` : ''}`);
+    if (updated || newInsts || scUpdated) render();
+  } catch(e) {
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    _syncAddLog(t, 'Error: ' + e.message);
+    if (!isAuto) alert('Pull failed: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '⇩ Pull Now'; btn.disabled = false; }
+  }
+}
+
+async function _scSyncToNotion() {
+  const btn = document.getElementById('syncStocktakePushBtn');
+  if (btn) { btn.textContent = '⏳ Pushing…'; btn.disabled = true; }
+  try {
+    const resp = await fetch('/api/notion-stocktake-push', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({checks: _scChecked})
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    const errs = data.errors?.length ? `\n${data.errors.length} error(s): ${data.errors.slice(0,3).join('; ')}` : '';
+    alert(`Stocktake sync complete.\n${data.updated} updated, ${data.skipped} skipped.${errs}`);
+    const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    _syncAddLog(t, `Stocktake push: ${data.updated} updated, ${data.skipped} skipped`);
+  } catch(e) {
+    alert('Stocktake push failed: ' + e.message);
+  } finally {
+    if (btn) { btn.textContent = '⇧ Push Stocktake Dates'; btn.disabled = false; }
+  }
+}
+
+function _saveAuditLogToServer() {
+  const log = JSON.parse(localStorage.getItem('coinhub_audit_log') || '[]');
+  if (!log.length) return;
+  fetch('/api/save-audit-log', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(log)}).catch(()=>{});
+}
+
+function copyQueuePrompt() {
+  navigator.clipboard.writeText('Please process the sync queue').then(() => {
+    const btn = document.getElementById('copyPromptBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function processQueueNow() {
+  const btn = document.getElementById('processNowBtn');
+  btn.textContent = '⏳ Processing…';
+  btn.disabled = true;
+  fetch('/api/process-queue', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
+    .then(r => r.json())
+    .then(data => {
+      const errs = data.errors && data.errors.length ? '\n\nErrors:\n' + data.errors.join('\n') : '';
+      alert(`Done.\n${data.processed} item(s) processed, ${data.remaining||0} remaining.${errs}`);
+      btn.textContent = '⚡ Process Now';
+      btn.disabled = false;
+      _saveAuditLogToServer();
+    })
+    .catch(e => {
+      alert('Failed to process queue: ' + e);
+      btn.textContent = '⚡ Process Now';
+      btn.disabled = false;
+    });
+}
+
+// ── STATS DASHBOARD ──────────────────────────────────────────────────────────
+function showStats() {
+  document.getElementById('statsModalBg').classList.add('open');
+  renderStats();
+}
+function closeStats() {
+  document.getElementById('statsModalBg').classList.remove('open');
+}
+function renderStats() {
+  const body = document.getElementById('statsBody');
+  const got = ALL_COINS.filter(c=>c.status==='Got');
+  const need = ALL_COINS.filter(c=>c.status==='Need');
+  const list = ALL_COINS.filter(c=>c.status==='List');
+  const total = ALL_COINS.length;
+  const pct = v => total ? Math.round(v/total*100) : 0;
+
+  // ── SUMMARY ────────────────────────────────────────────────────────────────
+  let html = `<div>
+    <div class="stats-section-title">Summary</div>
+    <div class="stats-summary">
+      <div class="stats-big s-got"><div class="stats-big-num">${got.length}</div><div class="stats-big-label">Got · ${pct(got.length)}%</div></div>
+      <div class="stats-big s-need"><div class="stats-big-num">${need.length}</div><div class="stats-big-label">Need · ${pct(need.length)}%</div></div>
+      <div class="stats-big s-list"><div class="stats-big-num">${list.length}</div><div class="stats-big-label">Want · ${pct(list.length)}%</div></div>
+      <div class="stats-big"><div class="stats-big-num">${total}</div><div class="stats-big-label">Total variants</div></div>
+    </div>
+  </div>`;
+
+  // ── COLLECTIONS ────────────────────────────────────────────────────────────
+  const collMap = {};
+  ALL_COINS.forEach(c => {
+    if (!collMap[c.collection]) collMap[c.collection] = {got:0, total:0};
+    collMap[c.collection].total++;
+    if (c.status==='Got') collMap[c.collection].got++;
+  });
+  const colls = Object.entries(collMap).sort((a,b) => {
+    const pa = a[1].total ? a[1].got/a[1].total : 0;
+    const pb = b[1].total ? b[1].got/b[1].total : 0;
+    return pb-pa || b[1].total-a[1].total;
+  });
+  html += `<div><div class="stats-section-title">Collection Completion</div>`;
+  colls.forEach(([name, d]) => {
+    const p = d.total ? Math.round(d.got/d.total*100) : 0;
+    const complete = d.got === d.total && d.total > 0;
+    html += `<div class="stat-bar-row">
+      <span class="stat-bar-label" title="${name}">${name}</span>
+      <div class="stat-bar-track"><div class="stat-bar-fill${complete?' complete':''}" style="width:${p}%"></div></div>
+      <span class="stat-bar-frac">${d.got}/${d.total}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── DENOMINATIONS + DECADES side-by-side ───────────────────────────────────
+  // Denominations
+  const denomMap = {};
+  ALL_COINS.forEach(c => {
+    if (!denomMap[c.denom]) denomMap[c.denom] = {got:0, total:0};
+    denomMap[c.denom].total++;
+    if (c.status==='Got') denomMap[c.denom].got++;
+  });
+  const maxDenomGot = Math.max(...Object.values(denomMap).map(d=>d.got), 1);
+  const denomsSorted = Object.entries(denomMap).sort((a,b) => {
+    const ai = DENOM_ORDER.indexOf(a[0]), bi = DENOM_ORDER.indexOf(b[0]);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+  let denomHtml = `<div><div class="stats-section-title">By Denomination</div>`;
+  denomsSorted.forEach(([denom, d]) => {
+    const w = Math.round(d.got/maxDenomGot*100);
+    const complete = d.got===d.total && d.total>0;
+    denomHtml += `<div class="stat-bar-row">
+      <span class="stat-bar-label mono">${denom}</span>
+      <div class="stat-bar-track"><div class="stat-bar-fill${complete?' complete':''}" style="width:${w}%"></div></div>
+      <span class="stat-bar-frac">${d.got}/${d.total}</span>
+    </div>`;
+  });
+  denomHtml += `</div>`;
+
+  // Decades (Got coins only)
+  const decadeMap = {};
+  got.forEach(c => {
+    if (!c.year) return;
+    const dec = Math.floor(c.year/10)*10;
+    decadeMap[dec] = (decadeMap[dec]||0)+1;
+  });
+  const decades = Object.entries(decadeMap).sort((a,b)=>+a[0]-+b[0]);
+  let decadeHtml = `<div><div class="stats-section-title">Got — by Decade</div><div class="decade-grid">`;
+  decades.forEach(([dec, cnt]) => {
+    decadeHtml += `<div class="decade-block"><div class="decade-block-num">${cnt}</div><div class="decade-block-label">${dec}s</div></div>`;
+  });
+  decadeHtml += `</div></div>`;
+
+  html += `<div class="stats-two-col">${denomHtml}${decadeHtml}</div>`;
+
+  // ── CONDITION GRADES ────────────────────────────────────────────────────────
+  const condMap = {};
+  Object.values(INSTANCE_DATA).forEach(insts => {
+    insts.forEach(inst => {
+      const c = (inst.cond||'').trim() || '—';
+      condMap[c] = (condMap[c]||0)+1;
+    });
+  });
+  const maxCond = Math.max(...Object.values(condMap), 1);
+  const conds = Object.entries(condMap).sort((a,b)=>b[1]-a[1]);
+  html += `<div><div class="stats-section-title">Condition Grades — all instances</div>`;
+  conds.forEach(([cond, cnt]) => {
+    const w = Math.round(cnt/maxCond*100);
+    html += `<div class="stat-bar-row">
+      <span class="stat-bar-label mono" style="flex:0 0 110px">${cond}</span>
+      <div class="stat-bar-track"><div class="stat-bar-fill gold" style="width:${w}%"></div></div>
+      <span class="stat-bar-frac">${cnt}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  body.innerHTML = html;
+}
+
+window.addEventListener('load', () => init());
+</script>
+<div id="version-badge" style="position:fixed;bottom:8px;right:8px;background:#8B7355;color:#fff;font-size:10px;padding:3px 7px;border-radius:3px;z-index:9999;opacity:0.7;font-family:monospace">v2026-03-15-STOCKCHECK2</div>
+</body>
+</html>
