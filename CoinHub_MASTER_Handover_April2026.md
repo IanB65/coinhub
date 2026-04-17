@@ -831,6 +831,61 @@ auth_server.py                       ← Old Python auth server (no longer used 
 
 ---
 
+## COINHUB GS — GOOGLE SHEETS EDITION
+
+A second version of CoinHub that fetches data live from Google Sheets at runtime. Runs alongside `CoinHub.html` on the same Vercel deployment.
+
+### URLs
+- **CoinHub (original):** `coins.ghghome.co.uk/CoinHub.html` — embedded data, Notion-backed
+- **CoinHub GS:** `coins.ghghome.co.uk/CoinHub_GS.html` — live from Google Sheets
+
+### Google Sheet
+- **URL:** https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit
+- **File on drive:** `I:\My Drive\Coins\Coinhub.gsheet` (also `I:\My Drive\Coins\CoinHub_Data.xlsx`)
+- **Sharing required:** "Anyone with the link can view" — must be set or the page shows a connection error
+- **Sheet ID:** `1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4`
+
+### Sheet tabs used by CoinHub GS
+| Sheet | Purpose |
+|---|---|
+| Variants | All coin variants — variantCode, name, denomination, collection, monarch, year, status, imageUrl |
+| Instances | All physical instances — instanceId, variantCode, location, storage1–3, condition, preservationType |
+| Images | COTUK_MAP — variantCode → imageUrl |
+
+### How it works
+On page load, CoinHub_GS fetches three CSV exports from Google Sheets in parallel using the GViz endpoint:
+```
+https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Variants
+https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Instances
+https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Images
+```
+Parses each CSV, builds `COTUK_MAP`, `INSTANCE_DATA`, and `ALL_COINS` in memory, then runs the same UI as CoinHub. No rebuild needed when data changes — just edit the sheet and refresh the page.
+
+### Differences from CoinHub.html
+| Feature | CoinHub | CoinHub GS |
+|---|---|---|
+| Data source | Embedded in HTML | Fetched live from Google Sheets |
+| File size | ~530KB | ~146KB |
+| Data update | Requires HTML rebuild | Edit sheet → refresh page |
+| Sync button | ✅ (Notion sync) | ❌ Removed |
+| Admin button | ✅ | ❌ Removed |
+| Edit in Sheets button | ❌ | ✅ Opens Google Sheet |
+| Logo subtitle | — | "LIVE · GOOGLE SHEETS" |
+| Instance add/edit/remove | ✅ | ❌ Read-only (edit via sheet) |
+
+### How to rebuild CoinHub_GS.html from scratch
+
+If `CoinHub_GS.html` is lost or needs regenerating, tell Claude:
+
+> "Please rebuild CoinHub_GS.html from CoinHub.html. Take `C:/Users/ian/Documents/coinhub/CoinHub.html` as the base, remove the three embedded data sections (COTUK_MAP, INSTANCE_DATA, and the RAW array inside buildCoinData), replace them with a live fetch from Google Sheets ID `1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4` using the GViz CSV endpoint for sheets named Variants, Instances, and Images. Parse CSV with a proper RFC 4180 parser. Build COTUK_MAP from Images sheet (col A=variantCode, col B=imageUrl), INSTANCE_DATA from Instances sheet, and ALL_COINS from Variants sheet. Make init() async and await loadFromSheets(). Remove the Sync button and Admin link. Add an Edit in Sheets button linking to the sheet. Change the title to CoinHub GS and add a LIVE · GOOGLE SHEETS subtitle. Save as CoinHub_GS.html."
+
+### Backup locations
+- **GitHub:** `IanB65/coinhub` repo, `main` branch — always the latest deployed version
+- **Local:** `C:/Users/ian/Documents/coinhub/CoinHub_GS.html`
+- **Data:** `I:\My Drive\Coins\CoinHub_Data.xlsx` and `Coinhub.gsheet` — Google Drive keeps full version history automatically
+
+---
+
 ## SCHEDULED TASKS (Claude Code)
 
 | Task ID | Schedule | Status | Purpose |
