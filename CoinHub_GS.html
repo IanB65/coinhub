@@ -134,6 +134,10 @@ body.guest-mode .sticky-top{top:82px}
 .results-bar{padding:.8rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;background:var(--paper)}
 .results-count{font-size:.62rem;color:var(--muted);letter-spacing:.06em}
 .results-count b{color:var(--ink)}
+.page-btn{padding:.25rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--ink);transition:all .12s}
+.page-btn:hover:not(:disabled){border-color:var(--gold2);color:var(--gold)}
+.page-btn:disabled{opacity:.35;cursor:default}
+.page-info{color:var(--muted);font-size:.6rem}
 .sort-row{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:.62rem;color:var(--muted)}
 .sort-btn{padding:.25rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);transition:all .12s}
 .sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
@@ -408,7 +412,7 @@ body.guest-mode .sticky-top{top:82px}
 .decade-block-label{font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.15rem}
 
 /* coin image */
-.coin-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);background:var(--paper3);flex-shrink:0}
+.coin-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid var(--border);background:var(--paper3) url("data:image/svg+xml,%3Csvg viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='24' cy='24' r='23' fill='%23E4DFD2' stroke='%23C8BFA8' stroke-width='1'/%3E%3Ccircle cx='24' cy='24' r='19' fill='none' stroke='%23C8BFA8' stroke-width='.75' stroke-dasharray='2.5 2'/%3E%3C/svg%3E") center/cover no-repeat;flex-shrink:0}
 .coin-thumb-ph{width:48px;height:48px;flex-shrink:0}
 
 #tableWrap{transition:opacity .1s ease}
@@ -490,6 +494,7 @@ body.guest-mode .sticky-top{top:82px}
     <button class="log-btn" onclick="showChangeLog()" title="Change Log"><span class="btn-icon">◷</span><span class="btn-text">Change Log</span></button>
     <button class="log-btn" onclick="showStats()" title="Stats"><span class="btn-icon">≋</span><span class="btn-text">Stats</span></button>
     <a class="log-btn" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" title="Edit data in Google Sheets" style="text-decoration:none"><span class="btn-icon">⊞</span><span class="btn-text">Sheets</span></a>
+    <button class="log-btn" onclick="gsRefreshCache()" title="Force re-fetch from Google Sheets"><span class="btn-icon">↺</span><span class="btn-text">Refresh</span></button>
     <button class="log-btn" id="logoutBtn" onclick="doLogout()" title="Sign Out"><span class="btn-icon">⏻</span><span class="btn-text">Sign Out</span></button>
   </div>
 </header>
@@ -626,7 +631,7 @@ body.guest-mode .sticky-top{top:82px}
     <div class="sticky-top">
     <div class="search-refine-bar">
       <button class="mobile-filter-btn" id="mobileFilterBtn" onclick="toggleMobileFilters()" aria-expanded="false" aria-controls="filterPanel">⊞ Filters</button>
-      <input type="text" id="searchInput" placeholder="Search name, variant, year…" oninput="applyFilters()" inputmode="search">
+      <input type="text" id="searchInput" placeholder="Search name, variant, year…" oninput="debouncedSearch()" inputmode="search">
       <div class="refine-selects">
         <span class="refine-label">Year</span>
         <select id="yearSel" onchange="applyFilters()"><option value="">All</option></select>
@@ -637,7 +642,8 @@ body.guest-mode .sticky-top{top:82px}
       </div>
     </div>
     <div class="results-bar">
-      <div class="results-count">Showing <b id="countShown">–</b> of <b id="countTotal">–</b></div>
+      <div class="results-count">Showing <b id="countShown">–</b> of <b id="countTotal">–</b> &nbsp;·&nbsp; <b id="countQty">–</b> coins owned</div>
+      <div id="pagination" style="display:flex;align-items:center;gap:.5rem;font-size:.62rem;font-family:'DM Mono',monospace"></div>
       <div class="sort-row">
         Sort:
         <button class="sort-btn active" data-sort="year" onclick="setSort('year')">Year</button>
@@ -676,60 +682,45 @@ body.guest-mode .sticky-top{top:82px}
 // Fallback: existing Royal Mint URL stored in RAW[7]
 // Final fallback: denomination placeholder
 
-const GS_BASE = '/api/sheets?tab=';
-
 // These are populated by loadFromSheets() before init() runs
 const COTUK_MAP = {};
 // ALL_COINS is built from fetched variants data
 
-function parseCSV(text) {
-  // Proper RFC 4180 CSV parser -- handles quoted fields, commas in values, escaped quotes
-  const rows = [];
-  let row = [], field = '', inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i], next = text[i+1];
-    if (inQuotes) {
-      if (ch === '"' && next === '"') { field += '"'; i++; }
-      else if (ch === '"') { inQuotes = false; }
-      else { field += ch; }
-    } else {
-      if (ch === '"') { inQuotes = true; }
-      else if (ch === ',') { row.push(field); field = ''; }
-      else if (ch === '\n' || (ch === '\r' && next === '\n')) {
-        row.push(field); field = '';
-        if (row.some(f => f !== '')) rows.push(row);
-        row = [];
-        if (ch === '\r') i++;
-      } else { field += ch; }
-    }
-  }
-  if (field || row.length) { row.push(field); if (row.some(f => f !== '')) rows.push(row); }
-  return rows;
-}
+const GS_CACHE_KEY = 'coinhub_gs_cache';
+const GS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+window.gsRefreshCache = async function() {
+  localStorage.removeItem(GS_CACHE_KEY);
+  location.reload();
+};
 
 async function loadFromSheets() {
   const showStatus = msg => {
     const el = document.getElementById('loadMsg');
     if (el) el.textContent = msg;
   };
+
+  // Try cache first
   try {
-    showStatus('Fetching coin data from Google Sheets…');
-    const [varRes, instRes, imgRes] = await Promise.all([
-      fetch(GS_BASE + 'Variants'),
-      fetch(GS_BASE + 'Instances'),
-      fetch(GS_BASE + 'Images'),
-    ]);
-    if (!varRes.ok || !instRes.ok || !imgRes.ok) throw new Error('Sheet fetch failed — check sharing is set to “Anyone with link can view”');
+    const raw = localStorage.getItem(GS_CACHE_KEY);
+    if (raw) {
+      const { ts, coins, cotuk, instances } = JSON.parse(raw);
+      if (Date.now() - ts < GS_CACHE_TTL) {
+        showStatus('Loading from cache…');
+        Object.assign(COTUK_MAP, cotuk);
+        Object.assign(INSTANCE_DATA, instances);
+        return coins;
+      }
+    }
+  } catch(e) { /* stale or corrupt cache, fall through */ }
 
-    showStatus('Parsing variants…');
-    const varRows = parseCSV(await varRes.text());
+  try {
+    showStatus('Fetching coin data…');
+    const res = await fetch('/api/sheets-all');
+    if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
+
+    const { variants: varRows, instances: instRows, images: imgRows } = await res.json();
     const iVC=0,iName=1,iDenom=2,iColl=3,iMon=4,iYear=5,iStat=6,iImg=7;
-
-    showStatus('Parsing instances…');
-    const instRows = parseCSV(await instRes.text());
-
-    showStatus('Parsing images…');
-    const imgRows = parseCSV(await imgRes.text());
 
     // Build COTUK_MAP
     for (let i = 1; i < imgRows.length; i++) {
@@ -779,13 +770,24 @@ async function loadFromSheets() {
         parsed: parseVariant(vc),
       });
     }
+
+    // Save to cache
+    try {
+      localStorage.setItem(GS_CACHE_KEY, JSON.stringify({
+        ts: Date.now(),
+        coins,
+        cotuk: { ...COTUK_MAP },
+        instances: { ...INSTANCE_DATA },
+      }));
+    } catch(e) { /* quota exceeded, skip cache */ }
+
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `
-      <div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif">
-        <div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load Google Sheets data</div>
-        <div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${e.message}</div>
-        <div style=”color:#888;font-size:.8rem”>Check that GOOGLE_SERVICE_ACCOUNT_JSON is set in Vercel environment variables and the sheet is shared with the service account.</div>
+      <div style=”text-align:center;padding:3rem;font-family:Cormorant Garamond,serif”>
+        <div style=”font-size:1.4rem;color:#9B2335;margin-bottom:1rem”>⚠ Could not load Google Sheets data</div>
+        <div style=”color:#555;font-size:.9rem;margin-bottom:1.5rem”>${e.message}</div>
+        <div style=”color:#888;font-size:.8rem”>Check that GOOGLE_API_KEY and GOOGLE_SHEET_ID are set in Vercel environment variables.</div>
       </div>`;
     throw e;
   }
@@ -853,6 +855,8 @@ let STATE = {
   sortDir: 1,
   openId: null,
 };
+let PAGE = 0;
+const PAGE_SIZE = 100;
 
 // ── VARIANT CODE PARSER ────────────────────────────────────────────────────────
 // UK-D-50P-2025-ZOG1- → {type:'D', denom:'50P', year:2025, id:'ZOG1'}
@@ -1147,7 +1151,14 @@ window.clearFilters = function() {
   applyFilters();
 };
 
+let _searchTimer;
+function debouncedSearch() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(applyFilters, 180);
+}
+
 function applyFilters() {
+  PAGE = 0;
   STATE.year = document.getElementById('yearSel').value;
   STATE.monarch = document.getElementById('monarchSel').value;
   STATE.collection = document.getElementById('collectionSel').value;
@@ -1167,9 +1178,8 @@ function applyFilters() {
   });
 
   sortCoins();
-  const wrap = document.getElementById('tableWrap');
-  wrap.style.opacity = '0';
-  setTimeout(() => { renderTable(); updateCollProgress(); wrap.style.opacity = '1'; }, 80);
+  renderTable();
+  updateCollProgress();
 }
 
 function sortCoins() {
@@ -1216,27 +1226,28 @@ function renderTable() {
   const body = document.getElementById('coinBody');
   document.getElementById('countShown').textContent = FILTERED.length;
   document.getElementById('countTotal').textContent = ALL_COINS.length;
+  document.getElementById('countQty').textContent = ALL_COINS.reduce((s,c) => s + (c.instCount||0), 0);
 
   const empty = document.getElementById('emptyState');
-  if (!FILTERED.length) { body.innerHTML=''; empty.style.display='block'; return; }
+  if (!FILTERED.length) { body.innerHTML=''; empty.style.display='block'; renderPagination(); return; }
   empty.style.display='none';
 
-  body.innerHTML = FILTERED.map((c,i) => {
+  const totalPages = Math.ceil(FILTERED.length / PAGE_SIZE);
+  PAGE = Math.max(0, Math.min(PAGE, totalPages - 1));
+  const slice = FILTERED.slice(PAGE * PAGE_SIZE, (PAGE + 1) * PAGE_SIZE);
+
+  body.innerHTML = slice.map((c,i) => {
+    const gi = PAGE * PAGE_SIZE + i;
     const parsed = c.parsed || {};
-    const cotukUrl = COTUK_MAP?.[c.variantCode] || null;
-    const rmUrl = c.imgUrl || null;
-    const imgSrc = cotukUrl || rmUrl;
-    const thumb = imgSrc
-      ? `<img class="coin-thumb" src="${imgSrc}" data-cotuk="${cotukUrl||''}" data-rm="${rmUrl||''}" alt="" onerror="imgFallback(this)" onclick="openLightbox(event,this)">`
-      : `<svg class="coin-thumb-ph" viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="24" cy="24" r="19" fill="none" stroke="#C8BFA8" stroke-width="0.75" stroke-dasharray="2.5 2"/><text x="24" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#8B6914">${c.denom}</text></svg>`;
+    const thumb = `<svg class="coin-thumb-ph" viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="24" cy="24" r="19" fill="none" stroke="#C8BFA8" stroke-width="0.75" stroke-dasharray="2.5 2"/><text x="24" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#8B6914">${c.denom}</text></svg>`;
     const badge = `<span class="sbadge ${c.status||'Unknown'}">${c.status||'?'}</span>`;
     const qtyDisplay = c.instCount > 0
       ? `<div class="qty-wrap has-inst"><span class="qty-num">${c.instCount}</span><span class="qty-label">owned</span></div>`
       : `<div class="qty-wrap"><span class="qty-num zero">–</span><span class="qty-label">${c.status==='Need'?'need':c.status==='List'?'list':'none'}</span></div>`;
     const monarchShort = (c.monarch||'').replace('Queen Elizabeth II','QEII').replace('King Charles III','KCIII').replace('Queen Victoria','QVic').replace('King Edward VII','KVII');
 
-    return `<tr class="coin-row" id="row-${i}">
-      <td style="padding-left:.6rem;width:28px"><button class="expand-btn" id="btn-${i}" onclick="toggleDetail(${i})">›</button></td>
+    return `<tr class="coin-row" id="row-${gi}">
+      <td style="padding-left:.6rem;width:28px"><button class="expand-btn" id="btn-${gi}" onclick="toggleDetail(${gi})">›</button></td>
       <td style="width:56px">${thumb}</td>
       <td class="main-cell">
         <div class="main-cell-top">
@@ -1254,11 +1265,31 @@ function renderTable() {
       <td class="hide-mobile" style="white-space:nowrap;font-size:.7rem">${c.year||'—'}</td>
       <td class="hide-mobile"><span class="monarch-tag">${monarchShort}</span></td>
     </tr>
-    <tr class="detail-row" id="detail-${i}">
-      <td colspan="5"><div class="detail-panel" id="panel-${i}"></div></td>
+    <tr class="detail-row" id="detail-${gi}">
+      <td colspan="5"><div class="detail-panel" id="panel-${gi}"></div></td>
     </tr>`;
   }).join('');
+  renderPagination();
 }
+
+function renderPagination() {
+  const el = document.getElementById('pagination');
+  if (!el) return;
+  const totalPages = Math.ceil(FILTERED.length / PAGE_SIZE);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  const start = PAGE * PAGE_SIZE + 1;
+  const end = Math.min((PAGE + 1) * PAGE_SIZE, FILTERED.length);
+  el.innerHTML = `
+    <button class="page-btn" onclick="goPage(${PAGE-1})" ${PAGE===0?'disabled':''}>‹ Prev</button>
+    <span class="page-info">Page ${PAGE+1} of ${totalPages} &nbsp;(${start}–${end})</span>
+    <button class="page-btn" onclick="goPage(${PAGE+1})" ${PAGE>=totalPages-1?'disabled':''}>Next ›</button>`;
+}
+
+window.goPage = function(p) {
+  PAGE = p;
+  document.getElementById('tableWrap').scrollIntoView({behavior:'smooth', block:'start'});
+  renderTable();
+};
 
 window.toggleDetail = function(i) {
   const coin = FILTERED[i];
@@ -1364,7 +1395,14 @@ function buildDetailHTML(coin) {
   const nameEsc = coin.name.replace(/"/g,'&quot;');
   const collEsc = (coin.collection||'').replace(/"/g,'&quot;');
 
-  return `<div class="detail-grid">
+  const cotukUrl = COTUK_MAP[coin.variantCode] || null;
+  const rmUrl = coin.imgUrl || null;
+  const imgSrc = cotukUrl || rmUrl;
+  const detailImg = imgSrc
+    ? `<img class="coin-thumb" src="${imgSrc}" data-cotuk="${cotukUrl||''}" data-rm="${rmUrl||''}" alt="" onerror="imgFallback(this)" onclick="openLightbox(event,this)" style="width:64px;height:64px;margin-bottom:.6rem">`
+    : '';
+
+  return `${detailImg}<div class="detail-grid">
     <div class="detail-field"><label>Full Variant Code</label><p class="mono">${coin.variantCode}</p></div>
     <div class="detail-field"><label>Type</label><p>${p.type==='D'?'Decimal':'Pre-decimal'}</p></div>
     <div class="detail-field"><label>Variant ID</label><p class="mono" style="color:var(--got)">${p.id||'—'}</p></div>
