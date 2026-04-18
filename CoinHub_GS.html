@@ -2578,6 +2578,13 @@ function processQueueNow() {
 }
 
 // ── STATS DASHBOARD ──────────────────────────────────────────────────────────
+window.statsShowTab = function(tab) {
+  document.getElementById('statsTabCollBody').style.display = tab === 'coll' ? '' : 'none';
+  document.getElementById('statsTabDenomBody').style.display = tab === 'denom' ? '' : 'none';
+  document.getElementById('statsTabColl').classList.toggle('active', tab === 'coll');
+  document.getElementById('statsTabDenom').classList.toggle('active', tab === 'denom');
+};
+
 function showStats() {
   document.getElementById('statsModalBg').classList.add('open');
   renderStats();
@@ -2616,44 +2623,51 @@ function renderStats() {
     const pb = b[1].total ? b[1].got/b[1].total : 0;
     return pb-pa || b[1].total-a[1].total;
   });
-  html += `<div><div class="stats-section-title">Collection Completion</div>`;
+  let collRows = '';
   colls.forEach(([name, d]) => {
     const p = d.total ? Math.round(d.got/d.total*100) : 0;
     const complete = d.got === d.total && d.total > 0;
-    html += `<div class="stat-bar-row">
+    collRows += `<div class="stat-bar-row">
       <span class="stat-bar-label" title="${name}">${name}</span>
       <div class="stat-bar-track"><div class="stat-bar-fill${complete?' complete':''}" style="width:${p}%"></div></div>
       <span class="stat-bar-frac">${d.got}/${d.total}</span>
     </div>`;
   });
-  html += `</div>`;
 
-  // ── DENOMINATIONS + DECADES side-by-side ───────────────────────────────────
-  // Denominations
+  // ── DENOMINATIONS ──────────────────────────────────────────────────────────
   const denomMap = {};
   ALL_COINS.forEach(c => {
     if (!denomMap[c.denom]) denomMap[c.denom] = {got:0, total:0};
     denomMap[c.denom].total++;
     if (c.status==='Got') denomMap[c.denom].got++;
   });
-  const maxDenomGot = Math.max(...Object.values(denomMap).map(d=>d.got), 1);
   const denomsSorted = Object.entries(denomMap).sort((a,b) => {
     const ai = DENOM_ORDER.indexOf(a[0]), bi = DENOM_ORDER.indexOf(b[0]);
     return (ai<0?99:ai)-(bi<0?99:bi);
   });
-  let denomHtml = `<div><div class="stats-section-title">By Denomination</div>`;
+  let denomRows = '';
   denomsSorted.forEach(([denom, d]) => {
-    const w = Math.round(d.got/maxDenomGot*100);
+    const p = d.total ? Math.round(d.got/d.total*100) : 0;
     const complete = d.got===d.total && d.total>0;
-    denomHtml += `<div class="stat-bar-row">
+    denomRows += `<div class="stat-bar-row">
       <span class="stat-bar-label mono">${denom}</span>
-      <div class="stat-bar-track"><div class="stat-bar-fill${complete?' complete':''}" style="width:${w}%"></div></div>
+      <div class="stat-bar-track"><div class="stat-bar-fill${complete?' complete':''}" style="width:${p}%"></div></div>
       <span class="stat-bar-frac">${d.got}/${d.total}</span>
     </div>`;
   });
-  denomHtml += `</div>`;
 
-  // Decades (Got coins only)
+  html += `<div>
+    <div class="stats-section-title" style="margin-bottom:.6rem">Completion
+      <span style="margin-left:auto;display:flex;gap:.3rem">
+        <button class="sort-btn active" id="statsTabColl" onclick="statsShowTab('coll')" style="font-size:.5rem;padding:.15rem .5rem">By Collection</button>
+        <button class="sort-btn" id="statsTabDenom" onclick="statsShowTab('denom')" style="font-size:.5rem;padding:.15rem .5rem">By Denomination</button>
+      </span>
+    </div>
+    <div id="statsTabCollBody">${collRows}</div>
+    <div id="statsTabDenomBody" style="display:none">${denomRows}</div>
+  </div>`;
+
+  // ── DECADES ────────────────────────────────────────────────────────────────
   const decadeMap = {};
   got.forEach(c => {
     if (!c.year) return;
@@ -2666,8 +2680,7 @@ function renderStats() {
     decadeHtml += `<div class="decade-block"><div class="decade-block-num">${cnt}</div><div class="decade-block-label">${dec}s</div></div>`;
   });
   decadeHtml += `</div></div>`;
-
-  html += `<div class="stats-two-col">${denomHtml}${decadeHtml}</div>`;
+  html += decadeHtml;
 
   // ── CONDITION GRADES ────────────────────────────────────────────────────────
   const condMap = {};
