@@ -1232,12 +1232,8 @@ function renderTable() {
   if (!FILTERED.length) { body.innerHTML=''; empty.style.display='block'; renderPagination(); return; }
   empty.style.display='none';
 
-  const totalPages = Math.ceil(FILTERED.length / PAGE_SIZE);
-  PAGE = Math.max(0, Math.min(PAGE, totalPages - 1));
-  const slice = FILTERED.slice(PAGE * PAGE_SIZE, (PAGE + 1) * PAGE_SIZE);
-
-  body.innerHTML = slice.map((c,i) => {
-    const gi = PAGE * PAGE_SIZE + i;
+  body.innerHTML = FILTERED.map((c,i) => {
+    const gi = i;
     const parsed = c.parsed || {};
     const thumb = `<svg class="coin-thumb-ph" viewBox="0 0 48 48" width="48" height="48" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="23" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="24" cy="24" r="19" fill="none" stroke="#C8BFA8" stroke-width="0.75" stroke-dasharray="2.5 2"/><text x="24" y="28" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#8B6914">${c.denom}</text></svg>`;
     const badge = `<span class="sbadge ${c.status||'Unknown'}">${c.status||'?'}</span>`;
@@ -1269,27 +1265,7 @@ function renderTable() {
       <td colspan="5"><div class="detail-panel" id="panel-${gi}"></div></td>
     </tr>`;
   }).join('');
-  renderPagination();
 }
-
-function renderPagination() {
-  const el = document.getElementById('pagination');
-  if (!el) return;
-  const totalPages = Math.ceil(FILTERED.length / PAGE_SIZE);
-  if (totalPages <= 1) { el.innerHTML = ''; return; }
-  const start = PAGE * PAGE_SIZE + 1;
-  const end = Math.min((PAGE + 1) * PAGE_SIZE, FILTERED.length);
-  el.innerHTML = `
-    <button class="page-btn" onclick="goPage(${PAGE-1})" ${PAGE===0?'disabled':''}>‹ Prev</button>
-    <span class="page-info">Page ${PAGE+1} of ${totalPages} &nbsp;(${start}–${end})</span>
-    <button class="page-btn" onclick="goPage(${PAGE+1})" ${PAGE>=totalPages-1?'disabled':''}>Next ›</button>`;
-}
-
-window.goPage = function(p) {
-  PAGE = p;
-  document.getElementById('tableWrap').scrollIntoView({behavior:'smooth', block:'start'});
-  renderTable();
-};
 
 window.toggleDetail = function(i) {
   const coin = FILTERED[i];
