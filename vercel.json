@@ -1,7 +1,5 @@
 {
-  "functions": {
-    "api/sheets.js": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
 }

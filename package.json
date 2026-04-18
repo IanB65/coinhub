@@ -1,6 +1,9 @@
 {
   "name": "coinhub",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@netlify/blobs": "^8.0.0"
   }
