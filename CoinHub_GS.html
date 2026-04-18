@@ -676,8 +676,7 @@ body.guest-mode .sticky-top{top:82px}
 // Fallback: existing Royal Mint URL stored in RAW[7]
 // Final fallback: denomination placeholder
 
-const SHEET_ID = '1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4';
-const GS_BASE = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=`;
+const GS_BASE = '/api/sheets?tab=';
 
 // These are populated by loadFromSheets() before init() runs
 const COTUK_MAP = {};
@@ -786,7 +785,7 @@ async function loadFromSheets() {
       <div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif">
         <div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load Google Sheets data</div>
         <div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${e.message}</div>
-        <div style="color:#888;font-size:.8rem">Make sure the Google Sheet is shared as “Anyone with the link can view”</div>
+        <div style=”color:#888;font-size:.8rem”>Check that GOOGLE_SERVICE_ACCOUNT_JSON is set in Vercel environment variables and the sheet is shared with the service account.</div>
       </div>`;
     throw e;
   }
