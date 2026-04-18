@@ -716,7 +716,7 @@ async function loadFromSheets() {
 
   try {
     showStatus('Fetching coin data…');
-    const res = await fetch('/api/sheets-all');
+    const res = await fetch('/api/sheets-all?_=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
 
     const { variants: varRows, instances: instRows, images: imgRows } = await res.json();

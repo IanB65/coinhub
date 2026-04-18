@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
     }));
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({
       variants: results[0],
       instances: results[1],
