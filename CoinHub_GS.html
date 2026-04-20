@@ -1296,6 +1296,9 @@ function buildInstItemHTML(coin, inst) {
   const s1Opts = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
   const s2Opts = ['Page 1','Page 2','Page 3','Page 4','Page 5','Page 6','Page 7','Page 8','Page 9','Page 10','Page 11','Capsule','Capsule Case 01','Capsule Case 02','Carded','Collection Box 01','Olympic Folder','Presentation Case 01','Presentation Case 02','2023 Annual Set','2023 Annual Set 2','2024 Annual Set','2025 Annual Set','Farthings Folder 1860 - 1901','Farthings Folder 1902 - 1936','Farthings Folder 1937 - 1956','Florins Folder 1911 - 1940','Florins Folder 1941 -','Half Crowns Folder - 1911 - 1940','Half Crowns Folder - 1941 -','Halfpennies Folder 1860 - 1901','Halfpennies Folder 1902 - 1936','Halfpennies Folder 1937 -','Pennies Folder 1860 - 1880','Pennies Folder 1881 - 1901','Pennies Folder 1902 - 1929','Pennies Folder 1930 - 1966','Shillings Folder 1902 - 1936','Shillings Folder 1937 - 1951','Shillings Folder 1953 -','Sixpence Folder 1902 - 1936','Sixpence Folder 1937 -','Threepence Folder 1838 - 1901','Threepence Folder 1902 - 1945','Threepence Folder 1937 -'];
   const s3Opts = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','Obverse'];
+  const _scDate = (inst.insId && _scChecked[inst.insId]) || inst.lastStocktake || '';
+  const _scDateStr = _scDate ? _scFmtDate(_scDate) : '—';
+  const _scDateColor = _scDate ? 'color:var(--got)' : 'color:var(--muted)';
   let h = `<div class="inst-item">
     <div class="inst-num">#${inst.num}${inst.insId?`<br><span class="inst-id-badge">${inst.insId}</span>`:''}</div>
     <div class="inst-loc">
@@ -1307,6 +1310,7 @@ function buildInstItemHTML(coin, inst) {
       <div class="inst-loc-row"><span class="inst-field-label">Condition</span><span>${inst.cond}${COND_LABELS[inst.cond]?' – '+COND_LABELS[inst.cond]:''}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Preservation</span><span>${inst.ptype}</span></div>
       ${inst.desc?`<div class="inst-loc-row"><span class="inst-field-label">Description</span><span>${inst.desc}</span></div>`:''}
+      <div class="inst-loc-row"><span class="inst-field-label">Stock Check</span><span style="font-family:'DM Mono',monospace;font-size:.75rem;${_scDateColor}">${_scDateStr}</span></div>
     </div>`;
   if (fid) {
     const cSel = condOpts.map(c=>`<option${inst.cond===c?' selected':''}>${c}</option>`).join('');
