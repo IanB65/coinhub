@@ -1712,6 +1712,7 @@ function scToggle(iid, checked) {
     delete _scChecked[iid];
   }
   _scSave();
+  _scSyncToSheets([{ insId: iid, date: _scChecked[iid] || '' }]);
   const row = document.getElementById('sc-row-' + iid);
   if (row) {
     row.classList.toggle('checked', checked);
@@ -1720,6 +1721,15 @@ function scToggle(iid, checked) {
     if (_scUncheckedOnly && checked) { row.style.display = 'none'; _scApplyUncheckedFilter(); }
   }
   _scUpdateProgress();
+}
+
+function _scSyncToSheets(updates) {
+  if (GUEST_MODE) return;
+  fetch('/api/sheets-write', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ updates }),
+  }).catch(() => {}); // silent — localStorage is the source of truth
 }
 
 function scCheckAll() {
