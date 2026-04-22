@@ -1734,32 +1734,38 @@ function _scSyncToSheets(updates) {
 
 function scCheckAll() {
   const today = new Date().toISOString().slice(0, 10);
+  const updates = [];
   document.querySelectorAll('#scList .sc-item').forEach(row => {
     const iid = row.id.replace('sc-row-', '');
     const cb = row.querySelector('input[type=checkbox]');
     if (cb) cb.checked = true;
     _scChecked[iid] = today;
+    updates.push({ insId: iid, date: today });
     row.classList.add('checked');
     const dateEl = row.querySelector('.sc-item-date');
     if (dateEl) dateEl.textContent = _scFmtDate(today);
   });
   _scSave();
+  if (updates.length) _scSyncToSheets(updates);
   _scApplyUncheckedFilter();
   _scUpdateProgress();
 }
 
 function scClearAll() {
+  const updates = [];
   document.querySelectorAll('#scList .sc-item').forEach(row => {
     const iid = row.id.replace('sc-row-', '');
     const cb = row.querySelector('input[type=checkbox]');
     if (cb) cb.checked = false;
     delete _scChecked[iid];
+    updates.push({ insId: iid, date: '' });
     row.classList.remove('checked');
     const dateEl = row.querySelector('.sc-item-date');
     if (dateEl) dateEl.textContent = '';
     row.style.display = '';
   });
   _scSave();
+  if (updates.length) _scSyncToSheets(updates);
   _scUpdateProgress();
 }
 
