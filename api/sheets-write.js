@@ -1,39 +1,24 @@
-const crypto = require('crypto');
-
-async function getAccessToken(email, privateKey) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
-  const payload = Buffer.from(JSON.stringify({
-    iss: email,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  })).toString('base64url');
-
-  const sign = crypto.createSign('RSA-SHA256');
-  sign.update(`${header}.${payload}`);
-  const sig = sign.sign(privateKey, 'base64url');
-
-  const jwt = `${header}.${payload}.${sig}`;
+async function getAccessToken() {
   const resp = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+    body: new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+      grant_type: 'refresh_token',
+    }),
   });
-  if (!resp.ok) throw new Error('Token fetch failed: ' + await resp.text());
+  if (!resp.ok) throw new Error('Token refresh failed: ' + await resp.text());
   return (await resp.json()).access_token;
 }
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
   const sheetId = process.env.GOOGLE_SHEET_ID;
-
-  if (!email || !privateKey || !sheetId) {
-    return res.status(500).json({ error: 'Missing env vars: GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY' });
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN || !sheetId) {
+    return res.status(500).json({ error: 'Missing env vars' });
   }
 
   let body;
@@ -46,7 +31,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const token = await getAccessToken(email, privateKey);
+    const token = await getAccessToken();
 
     // Fetch Instances sheet to map insId → row number
     const fetchResp = await fetch(
