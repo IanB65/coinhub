@@ -754,6 +754,8 @@ async function loadFromSheets() {
         _scChecked[iid] = lastStocktake;
       }
     }
+    const seededCount = Object.keys(_scChecked).length;
+    console.log('[CoinHub] _scChecked seeded:', seededCount, 'entries', Object.entries(_scChecked).slice(0,3));
     _scSave();
 
     // Build ALL_COINS from variants
