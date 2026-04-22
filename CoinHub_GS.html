@@ -734,8 +734,10 @@ async function loadFromSheets() {
       const vc = r[1]?.trim();
       if (!vc) continue;
       if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+      const iid = r[0]?.trim() || '';
+      const lastStocktake = r[11]?.trim() || '';
       INSTANCE_DATA[vc].push({
-        id: r[0]?.trim() || '',
+        id: iid,
         loc: r[2]?.trim() || 'Office',
         s1: r[3]?.trim() || '',
         s2: r[4]?.trim() || '',
@@ -744,10 +746,15 @@ async function loadFromSheets() {
         ptype: r[7]?.trim() || '',
         desc: r[8]?.trim() || '',
         notes: r[9]?.trim() || '',
-        lastStocktake: r[11]?.trim() || '',
+        lastStocktake,
         lastEdited: r[13]?.trim() || '',
       });
+      // Seed _scChecked from sheet if no local date recorded
+      if (iid && lastStocktake && !_scChecked[iid]) {
+        _scChecked[iid] = lastStocktake;
+      }
     }
+    _scSave();
 
     // Build ALL_COINS from variants
     const coins = [];
