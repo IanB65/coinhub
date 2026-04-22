@@ -694,6 +694,20 @@ window.gsRefreshCache = async function() {
   location.reload();
 };
 
+function _seedScCheckedFromInstances(instanceData) {
+  let seeded = 0;
+  Object.values(instanceData).forEach(arr => {
+    arr.forEach(inst => {
+      const iid = inst.id;
+      if (iid && inst.lastStocktake && !_scChecked[iid]) {
+        _scChecked[iid] = inst.lastStocktake;
+        seeded++;
+      }
+    });
+  });
+  if (seeded) _scSave();
+}
+
 async function loadFromSheets() {
   const showStatus = msg => {
     const el = document.getElementById('loadMsg');
@@ -709,6 +723,7 @@ async function loadFromSheets() {
         showStatus('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
         Object.assign(INSTANCE_DATA, instances);
+        _seedScCheckedFromInstances(instances);
         return coins;
       }
     }
@@ -749,14 +764,8 @@ async function loadFromSheets() {
         lastStocktake,
         lastEdited: r[13]?.trim() || '',
       });
-      // Seed _scChecked from sheet if no local date recorded
-      if (iid && lastStocktake && !_scChecked[iid]) {
-        _scChecked[iid] = lastStocktake;
-      }
     }
-    const seededCount = Object.keys(_scChecked).length;
-    console.log('[CoinHub] _scChecked seeded:', seededCount, 'entries', Object.entries(_scChecked).slice(0,3));
-    _scSave();
+    _seedScCheckedFromInstances(INSTANCE_DATA);
 
     // Build ALL_COINS from variants
     const coins = [];
