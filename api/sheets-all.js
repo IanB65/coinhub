@@ -1,4 +1,4 @@
-const TABS = ['Variants', 'Instances', 'Images'];
+const TABS = ['Variants', 'Instances', 'Images', 'Storage'];
 
 module.exports = async function handler(req, res) {
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -28,6 +28,7 @@ module.exports = async function handler(req, res) {
       variants: results[0],
       instances: results[1],
       images: results[2],
+      storage: results[3],
     });
   } catch (e) {
     return res.status(500).json({ error: e.message });

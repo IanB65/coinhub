@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
 
     const data = updates
       .filter(u => rowMap[u.insId])
-      .map(u => ({ range: `Instances!L${rowMap[u.insId]}`, values: [[u.date || '']] }));
+      .map(u => ({ range: `Instances!K${rowMap[u.insId]}`, values: [[u.date || '']] }));
 
     if (!data.length) return res.status(200).json({ updated: 0, skipped: updates.length });
 

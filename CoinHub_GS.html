@@ -521,11 +521,7 @@ body.guest-mode .sticky-top{top:82px}
     </div>
     <div class="sc-controls">
       <select id="scLocationSelect" onchange="loadStockCheck()" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer">
-        <option value="">— Select location —</option>
-        <option>Box 1</option><option>Box 2</option>
-        <option>Folder 1</option><option>Folder 2</option><option>Folder 3</option>
-        <option>Folder 4</option><option>Folder 5</option><option>Folder 6</option>
-        <option>Folder 7</option><option>Folder 8</option><option>Folder 9</option><option>Folder 10</option>
+        <option value="">— Select container —</option>
       </select>
       <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
       <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
@@ -718,11 +714,12 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         showStatus('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
         Object.assign(INSTANCE_DATA, instances);
+        Object.assign(STORAGE_MAP, storageMap || {});
         _seedScCheckedFromInstances(instances);
         return coins;
       }
@@ -734,7 +731,7 @@ async function loadFromSheets() {
     const res = await fetch('/api/sheets-all?_=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
 
-    const { variants: varRows, instances: instRows, images: imgRows } = await res.json();
+    const { variants: varRows, instances: instRows, images: imgRows, storage: storRows } = await res.json();
     const iVC=0,iName=1,iDenom=2,iColl=3,iMon=4,iYear=5,iStat=6,iImg=7;
 
     // Build COTUK_MAP
@@ -743,26 +740,31 @@ async function loadFromSheets() {
       if (r[0] && r[1]) COTUK_MAP[r[0].trim()] = r[1].trim();
     }
 
-    // Build INSTANCE_DATA
+    // Build STORAGE_MAP: Storage 1 name → room/location
+    for (let i = 1; i < (storRows || []).length; i++) {
+      const r = storRows[i];
+      if (r[0] && r[1]) STORAGE_MAP[r[0].trim()] = r[1].trim();
+    }
+
+    // Build INSTANCE_DATA (Instances sheet: ID, VariantCode, S1, S2, S3, Cond, PType, Desc, Notes, ?, LastStocktake, ?, LastEdited)
     for (let i = 1; i < instRows.length; i++) {
       const r = instRows[i];
       const vc = r[1]?.trim();
       if (!vc) continue;
       if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
       const iid = r[0]?.trim() || '';
-      const lastStocktake = r[11]?.trim() || '';
+      const lastStocktake = r[10]?.trim() || '';
       INSTANCE_DATA[vc].push({
         id: iid,
-        loc: r[2]?.trim() || 'Office',
-        s1: r[3]?.trim() || '',
-        s2: r[4]?.trim() || '',
-        s3: r[5]?.trim() || '',
-        cond: r[6]?.trim() || '',
-        ptype: r[7]?.trim() || '',
-        desc: r[8]?.trim() || '',
-        notes: r[9]?.trim() || '',
+        s1: r[2]?.trim() || '',
+        s2: r[3]?.trim() || '',
+        s3: r[4]?.trim() || '',
+        cond: r[5]?.trim() || '',
+        ptype: r[6]?.trim() || '',
+        desc: r[7]?.trim() || '',
+        notes: r[8]?.trim() || '',
         lastStocktake,
-        lastEdited: r[13]?.trim() || '',
+        lastEdited: r[12]?.trim() || '',
       });
     }
     _seedScCheckedFromInstances(INSTANCE_DATA);
@@ -796,6 +798,7 @@ async function loadFromSheets() {
         coins,
         cotuk: { ...COTUK_MAP },
         instances: { ...INSTANCE_DATA },
+        storageMap: { ...STORAGE_MAP },
       }));
     } catch(e) { /* quota exceeded, skip cache */ }
 
@@ -895,6 +898,7 @@ function parseVariant(code) {
 // Embedded data — variant code is the canonical ID.
 
 const INSTANCE_DATA = {};
+const STORAGE_MAP = {}; // s1 name → room/location, e.g. 'Box 1' → 'Office'
 
 
 // ── STORAGE MAP (approximate locations per collection) ────────────────────────
@@ -971,6 +975,7 @@ async function init() {
   document.getElementById('hList').textContent = ALL_COINS.filter(c=>c.status==='List').length;
   document.getElementById('hTotalN').textContent = ALL_COINS.length;
 
+  _populateStorageSelect();
   buildDenomFilter();
   buildYearFilter();
   buildMonarchFilter();
@@ -1321,7 +1326,7 @@ function buildInstItemHTML(coin, inst) {
     <div class="inst-num">#${inst.num}${inst.insId?`<br><span class="inst-id-badge">${inst.insId}</span>`:''}</div>
     <div class="inst-loc">
       ${inst.insId?`<div class="inst-loc-row"><span class="inst-field-label">ID</span><span class="inst-id-badge" style="font-size:.68rem">${inst.insId}</span></div>`:''}
-      <div class="inst-loc-row"><span class="inst-field-label">Location</span><span>${inst.loc}</span></div>
+      <div class="inst-loc-row"><span class="inst-field-label">Location</span><span>${STORAGE_MAP[inst.s1] || '—'}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Storage 1</span><span>${inst.s1}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Storage 2</span><span>${inst.s2}</span></div>
       <div class="inst-loc-row"><span class="inst-field-label">Storage 3</span><span>${inst.s3||'—'}</span></div>
@@ -1375,12 +1380,12 @@ function buildDetailHTML(coin) {
   const instances = instRecords.length > 0
     ? instRecords.map((r,j) => ({
         num: j+1, insId: r.id,
-        loc: r.loc || '—', s1: r.s1 || '—', s2: r.s2 || '—', s3: r.s3 || '',
+        s1: r.s1 || '—', s2: r.s2 || '—', s3: r.s3 || '',
         cond: r.cond || '—', ptype: r.ptype || '—', desc: r.desc || '',
       }))
     : Array.from({length: coin.instCount}, (_,j) => ({
         num: j+1, insId: null,
-        loc: '—', s1: '—', s2: '—', s3: '', cond: '—', ptype: '—',
+        s1: '—', s2: '—', s3: '', cond: '—', ptype: '—',
       }));
 
   const instHTML = instances.length === 0
@@ -1483,7 +1488,6 @@ function saveInstance(variantCode) {
 
   const inst = {
     id: instId,
-    loc: 'Office',
     s1: form.querySelector('[name=s1]').value,
     s2: form.querySelector('[name=s2]').value,
     s3: form.querySelector('[name=s3]').value,
@@ -1697,13 +1701,15 @@ function loadStockCheck() {
     listEl.appendChild(row);
 
     const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+    const roomLoc = inst.s1 ? (STORAGE_MAP[inst.s1] || '') : '';
     const variantCode = inst.vc || (coin ? coin.variantCode : '');
     const detail = document.createElement('div');
     detail.className = 'sc-detail';
     detail.id = `sc-detail-${iid}`;
     detail.innerHTML = [
       `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val mono">${iid}</span></div>`,
-      storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Location</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
+      roomLoc ? `<div class="sc-detail-row"><span class="sc-detail-label">Room</span><span class="sc-detail-val">${roomLoc}</span></div>` : '',
+      storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
       inst.cond ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
       inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
       variantCode ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val mono">${variantCode}</span></div>` : '',
@@ -1819,8 +1825,22 @@ function _scApplyUncheckedFilter() {
   });
 }
 
+function _populateStorageSelect() {
+  const sel = document.getElementById('scLocationSelect');
+  if (!sel) return;
+  const containers = Object.keys(STORAGE_MAP);
+  // Keep the placeholder option, replace any others
+  while (sel.options.length > 1) sel.remove(1);
+  containers.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name + (STORAGE_MAP[name] ? '  (' + STORAGE_MAP[name] + ')' : '');
+    sel.appendChild(opt);
+  });
+}
+
 function _scBuildSummary() {
-  const locations = ['Box 1','Box 2','Folder 1','Folder 2','Folder 3','Folder 4','Folder 5','Folder 6','Folder 7','Folder 8','Folder 9','Folder 10'];
+  const locations = Object.keys(STORAGE_MAP);
   const listEl = document.getElementById('scList');
   const div = document.createElement('div');
   div.className = 'sc-loc-sum';
@@ -2517,7 +2537,7 @@ async function _syncPullNow(isAuto) {
         const newVc = inst.variantCode;
         if (!INSTANCE_DATA[newVc]) INSTANCE_DATA[newVc] = [];
         if (!INSTANCE_DATA[newVc].find(r => r.id === iid)) {
-          const newRec = { id: iid, loc: '', s1: inst.s1 || '', s2: inst.s2 || '', s3: inst.s3 || '', cond: inst.cond || '', ptype: inst.ptype || '', notes: inst.notes || '' };
+          const newRec = { id: iid, s1: inst.s1 || '', s2: inst.s2 || '', s3: inst.s3 || '', cond: inst.cond || '', ptype: inst.ptype || '', notes: inst.notes || '' };
           INSTANCE_DATA[newVc].push(newRec);
           idx[iid] = newVc; // keep index current
           const coin = ALL_COINS.find(c => c.variantCode === newVc);
