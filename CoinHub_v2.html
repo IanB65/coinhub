@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinHub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C0C0A;--paper:#F5F2EB;--paper2:#EDE9DF;--paper3:#E4DFD2;
+  --gold:#8B6914;--gold2:#C49A2A;--gold3:#F0C84A;
+  --got:#2D6A4F;--got-bg:#D8F3DC;
+  --need:#9B2335;--need-bg:#FFE4E8;
+  --list:#1A3A6B;--list-bg:#DBEAFE;
+  --border:#C8BFA8;--muted:#4A4438;
+  --dark:#1a1208;--dark2:#2a1e0c;
+  --nav-h:60px;--mob-nav-h:60px;
+  --max-w:1380px;--gap:24px;
+  --r:3px;--shadow:0 2px 16px rgba(12,12,10,.12);--shadow-lg:0 8px 40px rgba(12,12,10,.22);
+  --page-pad:clamp(1rem,4vw,2.5rem);
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Cormorant Garamond',serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+body.modal-open{overflow:hidden}
+
+/* ── GRAIN ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+
+/* ── LOADING ── */
+#loadScreen{position:fixed;inset:0;background:var(--paper);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.load-logo{font-family:'Bodoni Moda',serif;font-size:3rem;font-weight:900;color:var(--gold);letter-spacing:.2em}
+.load-sub{font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.load-bar{width:200px;height:1px;background:var(--border);position:relative;overflow:hidden}
+.load-bar::after{content:'';position:absolute;inset:0;background:var(--gold2);transform:translateX(-100%);animation:loadBar 2s ease forwards}
+@keyframes loadBar{to{transform:translateX(0)}}
+.load-msg{font-size:.65rem;color:var(--muted);letter-spacing:.08em;margin-top:.25rem}
+.load-error{color:var(--need);font-size:.75rem;text-align:center;max-width:340px;margin-top:.5rem;display:none}
+
+/* ── GUEST BANNER ── */
+#guestBanner{display:none;background:var(--list-bg);border-bottom:1px solid var(--list);padding:.45rem 2rem;height:30px;font-size:.62rem;font-family:'DM Mono',monospace;letter-spacing:.06em;color:var(--list);align-items:center;gap:1rem;position:sticky;top:0;z-index:201}
+#guestBanner b{font-weight:600}
+#guestBanner .guest-expiry{color:var(--muted);margin-left:auto}
+body.guest-mode #guestBanner{display:flex}
+
+/* ── TOP NAV ── */
+#topNav{height:var(--nav-h);background:var(--paper);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 2rem;gap:2rem;position:sticky;top:0;z-index:100;transition:top .2s}
+body.guest-mode #topNav{top:30px}
+.nav-logo{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;flex-shrink:0}
+.nav-logo span{color:var(--ink);font-weight:400;font-style:italic}
+.nav-links{display:flex;gap:0;margin-left:.5rem}
+.nav-link{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:.35rem .75rem;border-radius:var(--r);transition:color .12s,background .12s}
+.nav-link:hover{color:var(--ink)}
+.nav-link.active{color:var(--gold);font-weight:500}
+.nav-actions{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+.nav-search-btn{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:.3rem .7rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.35rem;transition:all .12s}
+.nav-search-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.nav-admin-btn{background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:.3rem .6rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);cursor:pointer;transition:all .12s;position:relative}
+.nav-admin-btn:hover{border-color:var(--gold2);color:var(--ink)}
+.nav-badge{position:absolute;top:-5px;right:-5px;background:var(--need);color:#fff;font-size:.45rem;min-width:14px;height:14px;border-radius:7px;display:none;align-items:center;justify-content:center;padding:0 3px;font-family:'DM Mono',monospace}
+.admin-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);min-width:160px;z-index:200;display:none;flex-direction:column;overflow:hidden}
+.admin-dropdown.open{display:flex}
+.admin-dropdown-item{padding:.5rem .9rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--ink);cursor:pointer;text-decoration:none;display:block;border:none;background:transparent;text-align:left;width:100%;transition:background .1s;letter-spacing:.05em}
+.admin-dropdown-item:hover{background:var(--paper2)}
+.admin-dropdown-sep{height:1px;background:var(--border);margin:.2rem 0}
+.nav-stats{display:flex;gap:1.5rem;font-size:.6rem;letter-spacing:.08em;margin-left:1rem}
+.hstat{display:flex;align-items:center;gap:.3rem;color:var(--muted)}
+.hstat b{font-weight:500;color:var(--ink)}
+.hstat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+@media(max-width:1023px){.nav-links,.nav-stats{display:none}}
+
+/* ── MOBILE BOTTOM NAV ── */
+#bottomNav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mob-nav-h);background:var(--paper);border-top:1px solid var(--border);z-index:100;justify-content:stretch;align-items:stretch}
+@media(max-width:1023px){#bottomNav{display:flex}}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;text-decoration:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.06em;text-transform:uppercase;border:none;background:transparent;cursor:pointer;padding:.5rem .25rem;transition:color .12s}
+.bnav-item.active{color:var(--gold)}
+.bnav-icon{font-size:1.1rem;line-height:1}
+body.guest-mode #bottomNav{bottom:0}
+
+/* ── PAGE CONTAINER ── */
+#pageMain{min-height:calc(100vh - var(--nav-h));padding-bottom:0}
+@media(max-width:1023px){#pageMain{padding-bottom:var(--mob-nav-h)}}
+.page{display:none}
+.page.active{display:block}
+
+/* ── SECTION LAYOUT ── */
+.section-wrap{max-width:var(--max-w);margin:0 auto;padding:0 2rem}
+@media(max-width:767px){.section-wrap{padding:0 1rem}}
+.section-block{padding:3rem 0}
+@media(max-width:767px){.section-block{padding:2rem 0}}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.5rem;gap:1rem}
+.section-title{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+.section-title em{color:var(--gold);font-style:normal}
+.section-link{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);text-decoration:none;flex-shrink:0;padding:.3rem 0;border-bottom:1px solid transparent;transition:border-color .12s}
+.section-link:hover{border-color:var(--gold)}
+
+/* ── HOME: HERO ── */
+.hero{background:var(--dark);position:relative;overflow:hidden;padding:5rem 2rem 4.5rem}
+@media(max-width:767px){.hero{padding:3rem 1rem 3rem}}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(139,105,20,.12) 0%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(139,105,20,.07) 0%,transparent 55%);pointer-events:none}
+.hero-coins{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='36' fill='none' stroke='%23F0C84A' stroke-width='1'/%3E%3Ccircle cx='40' cy='40' r='28' fill='none' stroke='%23F0C84A' stroke-width='.5'/%3E%3C/svg%3E");background-size:80px 80px;pointer-events:none}
+.hero-inner{max-width:var(--max-w);margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold2);margin-bottom:1rem}
+.hero-title{font-family:'Bodoni Moda',serif;font-size:clamp(2.4rem,6vw,4.5rem);font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:#fff;line-height:1;margin-bottom:.5rem}
+.hero-title span{color:var(--gold3)}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:rgba(255,255,255,.55);margin-bottom:2.5rem;letter-spacing:.04em}
+.hero-search{width:100%;max-width:600px;position:relative}
+.hero-input{width:100%;padding:1rem 1.25rem 1rem 3rem;font-family:'Cormorant Garamond',serif;font-size:1.1rem;border:1px solid rgba(255,255,255,.15);border-radius:2px;background:rgba(255,255,255,.07);color:#fff;outline:none;transition:border-color .18s,background .18s}
+.hero-input::placeholder{color:rgba(255,255,255,.35)}
+.hero-input:focus{border-color:var(--gold2);background:rgba(255,255,255,.1)}
+.hero-search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);font-size:.9rem;pointer-events:none}
+.hero-suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);z-index:10;display:none;max-height:340px;overflow-y:auto}
+.hero-suggest.open{display:block}
+.suggest-group{padding:.5rem 0}
+.suggest-label{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:.2rem .9rem .4rem}
+.suggest-item{padding:.5rem .9rem;cursor:pointer;display:flex;align-items:center;gap:.6rem;font-size:.95rem;color:var(--ink);transition:background .1s}
+.suggest-item:hover{background:var(--paper2)}
+.suggest-item-label{flex:1;min-width:0}
+.suggest-item-meta{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);flex-shrink:0}
+.hero-stats{display:flex;gap:2.5rem;margin-top:2rem;flex-wrap:wrap;justify-content:center}
+.hero-stat{display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.hero-stat-num{font-family:'Bodoni Moda',serif;font-size:1.8rem;font-weight:700;color:var(--gold3);line-height:1}
+.hero-stat-label{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+
+/* ── COLLECTION CARDS ── */
+.card-scroll{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
+@media(max-width:1023px){.card-scroll{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:767px){.card-scroll{display:flex;overflow-x:auto;gap:1rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:.5rem}.card-scroll::-webkit-scrollbar{height:3px}.card-scroll::-webkit-scrollbar-thumb{background:var(--border)}}
+.coll-card-v2{border-radius:var(--r);overflow:hidden;cursor:pointer;position:relative;aspect-ratio:3/2;background:var(--paper3);display:flex;flex-direction:column;justify-content:flex-end;transition:transform .18s,box-shadow .18s;text-decoration:none;flex-shrink:0}
+@media(max-width:767px){.coll-card-v2{width:260px;scroll-snap-align:start}}
+.coll-card-v2:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.coll-card-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .3s}
+.coll-card-v2:hover .coll-card-bg{transform:scale(1.04)}
+.coll-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,4,.85) 0%,rgba(10,8,4,.3) 55%,transparent 100%)}
+.coll-card-body{position:relative;z-index:1;padding:1rem}
+.coll-card-name{font-family:'Bodoni Moda',serif;font-size:1.05rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.3rem}
+.coll-card-meta{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:.5rem}
+.coll-card-prog{height:2px;background:rgba(255,255,255,.15);border-radius:1px;margin-top:.5rem;overflow:hidden}
+.coll-card-prog-fill{height:100%;background:var(--gold3);border-radius:1px;transition:width .4s}
+
+/* ── MONARCH CARDS ── */
+.monarch-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--gap)}
+@media(max-width:1023px){.monarch-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:767px){.monarch-grid{display:flex;overflow-x:auto;gap:1rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:.5rem}}
+.monarch-card{cursor:pointer;text-align:center;text-decoration:none;display:block;transition:transform .18s;flex-shrink:0}
+@media(max-width:767px){.monarch-card{width:140px;scroll-snap-align:start}}
+.monarch-card:hover{transform:translateY(-3px)}
+.monarch-coin{width:100%;aspect-ratio:1;border-radius:50%;background:var(--dark2);overflow:hidden;margin-bottom:.75rem;position:relative;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:border-color .18s;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.monarch-card:hover .monarch-coin{border-color:var(--gold2)}
+.monarch-coin img{width:100%;height:100%;object-fit:cover}
+.monarch-cypher{font-family:'Bodoni Moda',serif;font-size:1.4rem;font-weight:700;color:var(--gold2);letter-spacing:.04em}
+.monarch-name{font-family:'Bodoni Moda',serif;font-size:.85rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;line-height:1.2}
+.monarch-reign{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;color:var(--muted)}
+.monarch-count{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);margin-top:.2rem}
+
+/* ── YEAR CHIPS ── */
+.decade-section{margin-bottom:1.2rem}
+.decade-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.year-chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.year-chip{font-family:'DM Mono',monospace;font-size:.65rem;padding:.35rem .65rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--ink);background:transparent;transition:all .12s;text-decoration:none;display:inline-block}
+.year-chip:hover{border-color:var(--gold2);color:var(--gold);background:rgba(139,105,20,.06)}
+.year-chip.has-coins{border-color:var(--border)}
+.year-chip.got{background:var(--got-bg);border-color:var(--got);color:var(--got)}
+.year-chip-count{font-size:.52rem;opacity:.65;margin-left:.2rem}
+
+/* ── DENOM PILLS ── */
+.denom-pills{display:flex;flex-wrap:wrap;gap:.5rem}
+.denom-pill{font-family:'DM Mono',monospace;font-size:.72rem;padding:.4rem 1rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--ink);background:var(--paper2);transition:all .12s;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
+.denom-pill:hover{border-color:var(--gold2);background:var(--paper);color:var(--gold)}
+.denom-pill-count{font-size:.55rem;color:var(--muted)}
+
+/* ── HOME CTA ── */
+.home-cta{background:var(--dark);border-radius:var(--r);padding:2.5rem 2rem;text-align:center;margin:0}
+.home-cta-title{font-family:'Bodoni Moda',serif;font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:.5rem}
+.home-cta-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.5);margin-bottom:1.5rem}
+.btn-primary{display:inline-block;padding:.7rem 2rem;background:var(--gold);color:#fff;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;border-radius:var(--r);text-decoration:none;border:none;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--gold2)}
+.btn-secondary{display:inline-block;padding:.65rem 1.5rem;background:transparent;color:var(--gold3);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;border-radius:var(--r);text-decoration:none;border:1px solid var(--gold);cursor:pointer;transition:all .15s;margin-left:.75rem}
+.btn-secondary:hover{background:rgba(240,200,74,.1)}
+
+/* ── PAGE HERO (collections, monarchs, etc) ── */
+.page-hero{background:var(--dark2);padding:2.5rem 2rem;border-bottom:1px solid var(--border)}
+.page-hero-inner{max-width:var(--max-w);margin:0 auto}
+.page-hero-title{font-family:'Bodoni Moda',serif;font-size:2rem;font-weight:700;color:#fff;letter-spacing:.06em;margin-bottom:.3rem}
+.page-hero-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.5)}
+.page-hero-back{display:inline-flex;align-items:center;gap:.4rem;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--gold2);text-decoration:none;margin-bottom:.75rem;transition:color .12s}
+.page-hero-back:hover{color:var(--gold3)}
+
+/* ── COIN GRID ── */
+.coin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
+@media(max-width:767px){.coin-grid{grid-template-columns:repeat(2,1fr);gap:.75rem}}
+.coin-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;background:var(--paper2);transition:transform .15s,box-shadow .15s;position:relative}
+.coin-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.coin-card-img{width:100%;aspect-ratio:1;background:var(--paper3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.coin-card-img img{width:100%;height:100%;object-fit:contain;padding:.5rem}
+.coin-card-status{position:absolute;top:.4rem;right:.4rem;font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.07em;padding:2px 6px;border-radius:10px;text-transform:uppercase;font-weight:500}
+.coin-card-status.Got{background:var(--got-bg);color:var(--got)}
+.coin-card-status.Need{background:var(--need-bg);color:var(--need)}
+.coin-card-status.List{background:var(--list-bg);color:var(--list)}
+.coin-card-body{padding:.6rem .7rem}
+.coin-card-name{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-weight:600;line-height:1.2;color:var(--ink);margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.coin-card-meta{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);display:flex;gap:.4rem;flex-wrap:wrap}
+
+/* ── ARCHIVE PAGE ── */
+.archive-layout{max-width:var(--max-w);margin:0 auto;padding:1.5rem 2rem}
+@media(max-width:767px){.archive-layout{padding:1rem}}
+.archive-toolbar{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.archive-search{flex:1;min-width:200px;position:relative}
+.archive-search input{width:100%;padding:.55rem .75rem .55rem 2.2rem;font-family:'DM Mono',monospace;font-size:.72rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);outline:none}
+.archive-search input:focus{border-color:var(--gold2)}
+.archive-search-icon{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none}
+.filter-chip-row{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.filter-chip{font-family:'DM Mono',monospace;font-size:.6rem;padding:.3rem .65rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted);background:transparent;transition:all .12s;white-space:nowrap}
+.filter-chip:hover{border-color:var(--gold2);color:var(--ink)}
+.filter-chip.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.filter-chip.got.active{background:var(--got);border-color:var(--got);color:#fff}
+.filter-chip.need.active{background:var(--need);border-color:var(--need);color:#fff}
+.filter-chip.list.active{background:var(--list);border-color:var(--list);color:#fff}
+.archive-selects{display:flex;gap:.5rem;flex-wrap:wrap}
+.archive-selects select{padding:.35rem .5rem;font-family:'DM Mono',monospace;font-size:.65rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7060' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .4rem center;padding-right:1.4rem}
+.archive-selects select:focus{border-color:var(--gold2)}
+.archive-results{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.05em;padding:.4rem 0;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border);margin-bottom:.5rem;flex-wrap:wrap}
+.archive-results b{color:var(--ink)}
+.archive-sort{margin-left:auto;display:flex;gap:.3rem}
+.sort-btn{font-family:'DM Mono',monospace;font-size:.58rem;padding:.25rem .55rem;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:transparent;color:var(--muted);transition:all .12s}
+.sort-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.page-btn{font-family:'DM Mono',monospace;font-size:.6rem;padding:.25rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--ink);transition:all .12s}
+.page-btn:hover:not(:disabled){border-color:var(--gold2);color:var(--gold)}
+.page-btn:disabled{opacity:.3;cursor:default}
+
+/* ── ARCHIVE TABLE ── */
+.coin-table{width:100%;border-collapse:collapse}
+.coin-table th{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400;padding:.6rem .9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--paper2);white-space:nowrap;cursor:pointer;user-select:none}
+.coin-table th:hover{color:var(--ink)}
+.coin-table th .si{opacity:.4;font-size:.5rem}
+.coin-table th.sorted .si{opacity:1;color:var(--gold)}
+.coin-table td{padding:.75rem .9rem;border-bottom:1px solid rgba(200,191,168,.3);vertical-align:middle;font-size:.85rem}
+.coin-table tr{cursor:pointer}
+.coin-table tr:hover td{background:rgba(200,191,168,.12)}
+.ct-thumb{width:44px;height:44px;border-radius:50%;object-fit:contain;background:var(--paper3);border:1px solid var(--border);flex-shrink:0}
+.ct-thumb-ph{width:44px;height:44px;flex-shrink:0}
+.ct-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;line-height:1.2;color:var(--ink)}
+.ct-coll{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:.1rem}
+.ct-code{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.ct-qty{font-family:'Bodoni Moda',serif;font-size:1rem;font-weight:700;color:var(--border);text-align:center}
+.ct-qty.owned{color:var(--got)}
+.hide-sm{} @media(max-width:767px){.hide-sm{display:none}}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.empty-state h3{font-family:'Bodoni Moda',serif;font-size:1.4rem;color:var(--ink);margin-bottom:.5rem}
+.empty-state p{font-size:.85rem}
+
+/* ── STATUS BADGES ── */
+.sbadge{display:inline-block;font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.07em;padding:2px 8px;border-radius:20px;font-weight:500;text-transform:uppercase}
+.sbadge.Got{background:var(--got-bg);color:var(--got)}
+.sbadge.Need{background:var(--need-bg);color:var(--need)}
+.sbadge.List{background:var(--list-bg);color:var(--list)}
+.sbadge.Unknown{background:var(--paper3);color:var(--muted)}
+
+/* ── COIN LIGHTBOX ── */
+#coinModal{position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+#coinModal.open{display:flex}
+.modal-box{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);max-width:860px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg);position:relative}
+.modal-close{position:absolute;top:.75rem;right:.75rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);width:32px;height:32px;cursor:pointer;font-size:1rem;color:var(--muted);z-index:1;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.modal-close:hover{border-color:var(--need);color:var(--need)}
+.modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:var(--paper);border:1px solid var(--border);border-radius:var(--r);width:36px;height:36px;cursor:pointer;font-size:1.2rem;color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:1;transition:all .12s}
+.modal-nav:hover{border-color:var(--gold2);color:var(--ink)}
+.modal-nav:disabled{opacity:.25;cursor:default}
+#modalPrev{left:-48px}
+#modalNext{right:-48px}
+@media(max-width:960px){#modalPrev{left:.5rem;top:auto;transform:none;bottom:.75rem}#modalNext{right:.5rem;top:auto;transform:none;bottom:.75rem}}
+.modal-inner{display:grid;grid-template-columns:240px 1fr;overflow:hidden;flex:1;min-height:0}
+@media(max-width:600px){.modal-inner{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+.modal-img{background:var(--paper3);display:flex;align-items:center;justify-content:center;padding:1.5rem;border-right:1px solid var(--border)}
+@media(max-width:600px){.modal-img{border-right:none;border-bottom:1px solid var(--border);padding:1.25rem;min-height:200px}}
+.modal-img img{max-width:100%;max-height:220px;object-fit:contain}
+.modal-meta{overflow-y:auto;padding:1.25rem 1.5rem 1.5rem;display:flex;flex-direction:column;gap:.75rem}
+.modal-meta::-webkit-scrollbar{width:3px}.modal-meta::-webkit-scrollbar-thumb{background:var(--border)}
+.modal-coin-header{display:flex;align-items:flex-start;gap:.75rem;padding-right:2rem}
+.modal-coin-name{font-family:'Bodoni Moda',serif;font-size:1.2rem;font-weight:700;color:var(--ink);line-height:1.2;flex:1}
+.modal-fields{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.modal-field label{display:block;font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:.15rem}
+.modal-field p{font-size:.85rem;color:var(--ink);line-height:1.3}
+.modal-field p.mono{font-family:'DM Mono',monospace;font-size:.65rem}
+.modal-section-label{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-bottom:.4rem;border-bottom:1px solid var(--border);margin-top:.25rem}
+.modal-inst-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.4rem}
+.modal-inst-item{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:.6rem .75rem;font-size:.78rem}
+.modal-inst-row{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.2rem;line-height:1.6}
+.modal-inst-label{font-family:'DM Mono',monospace;font-size:.52rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);min-width:4rem}
+.modal-inst-val{color:var(--ink)}
+.modal-inst-id{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--gold);font-weight:500}
+.no-inst{font-size:.85rem;color:var(--muted);font-style:italic}
+/* admin forms inside modal — reuse existing classes */
+.add-inst-btn{margin-top:.4rem;padding:.3rem .7rem;border:1px solid var(--gold);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);transition:all .12s}
+.add-inst-btn:hover{background:var(--gold);color:#fff}
+.add-inst-form{margin-top:.5rem;padding:.7rem;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);display:none;flex-direction:column;gap:.4rem}
+.add-inst-form.open{display:flex}
+.add-inst-form label{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.1rem}
+.add-inst-form select,.add-inst-form input[type=text]{width:100%;padding:.3rem .4rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);font-family:'DM Mono',monospace;font-size:.62rem;color:var(--ink);outline:none}
+.add-inst-form select:focus,.add-inst-form input:focus{border-color:var(--gold2)}
+.add-inst-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+.add-inst-id-preview{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);font-weight:500}
+.add-inst-actions{display:flex;gap:.35rem;margin-top:.1rem}
+.add-inst-save{padding:.3rem .75rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--got);transition:all .12s}
+.add-inst-save:hover{background:var(--got);color:#fff}
+.add-inst-cancel{padding:.3rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.add-inst-pending{font-size:.55rem;color:var(--gold);font-style:italic;margin-top:.3rem}
+.inst-actions{display:flex;gap:.3rem;margin-top:.3rem}
+.inst-edit-btn,.inst-remove-btn{padding:.2rem .5rem;border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;transition:all .12s}
+.inst-edit-btn{border:1px solid var(--gold);color:var(--gold)}
+.inst-edit-btn:hover{background:var(--gold);color:#fff}
+.inst-remove-btn{border:1px solid var(--need);color:var(--need)}
+.inst-remove-btn:hover{background:var(--need);color:#fff}
+.inst-confirm{margin-top:.3rem;padding:.3rem .5rem;background:var(--need-bg);border:1px solid var(--need);border-radius:var(--r);font-size:.58rem;color:var(--need);display:none;align-items:center;gap:.4rem;flex-wrap:wrap}
+.inst-confirm-yes{padding:.2rem .55rem;border:none;border-radius:var(--r);background:var(--need);color:#fff;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem}
+.inst-confirm-no{padding:.2rem .55rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem}
+.edit-variant-btn{padding:.25rem .6rem;border:1px dashed var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted);transition:all .12s;display:block;margin-top:.25rem}
+.edit-variant-btn:hover{border-color:var(--gold2);color:var(--ink)}
+
+/* ── SEARCH OVERLAY ── */
+#searchOverlay{position:fixed;inset:0;z-index:250;background:rgba(12,12,10,.5);display:none;align-items:flex-start;justify-content:center;padding-top:80px;backdrop-filter:blur(3px)}
+#searchOverlay.open{display:flex}
+.search-panel{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:640px;box-shadow:var(--shadow-lg);overflow:hidden}
+.search-panel-input{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+.search-panel-input input{flex:1;border:none;background:transparent;font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ink);outline:none}
+.search-panel-input input::placeholder{color:var(--muted)}
+.search-panel-close{background:transparent;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:.2rem;transition:color .12s}
+.search-panel-close:hover{color:var(--ink)}
+.search-results-list{max-height:400px;overflow-y:auto}
+.search-results-list::-webkit-scrollbar{width:3px}.search-results-list::-webkit-scrollbar-thumb{background:var(--border)}
+.sr-empty{text-align:center;padding:2rem;font-size:.85rem;color:var(--muted);font-style:italic}
+.sr-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;cursor:pointer;border-bottom:1px solid rgba(200,191,168,.3);transition:background .1s}
+.sr-item:hover{background:var(--paper2)}
+.sr-thumb{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:var(--paper3);border:1px solid var(--border);object-fit:contain;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sr-thumb img{width:100%;height:100%;object-fit:contain}
+.sr-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink)}
+.sr-meta{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);margin-top:.1rem}
+
+/* ── ADMIN MODALS (reused from GS) ── */
+.log-modal-bg,.sc-modal-bg,.sync-modal-bg,.stats-modal-bg{position:fixed;inset:0;background:rgba(12,12,10,.4);z-index:350;display:none;align-items:flex-start;justify-content:center;padding:60px 1rem 1rem}
+.log-modal-bg.open,.sc-modal-bg.open,.sync-modal-bg.open,.stats-modal-bg.open{display:flex}
+.log-modal-bg{justify-content:flex-end;padding-right:1rem}
+.log-modal,.sc-modal,.sync-modal,.stats-modal{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
+.log-modal{width:420px;max-height:calc(100vh - 80px)}
+.sc-modal{width:660px;max-height:calc(100vh - 80px)}
+.sync-modal{width:680px;max-height:calc(100vh - 80px)}
+.stats-modal{width:580px;max-height:calc(100vh - 80px)}
+.log-modal-head,.sc-modal-head,.sync-modal-head,.stats-modal-head{display:flex;align-items:center;justify-content:space-between;padding:.65rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.log-modal-title,.sc-modal-title,.sync-modal-title,.stats-modal-title{font-family:'Bodoni Moda',serif;font-size:.95rem;font-weight:700;letter-spacing:.08em;color:var(--gold)}
+.log-modal-close{background:transparent;border:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:0;line-height:1}
+.log-list{overflow-y:auto;flex:1;padding:.5rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border)}
+.log-entry{padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2)}
+.log-entry-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.2rem}
+.log-entry-type{font-size:.5rem;text-transform:uppercase;letter-spacing:.12em;font-weight:500}
+.log-entry-type.inst_remove{color:var(--need)}.log-entry-type.inst_edit{color:var(--gold)}.log-entry-type.variant_edit{color:var(--list)}
+.log-entry-ts{font-size:.5rem;color:var(--muted)}
+.log-entry-coin{font-family:'Cormorant Garamond',serif;font-size:.78rem;font-weight:600;color:var(--ink)}
+.log-entry-detail{font-size:.55rem;color:var(--muted);margin-top:.15rem;line-height:1.4}
+.log-reinstate-btn{margin-top:.3rem;padding:.2rem .6rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);transition:all .12s}
+.log-reinstate-btn:hover{background:var(--got);color:#fff}
+.log-empty{font-size:.65rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0;font-family:'Cormorant Garamond',serif}
+.sc-controls{display:flex;align-items:center;gap:.4rem;padding:.5rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.sc-list{overflow-y:auto;flex:1;padding:.4rem .8rem .8rem;display:flex;flex-direction:column;gap:0}
+.sc-list::-webkit-scrollbar{width:3px}.sc-list::-webkit-scrollbar-thumb{background:var(--border)}
+.sc-group-label{font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.65rem 0 .2rem;border-bottom:1px solid var(--border);margin-top:.35rem;font-weight:600}
+.sc-item{display:flex;align-items:center;gap:.55rem;padding:.4rem .3rem;border-radius:var(--r);transition:background .1s;cursor:pointer}
+.sc-item:hover{background:var(--paper2)}
+.sc-item.checked{background:rgba(45,106,79,.06)}
+.sc-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--got);flex-shrink:0;cursor:pointer}
+.sc-item-name{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-item-meta{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.sc-item-date{font-family:'DM Mono',monospace;font-size:.6rem;white-space:nowrap;flex-shrink:0;min-width:7rem;text-align:right;color:var(--got)}
+.sc-item:not(.checked) .sc-item-date{color:var(--need);opacity:.5}
+.sc-item.checked .sc-item-name{color:var(--got)}
+.sc-info-btn{flex-shrink:0;width:18px;height:18px;border:1px solid var(--border);border-radius:50%;background:transparent;cursor:pointer;font-size:.55rem;color:var(--muted);display:flex;align-items:center;justify-content:center;line-height:1;transition:all .12s;font-family:'DM Mono',monospace}
+.sc-info-btn:hover,.sc-info-btn.open{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.08)}
+.sc-detail{display:none;background:var(--paper2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:.45rem .7rem;font-size:.6rem;font-family:'DM Mono',monospace;color:var(--muted);line-height:1.9}
+.sc-detail.open{display:block}
+.sc-detail-row{display:flex;gap:.5rem}
+.sc-detail-label{min-width:5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.52rem}
+.sc-detail-val{color:var(--ink);font-size:.6rem}
+.sc-progress{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted);margin-left:auto}
+.sc-progress-wrap{padding:.3rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;display:none;align-items:center;gap:.75rem}
+.sc-progress-bar{flex:1;height:4px;background:var(--paper3);border-radius:2px;overflow:hidden}
+.sc-progress-bar-fill{height:100%;background:var(--got);border-radius:2px;transition:width .25s}
+.sc-loc-sum{display:flex;flex-direction:column;gap:0;padding:.2rem 0}
+.sc-loc-heading{font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.5rem .3rem .4rem;font-weight:600;border-bottom:1px solid var(--border)}
+.sc-loc-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .3rem;border-bottom:1px solid transparent;cursor:pointer;border-radius:var(--r)}
+.sc-loc-row:hover{background:var(--paper2)}
+.sc-loc-name{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink);min-width:5rem;flex-shrink:0}
+.sc-loc-bar{flex:1;height:4px;background:var(--paper3);border-radius:2px;overflow:hidden}
+.sc-loc-bar-fill{height:100%;background:var(--got);border-radius:2px}
+.sc-loc-count{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);min-width:4rem;text-align:right;flex-shrink:0}
+.sc-empty{font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0}
+#scUncheckedBtn.active{border-color:var(--need)!important;color:var(--need)!important;background:var(--need-bg)!important}
+.sc-print-header{display:none}
+.sync-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-tab{flex:1;padding:.5rem;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;background:transparent;border:none;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .12s}
+.sync-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--need);color:#fff;font-size:.45rem;min-width:14px;height:14px;border-radius:7px;padding:0 3px;margin-left:.3rem}
+.sync-push-actions{display:flex;gap:.4rem;padding:.5rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sync-body{overflow-y:auto;flex:1;padding:.5rem .8rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+.sync-body::-webkit-scrollbar{width:3px}.sync-body::-webkit-scrollbar-thumb{background:var(--border)}
+.sync-empty{font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem}
+.sync-item{border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);padding:.5rem .7rem}
+.sync-item-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem}
+.sync-item-coin{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-weight:600;color:var(--ink)}
+.sync-item-detail{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);margin-bottom:.3rem}
+.sync-item-actions{display:flex;gap:.3rem}
+.sync-approve-btn{padding:.2rem .6rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);transition:all .12s}
+.sync-approve-btn:hover{background:var(--got);color:#fff}
+.sync-dismiss-btn{padding:.2rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--muted)}
+.sync-type-badge{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:20px}
+.sync-type-badge.add{background:var(--got-bg);color:var(--got)}
+.sync-type-badge.edit{background:var(--list-bg);color:var(--list)}
+.sync-type-badge.remove,.sync-type-badge.delete{background:var(--need-bg);color:var(--need)}
+.sync-pull-body{padding:.75rem .85rem;display:flex;flex-direction:column;gap:.75rem;overflow-y:auto;flex:1}
+.sync-pull-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.sync-pull-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sync-pull-val{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ink);font-weight:500}
+.sync-interval-row{display:flex;gap:.35rem;flex-wrap:wrap}
+.sync-interval-btn{padding:.28rem .65rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);transition:all .12s}
+.sync-interval-btn.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.sync-action-bar{display:flex;gap:.5rem;flex-wrap:wrap}
+.sync-pull-btn,.sync-sc-btn{padding:.35rem .8rem;border:1px solid var(--gold);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);transition:all .12s}
+.sync-pull-btn:hover,.sync-sc-btn:hover{background:var(--gold);color:#fff}
+.sync-hint{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);line-height:1.6}
+.sync-pull-log{display:flex;flex-direction:column;gap:.25rem;max-height:120px;overflow-y:auto;background:var(--paper3);border:1px solid var(--border);border-radius:var(--r);padding:.4rem .6rem}
+.sync-pull-log-entry{display:flex;gap:.5rem;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted)}
+.sync-pull-log-time{color:var(--gold);flex-shrink:0}
+.stats-body{overflow-y:auto;flex:1;padding:.75rem .85rem;display:flex;flex-direction:column;gap:1.25rem}
+.stats-body::-webkit-scrollbar{width:3px}.stats-body::-webkit-scrollbar-thumb{background:var(--border)}
+.stats-section-title{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center}
+.stats-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.stats-big{padding:.6rem;background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);text-align:center}
+.stats-big-num{font-family:'Bodoni Moda',serif;font-size:1.5rem;font-weight:700;color:var(--ink)}
+.stats-big-label{font-family:'DM Mono',monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.stats-big.s-got .stats-big-num{color:var(--got)}
+.stats-big.s-need .stats-big-num{color:var(--need)}
+.stats-big.s-list .stats-big-num{color:var(--list)}
+.stat-bar-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem}
+.stat-bar-label{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--ink);min-width:8rem;max-width:8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.stat-bar-label.mono{font-family:'DM Mono',monospace}
+.stat-bar-track{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.stat-bar-fill{height:100%;background:var(--got);border-radius:3px}
+.stat-bar-fill.complete{background:var(--gold)}
+.stat-bar-fill.gold{background:var(--gold2)}
+.stat-bar-frac{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--muted);min-width:3.5rem;text-align:right;flex-shrink:0}
+.decade-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.decade-block{padding:.4rem .75rem;background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);text-align:center}
+.decade-block-num{font-family:'Bodoni Moda',serif;font-size:1rem;font-weight:700;color:var(--ink)}
+.decade-block-label{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+/* guest mode hides */
+body.guest-mode .inst-edit-btn,body.guest-mode .inst-remove-btn,body.guest-mode .add-inst-btn,
+body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!important}
+
+/* image zoom overlay */
+#imgZoom{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;cursor:zoom-out}
+#imgZoom.open{display:flex}
+#imgZoom img{max-width:90vw;max-height:90vh;object-fit:contain}
+
+@media print{body>*:not(#scModalBg){display:none!important}#scModalBg{display:block!important;position:static!important;background:none!important;padding:0!important}.sc-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important}.sc-list{overflow:visible!important;max-height:none!important}.sc-item{page-break-inside:avoid;border-bottom:1px solid #ddd!important}.sc-print-header{display:block;margin-bottom:.8rem}.sc-print-title{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700}.sc-print-date{font-size:.6rem;color:#666;font-family:monospace;margin-top:.2rem}.sc-group-label{page-break-after:avoid}.sc-modal.sc-print-unchecked .sc-item.checked{display:none!important}.sc-modal.sc-print-needed .sc-list{display:none!important}.sc-modal.sc-print-needed #scNeededSection{display:flex!important;flex-direction:column}}
+
+#version-badge{position:fixed;bottom:8px;right:8px;background:#8B7355;color:#fff;font-size:10px;padding:3px 7px;border-radius:3px;z-index:9999;opacity:.65;font-family:monospace;pointer-events:none}
+@media(max-width:1023px){#version-badge{bottom:calc(var(--mob-nav-h) + 8px)}}
+
+/* ── BADGE STATUS ── */
+.badge-status{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.65rem;font-family:'DM Mono',monospace;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.badge-status.Got{background:rgba(34,221,102,.15);color:var(--got)}
+.badge-status.Need{background:rgba(229,85,85,.12);color:var(--need)}
+.badge-status.List{background:rgba(100,120,220,.12);color:var(--list)}
+.badge-status.Unknown{background:rgba(0,0,0,.07);color:var(--muted)}
+
+/* ── BUTTONS ── */
+.btn-sm{padding:.25rem .6rem;font-size:.65rem;font-family:'DM Mono',monospace;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;transition:background .12s}
+.btn-sm:hover{background:var(--paper2)}
+.btn-danger{border-color:var(--need)!important;color:var(--need)!important}
+.btn-danger:hover{background:rgba(229,85,85,.08)!important}
+
+/* ── FORM GRID ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1rem}
+.form-grid label{display:flex;flex-direction:column;gap:.25rem;font-size:.72rem;font-family:'DM Mono',monospace;color:var(--muted)}
+.form-grid input,.form-grid select{padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);font-size:.85rem;font-family:inherit;outline:none}
+.form-grid input:focus,.form-grid select:focus{border-color:var(--gold)}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--mob-nav-h) + 1rem);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:.55rem 1.2rem;border-radius:999px;font-size:.78rem;font-family:'DM Mono',monospace;z-index:9990;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:1024px){.toast{bottom:1.5rem}}
+
+/* ── ARCHIVE PAGE ── */
+.arc-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding:1rem var(--page-pad);background:var(--paper2);border-bottom:1px solid var(--border)}
+.arc-filters{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.arc-filters select,.arc-filters input{padding:.35rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);font-size:.8rem;font-family:'DM Mono',monospace;outline:none}
+.arc-status-chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip-toggle{display:flex;align-items:center;gap:.3rem;font-size:.7rem;font-family:'DM Mono',monospace;cursor:pointer;padding:.25rem .5rem;border:1px solid var(--border);border-radius:999px;user-select:none}
+.arc-results-bar{padding:.5rem var(--page-pad);font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)}
+.arc-table-wrap{overflow-x:auto}
+.arc-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.arc-table th{text-align:left;padding:.5rem .75rem;border-bottom:2px solid var(--border);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.arc-table th.sortable{cursor:pointer}
+.arc-table th.sortable:hover{color:var(--ink)}
+.arc-table td{padding:.45rem .75rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.arc-table tr:hover td{background:var(--paper2)}
+.arc-pager{display:flex;align-items:center;gap:.75rem;padding:.75rem var(--page-pad);justify-content:center}
+.pager-btn{padding:.35rem .9rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.72rem}
+.pager-btn:hover{background:var(--paper2)}
+.pager-info{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--muted)}
+
+/* ── LIGHTBOX INNER LAYOUT ── */
+.lb-img-panel{width:240px;min-width:200px;display:flex;flex-direction:column;align-items:center;padding:1.5rem;border-right:1px solid var(--border);gap:1rem}
+.lb-img-panel img{width:100%;max-height:220px;object-fit:contain;border-radius:var(--r);cursor:zoom-in}
+.lb-img-actions{display:flex;flex-direction:column;gap:.4rem;width:100%}
+.lb-meta-panel{flex:1;min-width:0;overflow-y:auto;padding:1.5rem}
+.lb-header{margin-bottom:1rem}
+.lb-title{margin:0 0 .25rem;font-family:'Bodoni Moda',serif;font-size:1.2rem;line-height:1.25}
+.lb-code{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)}
+.lb-dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem .75rem;font-size:.85rem;margin-bottom:1.25rem}
+.lb-dl dt{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;align-self:center}
+.lb-dl dd{margin:0;color:var(--ink)}
+.lb-instances{margin-bottom:1.25rem}
+.lb-section-title{font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 .75rem}
+.lb-empty{color:var(--muted);font-size:.85rem;font-style:italic}
+.lb-add-form{border-top:1px solid var(--border);padding-top:1rem}
+.inst-item{border:1px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:.6rem;background:var(--paper2)}
+.inst-header{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.35rem}
+.inst-id{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)}
+.inst-grade{font-size:.8rem;font-weight:600}
+.inst-price{font-size:.8rem;color:var(--gold);margin-left:auto}
+.inst-notes{font-size:.8rem;color:var(--ink);margin-bottom:.35rem;font-style:italic}
+.inst-sc{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace}
+.inst-edit-form{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+@media(max-width:700px){.lb-img-panel{width:100%;border-right:none;border-bottom:1px solid var(--border)}}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem;padding:.5rem 0}
+.stat-card{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center}
+.stat-num{font-family:'Bodoni Moda',serif;font-size:2rem;line-height:1;color:var(--ink)}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.3rem}
+</style>
+</head>
+<body>
+
+<!-- ── LOAD SCREEN ── -->
+<div id="loadScreen">
+  <div class="load-logo">COIN<span style="color:var(--ink);font-weight:400;font-style:italic">hub</span></div>
+  <div class="load-sub">British Coin Archive</div>
+  <div class="load-bar"></div>
+  <div class="load-msg" id="loadMsg">Loading…</div>
+  <div class="load-error" id="loadError"></div>
+</div>
+
+<!-- ── GUEST BANNER ── -->
+<div id="guestBanner">
+  <b>Guest access</b> — read only
+  <span class="guest-expiry" id="guestExpiry"></span>
+</div>
+
+<!-- ── TOP NAV ── -->
+<header id="topNav" style="display:none">
+  <a class="nav-logo" href="#home">COIN<span>hub</span></a>
+  <nav class="nav-links" id="navLinks">
+    <a class="nav-link" href="#home" data-page="home">Home</a>
+    <a class="nav-link" href="#collections" data-page="collections">Collections</a>
+    <a class="nav-link" href="#monarchs" data-page="monarchs">Monarchs</a>
+    <a class="nav-link" href="#years" data-page="years">Years</a>
+    <a class="nav-link" href="#archive" data-page="archive">Archive</a>
+  </nav>
+  <div class="nav-stats" id="navStats">
+    <div class="hstat"><span class="hstat-dot" style="background:var(--got)"></span>Got <b id="hGot">–</b></div>
+    <div class="hstat"><span class="hstat-dot" style="background:var(--need)"></span>Need <b id="hNeed">–</b></div>
+    <div class="hstat"><span class="hstat-dot" style="background:var(--border)"></span>Total <b id="hTotal">–</b></div>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-search-btn" onclick="openSearchOverlay()">⌕ Search</button>
+    <div style="position:relative" id="adminMenuWrap">
+      <button class="nav-admin-btn" id="adminMenuBtn" onclick="toggleAdminMenu()">Admin ▾<span class="nav-badge" id="syncBadge" style="display:none">0</span></button>
+      <div class="admin-dropdown" id="adminDropdown">
+        <a class="admin-dropdown-item" onclick="showStats();closeAdminMenu()">📊 Statistics</a>
+        <a class="admin-dropdown-item" onclick="showChangeLog();closeAdminMenu()">📋 Change Log</a>
+        <a class="admin-dropdown-item" onclick="showStockCheck();closeAdminMenu()">✓ Stock Check</a>
+        <a class="admin-dropdown-item" onclick="showSyncQueue();closeAdminMenu()">⟳ Notion Sync <span id="syncBadge2" style="display:none;background:var(--need);color:#fff;font-size:.45rem;min-width:14px;height:14px;border-radius:7px;padding:0 3px;margin-left:.3rem;display:inline-flex;align-items:center;justify-content:center"></span></a>
+        <div class="admin-dropdown-sep"></div>
+        <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
+        <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── PAGE MAIN ── -->
+<main id="pageMain" style="display:none">
+  <section id="page-home" class="page active"></section>
+  <section id="page-collections" class="page"></section>
+  <section id="page-collection-detail" class="page"></section>
+  <section id="page-monarchs" class="page"></section>
+  <section id="page-monarch-detail" class="page"></section>
+  <section id="page-years" class="page"></section>
+  <section id="page-archive" class="page"></section>
+  <section id="page-search" class="page"></section>
+</main>
+
+<!-- ── MOBILE BOTTOM NAV ── -->
+<nav id="bottomNav" style="display:none">
+  <a class="bnav-item" href="#home" data-page="home"><span class="bnav-icon">⌂</span>Home</a>
+  <a class="bnav-item" href="#collections" data-page="collections"><span class="bnav-icon">◫</span>Collections</a>
+  <a class="bnav-item" href="#monarchs" data-page="monarchs"><span class="bnav-icon">♛</span>Monarchs</a>
+  <a class="bnav-item" href="#archive" data-page="archive"><span class="bnav-icon">≡</span>Archive</a>
+  <button class="bnav-item" onclick="openSearchOverlay()"><span class="bnav-icon">⌕</span>Search</button>
+</nav>
+
+<!-- ── COIN DETAIL MODAL ── -->
+<div id="coinModal" onclick="if(event.target===this)closeCoinModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCoinModal()">✕</button>
+    <button class="modal-nav" id="modalPrev" onclick="lightboxNav(-1)">‹</button>
+    <button class="modal-nav" id="modalNext" onclick="lightboxNav(1)">›</button>
+    <div class="modal-inner" id="modalInner"></div>
+  </div>
+</div>
+
+<!-- ── IMG ZOOM ── -->
+<div id="imgZoom" onclick="closeImgZoom()"><img id="imgZoomImg" src="" alt=""></div>
+
+<!-- ── SEARCH OVERLAY ── -->
+<div id="searchOverlay" onclick="if(event.target===this)closeSearchOverlay()">
+  <div class="search-panel">
+    <div class="search-panel-input">
+      <span style="color:var(--muted);font-size:.9rem">⌕</span>
+      <input type="text" id="searchPanelInput" placeholder="Search coins, collections, monarchs, years…" oninput="onSearchPanelInput()" onkeydown="onSearchPanelKey(event)">
+      <button class="search-panel-close" onclick="closeSearchOverlay()">✕</button>
+    </div>
+    <div class="search-results-list" id="searchResultsList"></div>
+  </div>
+</div>
+
+<!-- ── CHANGE LOG MODAL ── -->
+<div class="log-modal-bg" id="logModalBg" onclick="if(event.target===this)closeChangeLog()">
+  <div class="log-modal">
+    <div class="log-modal-head">
+      <span class="log-modal-title">Change Log</span>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <button class="log-reinstate-btn" onclick="_saveAuditLogToServer();this.textContent='✓ Saved';setTimeout(()=>this.textContent='💾 Save',2000)" style="margin-top:0">💾 Save</button>
+        <button class="log-reinstate-btn" onclick="exportChangeLogCSV()" style="margin-top:0">↓ CSV</button>
+        <button class="log-modal-close" onclick="closeChangeLog()">✕</button>
+      </div>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+</div>
+
+<!-- ── STOCK CHECK MODAL ── -->
+<div class="sc-modal-bg" id="scModalBg" onclick="if(event.target===this)closeStockCheck()">
+  <div class="sc-modal">
+    <div class="sc-modal-head">
+      <span class="sc-modal-title">Stock Check</span>
+      <button class="log-modal-close" onclick="closeStockCheck()">✕</button>
+    </div>
+    <div class="sc-controls">
+      <select id="scLocationSelect" onchange="loadStockCheck()" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer;outline:none"><option value="">— Select container —</option></select>
+      <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
+      <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
+      <button id="scUncheckedBtn" class="log-reinstate-btn" onclick="scToggleUnchecked()" style="margin-top:0">◌ Unchecked</button>
+      <button class="log-reinstate-btn" onclick="window.print()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ All</button>
+      <button class="log-reinstate-btn" onclick="scPrintUnchecked()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ Unchecked</button>
+      <button class="log-reinstate-btn" onclick="scPrintNeeded()" style="margin-top:0;border-color:var(--need);color:var(--need)">⎙ Needed</button>
+      <span class="sc-progress" id="scProgress"></span>
+    </div>
+    <div class="sc-progress-wrap" id="scProgressWrap">
+      <div class="sc-progress-bar"><div class="sc-progress-bar-fill" id="scProgressBarFill" style="width:0%"></div></div>
+    </div>
+    <div class="sc-list" id="scList">
+      <div class="sc-print-header" id="scPrintHeader"></div>
+      <div class="sc-empty" id="scEmptyMsg">Select a storage location above.</div>
+    </div>
+    <div id="scNeededSection" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ── NOTION SYNC MODAL ── -->
+<div class="sync-modal-bg" id="syncModalBg" onclick="if(event.target===this)closeSyncQueue()">
+  <div class="sync-modal">
+    <div class="sync-modal-head">
+      <span class="sync-modal-title">Notion Sync</span>
+      <button class="log-modal-close" onclick="closeSyncQueue()">✕</button>
+    </div>
+    <div class="sync-tabs">
+      <button class="sync-tab active" id="syncTabPush" onclick="_syncShowTab('push')">Push to Notion<span class="tab-badge" id="syncPushBadge" style="display:none">0</span></button>
+      <button class="sync-tab" id="syncTabPull" onclick="_syncShowTab('pull')">Pull from Notion</button>
+    </div>
+    <div id="syncPushPanel" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <div class="sync-push-actions">
+        <button class="log-reinstate-btn" id="approveAllBtn" onclick="approveAllSync()" style="margin-top:0">✓ Approve All</button>
+        <button class="log-reinstate-btn" id="processNowBtn" onclick="processQueueNow()" style="margin-top:0;border-color:var(--got);color:var(--got)">⚡ Process Now</button>
+      </div>
+      <div class="sync-body" id="syncBody"></div>
+    </div>
+    <div id="syncPullPanel" style="display:none;flex:1;overflow-y:auto;min-height:0">
+      <div class="sync-pull-body">
+        <div class="sync-pull-row">
+          <span class="sync-pull-label">Last pull</span>
+          <span class="sync-pull-val" id="syncLastPull">Never</span>
+        </div>
+        <div>
+          <div class="sync-pull-label" style="margin-bottom:.35rem">Auto-sync interval</div>
+          <div class="sync-interval-row">
+            <button class="sync-interval-btn" data-mins="15" onclick="_syncSetInterval(15)">15 min</button>
+            <button class="sync-interval-btn" data-mins="30" onclick="_syncSetInterval(30)">30 min</button>
+            <button class="sync-interval-btn" data-mins="60" onclick="_syncSetInterval(60)">1 hr</button>
+            <button class="sync-interval-btn active" data-mins="0" onclick="_syncSetInterval(0)">Off</button>
+          </div>
+        </div>
+        <div class="sync-action-bar">
+          <button class="sync-pull-btn" id="syncPullNowBtn" onclick="_syncPullNow(false)">⇩ Pull Now</button>
+          <button class="sync-sc-btn" id="syncStocktakePushBtn" onclick="_scSyncToNotion()">⇧ Push Stocktake</button>
+        </div>
+        <div class="sync-hint">Pull updates instance data from Notion. Push sends stocktake dates back to Notion.</div>
+        <div class="sync-pull-log" id="syncPullLog" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STATS MODAL ── -->
+<div class="stats-modal-bg" id="statsModalBg" onclick="if(event.target===this)closeStats()">
+  <div class="stats-modal">
+    <div class="stats-modal-head">
+      <span class="stats-modal-title">Statistics</span>
+      <button class="log-modal-close" onclick="closeStats()">✕</button>
+    </div>
+    <div class="stats-body" id="statsBody"></div>
+  </div>
+</div>
+
+<!-- ── EDIT VARIANT MODAL ── -->
+<div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onclick="if(event.target===this)closeEditVariant()">
+  <div style="background:var(--paper);border-radius:var(--r);padding:1.5rem;width:min(520px,92vw);max-height:90vh;overflow-y:auto;position:relative">
+    <button class="modal-close" onclick="closeEditVariant()">✕</button>
+    <h2 style="margin:0 0 1rem;font-family:'Bodoni Moda',serif;font-size:1.2rem">Edit Variant</h2>
+    <div class="form-grid">
+      <label>Code<input id="evCode" type="text" readonly style="opacity:.6"></label>
+      <label>Name<input id="evName" type="text"></label>
+      <label>Denomination<input id="evDenom" type="text"></label>
+      <label>Year<input id="evYear" type="text"></label>
+      <label>Monarch<input id="evMonarch" type="text"></label>
+      <label>Collection<input id="evCollect" type="text"></label>
+      <label>Status
+        <select id="evStatus">
+          <option>Got</option><option>Need</option><option>List</option><option>Unknown</option>
+        </select>
+      </label>
+      <label style="grid-column:1/-1">Image URL<input id="evImgUrl" type="text"></label>
+    </div>
+    <button class="btn-primary" style="margin-top:1rem" onclick="saveEditVariant()">Save Changes</button>
+  </div>
+</div>
+
+<div id="version-badge">v2-redesign</div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const GS_CACHE_KEY = 'coinhub_gs_cache';
+const GS_CACHE_TTL = 10 * 60 * 1000;
+const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
+const COTUK_MAP = {};
+const INSTANCE_DATA = {};
+const STORAGE_MAP = {};
+
+const MONARCH_META = {
+  'King Charles III':   { cypher:'CR III', reign:'2022–present', desc:'Current monarch. His effigy first appeared on UK coins in 2023.' },
+  'Queen Elizabeth II': { cypher:'ER II',  reign:'1952–2022',    desc:'Britain\'s longest-reigning monarch, whose portrait graced coins for seven decades.' },
+  'King George Vi':     { cypher:'GR VI',  reign:'1936–1952',    desc:'Father of Queen Elizabeth II, who reigned through the Second World War.' },
+  'King George V':      { cypher:'GR V',   reign:'1910–1936',    desc:'Reigned through the First World War and oversaw the transition to the House of Windsor.' },
+  'Queen Victoria':     { cypher:'VR',     reign:'1837–1901',    desc:'One of Britain\'s longest-reigning monarchs, spanning both pre-decimal and early coinage reforms.' },
+  'King Edward VII':    { cypher:'ER VII', reign:'1901–1910',    desc:'The Edwardian era brought distinctive coin designs following the Victorian period.' },
+  'King Edward VIII':   { cypher:'ER VIII',reign:'1936',         desc:'Brief reign; very few coins were minted before his abdication.' },
+};
+
+const FEATURED_COLLECTIONS = [
+  '10p Alphabet','London 2012 Olympics','Harry Potter','Disney',
+  'Beatrix Potter','Paddington Bear','Winnie the Pooh','2007 Proof Set',
+  'Britannia Characters Commemorative','Military',
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let ALL_COINS = [];
+let FILTERED  = [];
+let GUEST_MODE = false;
+let NEXT_INST_ID = 1520;
+
+// Archive state
+let ARC = { denom:null, status:new Set(), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 };
+const ARC_PAGE_SIZE = 100;
+
+// Lightbox state (declared in lightbox section below)
+let LB_CTX_ID = null;
+
+// Stock check
+let _scChecked = {};
+let _scUncheckedOnly = false;
+function _scSave() { try { localStorage.setItem(SC_KEY, JSON.stringify(_scChecked)); } catch(e){} }
+
+// Notion sync
+let _iidIndex = null;
+let _syncPullTimer = null, _syncCountdownTimer = null, _syncCountdownSecs = 0;
+const AUDIT_MAX = 200;
+
+// ── UTILITIES ────────────────────────────────────────────────────────────────
+function parseVariant(code) {
+  if (!code) return null;
+  const parts = code.replace(/^UK-/, '').replace(/^IOM-/,'').split('-');
+  const type = parts[0] || '';
+  const denom = parts[1] || '';
+  const yearRaw = parseInt(parts[2]);
+  const year = isNaN(yearRaw) ? null : yearRaw;
+  const id = year ? (parts[3] || '') : (parts[2] || '');
+  return { type, denom, year, id };
+}
+
+function resolveImage(coin) {
+  return COTUK_MAP[coin.variantCode] || coin.imgUrl || null;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function coinPlaceholderSVG(denom) {
+  return `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="38" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="40" cy="40" r="30" fill="none" stroke="#C8BFA8" stroke-width=".6" stroke-dasharray="3 2"/><text x="40" y="45" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="14" font-weight="600" fill="#8B6914">${esc(denom||'')}</text></svg>`;
+}
+
+function monarchSVG(cypher) {
+  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="120" height="120"><circle cx="60" cy="60" r="58" fill="#1a1208" stroke="#8B6914" stroke-width="1.5"/><circle cx="60" cy="60" r="48" fill="none" stroke="#8B6914" stroke-width=".6" stroke-dasharray="4 3" opacity=".5"/><text x="60" y="66" text-anchor="middle" font-family="Bodoni Moda,serif" font-size="18" font-weight="700" fill="#C49A2A" letter-spacing="2">${esc(cypher||'')}</text></svg>`;
+}
+
+function updateHeaderStats() {
+  const got  = ALL_COINS.filter(c=>c.status==='Got').length;
+  const need = ALL_COINS.filter(c=>c.status==='Need').length;
+  const el = id => document.getElementById(id);
+  if (el('hGot'))   el('hGot').textContent   = got;
+  if (el('hNeed'))  el('hNeed').textContent  = need;
+  if (el('hTotal')) el('hTotal').textContent = ALL_COINS.length;
+}
+function updateHeroStats() {
+  const got  = ALL_COINS.filter(c=>c.status==='Got').length;
+  const total = ALL_COINS.length;
+  const colls = new Set(ALL_COINS.map(c=>c.collection).filter(Boolean)).size;
+  const el = document.getElementById('heroStats');
+  if (el) el.innerHTML = `<span>${got} owned</span><span>·</span><span>${total} variants</span><span>·</span><span>${colls} collections</span>`;
+  const ns = document.getElementById('navStats');
+  if (ns) ns.textContent = `${got}/${total}`;
+}
+
+// ── DATA LOADING ─────────────────────────────────────────────────────────────
+function _seedScCheckedFromInstances(instanceData) {
+  Object.values(instanceData).forEach(arr => arr.forEach(inst => {
+    if (inst.id && inst.lastStocktake && !_scChecked[inst.id]) _scChecked[inst.id] = inst.lastStocktake;
+  }));
+  _scSave();
+}
+
+async function loadFromSheets() {
+  const setMsg = m => { const el = document.getElementById('loadMsg'); if (el) el.textContent = m; };
+  try {
+    const raw = localStorage.getItem(GS_CACHE_KEY);
+    if (raw) {
+      const { ts, coins, cotuk, instances, storageMap } = JSON.parse(raw);
+      if (Date.now() - ts < GS_CACHE_TTL) {
+        setMsg('Loading from cache…');
+        Object.assign(COTUK_MAP, cotuk);
+        Object.assign(INSTANCE_DATA, instances);
+        Object.assign(STORAGE_MAP, storageMap || {});
+        _seedScCheckedFromInstances(instances);
+        return coins;
+      }
+    }
+  } catch(e) {}
+
+  try {
+    setMsg('Fetching coin data…');
+    const res = await fetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
+    if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows } = await res.json();
+    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
+
+    for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
+    for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
+
+    for (let i=1; i<instRows.length; i++) {
+      const r = instRows[i]; const vc = r[1]?.trim(); if (!vc) continue;
+      if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+      INSTANCE_DATA[vc].push({ id:r[0]?.trim()||'', s1:r[2]?.trim()||'', s2:r[3]?.trim()||'', s3:r[4]?.trim()||'', cond:r[5]?.trim()||'', ptype:r[6]?.trim()||'', desc:r[7]?.trim()||'', notes:r[8]?.trim()||'', lastStocktake:r[10]?.trim()||'', lastEdited:r[12]?.trim()||'' });
+    }
+    _seedScCheckedFromInstances(INSTANCE_DATA);
+
+    const coins = [];
+    for (let i=1; i<varRows.length; i++) {
+      const r = varRows[i]; const vc = r[iVC]?.trim(); if (!vc) continue;
+      const instCount = (INSTANCE_DATA[vc]||[]).length;
+      const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
+      coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', instCount, parsed:parseVariant(vc) });
+    }
+
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP} })); } catch(e) {}
+    return coins;
+  } catch(e) {
+    document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
+    throw e;
+  }
+}
+
+window.gsRefreshCache = function() { localStorage.removeItem(GS_CACHE_KEY); location.reload(); };
+
+function restorePendingData() {
+  const pending  = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
+  const edits    = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits')||'[]');
+  const removals = JSON.parse(localStorage.getItem('coinhub_pending_inst_removals')||'[]');
+  pending.forEach(inst => {
+    const vc = inst.variantCode;
+    if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+    if (!INSTANCE_DATA[vc].find(r=>r.id===inst.id)) {
+      INSTANCE_DATA[vc].push(inst);
+      const coin = ALL_COINS.find(c=>c.variantCode===vc);
+      if (coin) { coin.instCount++; coin.status='Got'; }
+    }
+  });
+  edits.forEach(edit => {
+    const recs = INSTANCE_DATA[edit.variantCode];
+    if (recs) { const i=recs.findIndex(r=>r.id===edit.id); if (i>=0) recs[i]=edit; }
+  });
+  removals.forEach(rem => {
+    const recs = INSTANCE_DATA[rem.variantCode];
+    if (recs) {
+      const i = recs.findIndex(r=>r.id===rem.id);
+      if (i>=0) { recs.splice(i,1); const coin=ALL_COINS.find(c=>c.variantCode===rem.variantCode); if (coin) { coin.instCount=Math.max(0,coin.instCount-1); if(!coin.instCount) coin.status='Need'; } }
+    }
+  });
+}
+
+// ── ROUTER ───────────────────────────────────────────────────────────────────
+function router() {
+  const hash = location.hash.replace('#','') || 'home';
+  const [page, ...params] = hash.split('/');
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link, .bnav-item').forEach(a => {
+    const dp = a.dataset.page;
+    a.classList.toggle('active', dp === page || (page.startsWith('collection') && dp==='collections') || (page.startsWith('monarch') && dp==='monarchs'));
+  });
+
+  const show = id => { const el = document.getElementById(id); if (el) el.classList.add('active'); };
+
+  if (page === 'home')              { show('page-home');             renderHome(); }
+  else if (page === 'collections')  { show('page-collections');      renderCollections(); }
+  else if (page === 'collection')   { show('page-collection-detail');renderCollectionDetail(decodeURIComponent(params.join('/'))); }
+  else if (page === 'monarchs')     { show('page-monarchs');         renderMonarchs(); }
+  else if (page === 'monarch')      { show('page-monarch-detail');   renderMonarchDetail(decodeURIComponent(params.join('/'))); }
+  else if (page === 'years')        { show('page-years');            renderYears(); }
+  else if (page === 'archive')      { show('page-archive');          renderArchive(); }
+  else if (page === 'search')       { show('page-search');           renderSearchPage(decodeURIComponent(params.join('/'))); }
+  else                              { location.hash = 'home'; }
+
+  window.scrollTo(0,0);
+}
+
+// ── HOME PAGE ────────────────────────────────────────────────────────────────
+let _homeBuilt = false;
+function renderHome() {
+  if (_homeBuilt) return; // only build once; data doesn't change
+  _homeBuilt = true;
+  const el = document.getElementById('page-home');
+
+  // Compute collection stats
+  const collStats = {};
+  ALL_COINS.forEach(c => {
+    if (!collStats[c.collection]) collStats[c.collection] = { got:0, total:0, img:null };
+    collStats[c.collection].total++;
+    if (c.status==='Got') collStats[c.collection].got++;
+    if (!collStats[c.collection].img) collStats[c.collection].img = resolveImage(c);
+  });
+
+  // Monarch stats
+  const monStats = {};
+  ALL_COINS.forEach(c => {
+    if (!c.monarch) return;
+    if (!monStats[c.monarch]) monStats[c.monarch] = { got:0, total:0, img:null };
+    monStats[c.monarch].total++;
+    if (c.status==='Got') monStats[c.monarch].got++;
+    if (!monStats[c.monarch].img) monStats[c.monarch].img = resolveImage(c);
+  });
+
+  // Year stats
+  const yearStats = {};
+  ALL_COINS.forEach(c => { if (c.year) { yearStats[c.year] = (yearStats[c.year]||0)+1; } });
+
+  // Denom stats
+  const denomStats = {};
+  ALL_COINS.forEach(c => { denomStats[c.denom] = (denomStats[c.denom]||0)+1; });
+
+  const totalOwned = ALL_COINS.reduce((s,c)=>s+(c.instCount||0),0);
+
+  // ── Hero ──
+  const heroHTML = `<div class="hero">
+    <div class="hero-bg"></div><div class="hero-coins"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow">British Coin Archive</div>
+      <div class="hero-title">COIN<span>hub</span></div>
+      <div class="hero-sub">Explore the collection</div>
+      <div class="hero-search">
+        <span class="hero-search-icon">⌕</span>
+        <input class="hero-input" id="heroSearchInput" type="text" placeholder="Search coins, collections, monarchs, years…" oninput="onHeroSearch()" onkeydown="onHeroSearchKey(event)" autocomplete="off">
+        <div class="hero-suggest" id="heroSuggest"></div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-num">${ALL_COINS.length.toLocaleString()}</div><div class="hero-stat-label">Variants</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">${ALL_COINS.filter(c=>c.status==='Got').length.toLocaleString()}</div><div class="hero-stat-label">Owned</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">${totalOwned.toLocaleString()}</div><div class="hero-stat-label">Instances</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">${Object.keys(collStats).length}</div><div class="hero-stat-label">Collections</div></div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── Featured collections ──
+  const featuredCards = FEATURED_COLLECTIONS.filter(n=>collStats[n]).map(name => {
+    const { got, total, img } = collStats[name];
+    const pct = total ? Math.round(got/total*100) : 0;
+    const bgStyle = img ? `background-image:url('${img}')` : `background:linear-gradient(135deg,var(--dark2),var(--dark))`;
+    return `<a class="coll-card-v2" href="#collection/${encodeURIComponent(name)}" title="${esc(name)}">
+      <div class="coll-card-bg" style="${bgStyle}"></div>
+      <div class="coll-card-overlay"></div>
+      <div class="coll-card-body">
+        <div class="coll-card-name">${esc(name)}</div>
+        <div class="coll-card-meta"><span>${got}/${total}</span><span>·</span><span>${pct}%</span></div>
+        <div class="coll-card-prog"><div class="coll-card-prog-fill" style="width:${pct}%"></div></div>
+      </div>
+    </a>`;
+  }).join('');
+
+  // ── Monarchs ──
+  const monarchOrder = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII'];
+  const monarchCards = monarchOrder.filter(m=>monStats[m]).map(name => {
+    const meta = MONARCH_META[name] || { cypher:name.slice(0,4), reign:'', desc:'' };
+    const { got, total, img } = monStats[name];
+    const imgEl = img
+      ? `<img src="${img}" alt="${esc(name)}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">${monarchSVG(meta.cypher).replace('<svg','<svg style="display:none"')}`
+      : monarchSVG(meta.cypher);
+    return `<a class="monarch-card" href="#monarch/${encodeURIComponent(name)}">
+      <div class="monarch-coin">${imgEl}</div>
+      <div class="monarch-name">${esc(name)}</div>
+      <div class="monarch-reign">${esc(meta.reign)}</div>
+      <div class="monarch-count">${got} owned · ${total} variants</div>
+    </a>`;
+  }).join('');
+
+  // ── Years by decade ──
+  const decades = {};
+  Object.keys(yearStats).forEach(y => {
+    const d = Math.floor(+y/10)*10;
+    if (!decades[d]) decades[d] = [];
+    decades[d].push(+y);
+  });
+  const yearsHTML = Object.keys(decades).sort((a,b)=>+b-+a).map(dec => {
+    const years = decades[dec].sort((a,b)=>b-a);
+    const chips = years.map(y => `<a class="year-chip" href="#archive" onclick="arcJumpYear(${y})">${y}<span class="year-chip-count">${yearStats[y]}</span></a>`).join('');
+    return `<div class="decade-section"><div class="decade-label">${dec}s</div><div class="year-chips">${chips}</div></div>`;
+  }).join('');
+
+  // ── Denom pills ──
+  const denomPills = DENOM_ORDER.filter(d=>denomStats[d]).map(d => {
+    const cnt = denomStats[d];
+    return `<a class="denom-pill" href="#archive" onclick="arcJumpDenom('${esc(d)}')">${esc(d)}<span class="denom-pill-count">${cnt}</span></a>`;
+  }).join('');
+
+  el.innerHTML = heroHTML + `
+  <div class="section-wrap">
+    <div class="section-block">
+      <div class="section-head"><h2 class="section-title">Collections</h2><a class="section-link" href="#collections">View all →</a></div>
+      <div class="card-scroll">${featuredCards}</div>
+    </div>
+    <div class="section-block" style="border-top:1px solid var(--border)">
+      <div class="section-head"><h2 class="section-title">Browse by Monarch</h2><a class="section-link" href="#monarchs">All monarchs →</a></div>
+      <div class="monarch-grid">${monarchCards}</div>
+    </div>
+    <div class="section-block" style="border-top:1px solid var(--border)">
+      <div class="section-head"><h2 class="section-title">Browse by Year</h2><a class="section-link" href="#years">Full year index →</a></div>
+      ${yearsHTML}
+    </div>
+    <div class="section-block" style="border-top:1px solid var(--border)">
+      <div class="section-head"><h2 class="section-title">Browse by Denomination</h2></div>
+      <div class="denom-pills">${denomPills}</div>
+    </div>
+    <div class="section-block" style="border-top:1px solid var(--border)">
+      <div class="home-cta">
+        <div class="home-cta-title">Full Archive</div>
+        <div class="home-cta-sub">Search, filter and sort every variant in the collection</div>
+        <a class="btn-primary" href="#archive">Open Archive</a>
+        <a class="btn-secondary" href="#collections">All Collections</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── HOME SEARCH ──────────────────────────────────────────────────────────────
+let _heroTimer;
+function onHeroSearch() {
+  clearTimeout(_heroTimer);
+  _heroTimer = setTimeout(buildHeroSuggestions, 160);
+}
+function onHeroSearchKey(e) {
+  if (e.key === 'Enter') {
+    const q = document.getElementById('heroSearchInput').value.trim();
+    if (q) { closeHeroSuggest(); location.hash = 'archive'; setTimeout(()=>arcSetSearch(q),100); }
+  }
+  if (e.key === 'Escape') closeHeroSuggest();
+}
+function closeHeroSuggest() {
+  const s = document.getElementById('heroSuggest'); if (s) s.classList.remove('open');
+}
+function buildHeroSuggestions() {
+  const input = document.getElementById('heroSearchInput');
+  const box   = document.getElementById('heroSuggest');
+  if (!input || !box) return;
+  const q = input.value.trim().toLowerCase();
+  if (!q) { box.classList.remove('open'); return; }
+
+  const collHits = [...new Set(ALL_COINS.map(c=>c.collection))].filter(c=>c&&c.toLowerCase().includes(q)).slice(0,4);
+  const monHits  = [...new Set(ALL_COINS.map(c=>c.monarch))].filter(m=>m&&m.toLowerCase().includes(q)).slice(0,3);
+  const coinHits = ALL_COINS.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.variantCode||'').toLowerCase().includes(q)).slice(0,5);
+
+  let html = '';
+  if (collHits.length) html += `<div class="suggest-group"><div class="suggest-label">Collections</div>${collHits.map(c=>`<div class="suggest-item" onclick="location.hash='collection/${encodeURIComponent(c)}';closeHeroSuggest()"><span class="suggest-item-label">${esc(c)}</span></div>`).join('')}</div>`;
+  if (monHits.length)  html += `<div class="suggest-group"><div class="suggest-label">Monarchs</div>${monHits.map(m=>`<div class="suggest-item" onclick="location.hash='monarch/${encodeURIComponent(m)}';closeHeroSuggest()"><span class="suggest-item-label">${esc(m)}</span></div>`).join('')}</div>`;
+  if (coinHits.length) html += `<div class="suggest-group"><div class="suggest-label">Coins</div>${coinHits.map(c=>`<div class="suggest-item" onclick="openCoinModal('${esc(c.variantCode)}',ALL_COINS,ALL_COINS.indexOf(ALL_COINS.find(x=>x.variantCode==='${esc(c.variantCode)}')))""><span class="suggest-item-label">${esc(c.name)}</span><span class="suggest-item-meta">${c.year||''} · ${c.denom||''}</span></div>`).join('')}</div>`;
+
+  box.innerHTML = html || '<div class="suggest-group"><div style="padding:.75rem .9rem;font-size:.85rem;color:var(--muted);font-style:italic">No matches</div></div>';
+  box.classList.add('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#heroSuggest') && !e.target.closest('#heroSearchInput')) closeHeroSuggest();
+});
+
+// ── COLLECTIONS PAGE ─────────────────────────────────────────────────────────
+function renderCollections() {
+  const el = document.getElementById('page-collections');
+  const collStats = {};
+  ALL_COINS.forEach(c => {
+    if (!collStats[c.collection]) collStats[c.collection] = { got:0, total:0, img:null };
+    collStats[c.collection].total++;
+    if (c.status==='Got') collStats[c.collection].got++;
+    if (!collStats[c.collection].img) collStats[c.collection].img = resolveImage(c);
+  });
+  const sorted = Object.keys(collStats).sort();
+  const cards = sorted.map(name => {
+    const { got, total, img } = collStats[name];
+    const pct = total ? Math.round(got/total*100) : 0;
+    const bgStyle = img ? `background-image:url('${img}')` : `background:linear-gradient(135deg,var(--dark2),var(--dark))`;
+    return `<a class="coll-card-v2" href="#collection/${encodeURIComponent(name)}" title="${esc(name)}">
+      <div class="coll-card-bg" style="${bgStyle}"></div>
+      <div class="coll-card-overlay"></div>
+      <div class="coll-card-body">
+        <div class="coll-card-name">${esc(name)}</div>
+        <div class="coll-card-meta"><span>${got}/${total}</span><span>·</span><span>${pct}%</span></div>
+        <div class="coll-card-prog"><div class="coll-card-prog-fill" style="width:${pct}%"></div></div>
+      </div>
+    </a>`;
+  }).join('');
+  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Collections</h1><p class="page-hero-sub">${sorted.length} collections · ${ALL_COINS.length} variants</p></div></div>
+  <div class="section-wrap"><div class="section-block"><div class="card-scroll" style="grid-template-columns:repeat(4,1fr)">${cards}</div></div></div>`;
+}
+
+// ── COLLECTION DETAIL ────────────────────────────────────────────────────────
+function renderCollectionDetail(name) {
+  const el = document.getElementById('page-collection-detail');
+  const coins = ALL_COINS.filter(c=>c.collection===name).sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name));
+  if (!coins.length) { el.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--muted)">Collection not found</div>`; return; }
+  const got = coins.filter(c=>c.status==='Got').length;
+  const pct = Math.round(got/coins.length*100);
+  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner">
+    <a class="page-hero-back" href="#collections">← Collections</a>
+    <h1 class="page-hero-title">${esc(name)}</h1>
+    <p class="page-hero-sub">${got} owned · ${coins.length} variants · ${pct}% complete</p>
+  </div></div>
+  <div class="section-wrap"><div class="section-block">${coinGridHTML(coins)}</div></div>`;
+}
+
+// ── MONARCHS PAGE ────────────────────────────────────────────────────────────
+function renderMonarchs() {
+  const el = document.getElementById('page-monarchs');
+  const monStats = {};
+  ALL_COINS.forEach(c => {
+    if (!c.monarch) return;
+    if (!monStats[c.monarch]) monStats[c.monarch] = { got:0, total:0, img:null };
+    monStats[c.monarch].total++;
+    if (c.status==='Got') monStats[c.monarch].got++;
+    if (!monStats[c.monarch].img) monStats[c.monarch].img = resolveImage(c);
+  });
+  const order = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII'];
+  const rest  = Object.keys(monStats).filter(m=>!order.includes(m)).sort();
+  const all   = [...order.filter(m=>monStats[m]), ...rest];
+  const cards = all.map(name => {
+    const meta = MONARCH_META[name] || { cypher:name.slice(0,6), reign:'', desc:'' };
+    const { got, total, img } = monStats[name];
+    const imgEl = img ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">` : '';
+    return `<a class="monarch-card" href="#monarch/${encodeURIComponent(name)}">
+      <div class="monarch-coin">${imgEl}${!img?monarchSVG(meta.cypher):''}</div>
+      <div class="monarch-name">${esc(name)}</div>
+      <div class="monarch-reign">${esc(meta.reign)}</div>
+      <div class="monarch-count">${got} owned · ${total} variants</div>
+    </a>`;
+  }).join('');
+  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Monarchs</h1><p class="page-hero-sub">Browse the collection by reign</p></div></div>
+  <div class="section-wrap"><div class="section-block"><div class="monarch-grid" style="grid-template-columns:repeat(4,1fr)">${cards}</div></div></div>`;
+}
+
+// ── MONARCH DETAIL ───────────────────────────────────────────────────────────
+function renderMonarchDetail(name) {
+  const el = document.getElementById('page-monarch-detail');
+  const coins = ALL_COINS.filter(c=>c.monarch===name).sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name));
+  if (!coins.length) { el.innerHTML=`<div style="padding:3rem;text-align:center;color:var(--muted)">No coins found for this monarch</div>`; return; }
+  const meta = MONARCH_META[name] || { cypher:'', reign:'', desc:'' };
+  const got = coins.filter(c=>c.status==='Got').length;
+  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner">
+    <a class="page-hero-back" href="#monarchs">← Monarchs</a>
+    <h1 class="page-hero-title">${esc(name)}</h1>
+    <p class="page-hero-sub">${esc(meta.reign)}${meta.desc?' · '+esc(meta.desc):''}</p>
+    <p class="page-hero-sub" style="margin-top:.3rem">${got} owned · ${coins.length} variants</p>
+  </div></div>
+  <div class="section-wrap"><div class="section-block">${coinGridHTML(coins)}</div></div>`;
+}
+
+// ── YEARS PAGE ───────────────────────────────────────────────────────────────
+function renderYears() {
+  const el = document.getElementById('page-years');
+  const yearStats = {};
+  ALL_COINS.forEach(c => { if (c.year) yearStats[c.year] = (yearStats[c.year]||0)+1; });
+  const decades = {};
+  Object.keys(yearStats).forEach(y => { const d=Math.floor(+y/10)*10; if (!decades[d]) decades[d]=[]; decades[d].push(+y); });
+  const html = Object.keys(decades).sort((a,b)=>+b-+a).map(dec => {
+    const years = decades[dec].sort((a,b)=>b-a);
+    const chips = years.map(y=>`<a class="year-chip" href="#archive" onclick="arcJumpYear(${y})">${y}<span class="year-chip-count">${yearStats[y]}</span></a>`).join('');
+    return `<div class="decade-section"><div class="decade-label">${dec}s — ${decades[dec].length} years</div><div class="year-chips">${chips}</div></div>`;
+  }).join('');
+  const noYear = ALL_COINS.filter(c=>!c.year).length;
+  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Browse by Year</h1><p class="page-hero-sub">${Object.keys(yearStats).length} years · ${noYear} undated variants</p></div></div>
+  <div class="section-wrap"><div class="section-block">${html}</div></div>`;
+}
+
+// ── CONTEXT REGISTRY (for lightbox prev/next) ─────────────────────────────────
+const _CTX = {}; // ctxId -> variantCode[]
+let _ctxSeq = 0;
+function registerContext(coins) {
+  const id = 'c' + (++_ctxSeq);
+  _CTX[id] = coins.map(c=>c.variantCode);
+  return id;
+}
+
+// ── COIN CARD HTML ────────────────────────────────────────────────────────────
+function coinGridHTML(coins) {
+  const ctxId = registerContext(coins);
+  return `<div class="coin-grid">${coins.map((coin,i) => coinCardHTML(coin,ctxId,i)).join('')}</div>`;
+}
+function coinCardHTML(coin, ctxId, idx) {
+  const img = resolveImage(coin);
+  const imgEl = img
+    ? `<img src="${img}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    : coinPlaceholderSVG(coin.denom);
+  return `<div class="coin-card" onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${idx})">
+    <div class="coin-card-img">${imgEl}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
+    <div class="coin-card-body">
+      <div class="coin-card-name">${esc(coin.name)}</div>
+      <div class="coin-card-meta"><span>${coin.year||'—'}</span><span>${esc(coin.denom)}</span>${coin.instCount>0?`<span style="color:var(--got)">×${coin.instCount}</span>`:''}</div>
+    </div>
+  </div>`;
+}
+
+// ── ARCHIVE PAGE ──────────────────────────────────────────────────────────────
+function arcJumpYear(y) { ARC.year = String(y); router(); }
+
+function renderArchive() {
+  const el = document.getElementById('page-archive');
+  if (!el._built) { el.innerHTML = buildArchiveShell(); el._built = true; wireArchiveEvents(); }
+  syncArchiveUI();
+  arcApplyFilters();
+}
+
+function buildArchiveShell() {
+  const denoms = ['All',...DENOM_ORDER];
+  const denomOpts = denoms.map(d=>`<option value="${d==='All'?'':d}">${d}</option>`).join('');
+  const monarchs = ['All',...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))].map(m=>`<option value="${m==='All'?'':m}">${m}</option>`).join('');
+  return `<div class="arc-toolbar">
+    <div class="arc-filters">
+      <select id="arcDenom" onchange="ARC.denom=this.value||null;ARC.page=0;arcApplyFilters()">${denomOpts}</select>
+      <select id="arcMonarch" onchange="ARC.monarch=this.value;ARC.page=0;arcApplyFilters()">${monarchs}</select>
+      <input id="arcYear" type="number" placeholder="Year" style="width:90px" oninput="ARC.year=this.value;ARC.page=0;arcApplyFilters()">
+      <input id="arcSearch" type="text" placeholder="Search name / code…" oninput="ARC.search=this.value;ARC.page=0;arcApplyFilters()">
+    </div>
+    <div class="arc-status-chips">
+      ${['Got','Need','List','Unknown'].map(s=>`<label class="chip-toggle"><input type="checkbox" value="${s}" checked onchange="arcToggleStatus('${s}',this.checked)"> ${s}</label>`).join('')}
+    </div>
+  </div>
+  <div id="arcResultsBar" class="arc-results-bar"></div>
+  <div id="arcTableWrap" class="arc-table-wrap">
+    <table class="arc-table" id="arcTable">
+      <thead><tr>
+        <th></th>
+        <th class="sortable" onclick="arcSort('name')">Name</th>
+        <th class="sortable" onclick="arcSort('denom')">Denom</th>
+        <th class="sortable" onclick="arcSort('year')">Year</th>
+        <th class="sortable" onclick="arcSort('monarch')">Monarch</th>
+        <th class="sortable" onclick="arcSort('collection')">Collection</th>
+        <th>Status</th>
+        <th>Owned</th>
+      </tr></thead>
+      <tbody id="arcTbody"></tbody>
+    </table>
+  </div>
+  <div id="arcPager" class="arc-pager"></div>`;
+}
+
+function wireArchiveEvents() {
+  ARC.status = new Set(['Got','Need','List','Unknown']);
+}
+
+function arcToggleStatus(s, on) {
+  if (on) ARC.status.add(s); else ARC.status.delete(s);
+  ARC.page = 0; arcApplyFilters();
+}
+
+function arcSort(col) {
+  if (ARC.sort === col) ARC.sortDir *= -1; else { ARC.sort = col; ARC.sortDir = 1; }
+  arcRenderTable();
+}
+
+function syncArchiveUI() {
+  const d = document.getElementById('arcDenom');
+  const m = document.getElementById('arcMonarch');
+  const y = document.getElementById('arcYear');
+  const s = document.getElementById('arcSearch');
+  if (d) d.value = ARC.denom || '';
+  if (m) m.value = ARC.monarch || '';
+  if (y) y.value = ARC.year || '';
+  if (s) s.value = ARC.search || '';
+}
+
+function arcApplyFilters() {
+  FILTERED = ALL_COINS.filter(c => {
+    if (ARC.denom && c.denom !== ARC.denom) return false;
+    if (ARC.monarch && c.monarch !== ARC.monarch) return false;
+    if (ARC.year && String(c.year) !== String(ARC.year)) return false;
+    if (ARC.collection && c.collection !== ARC.collection) return false;
+    if (ARC.status.size < 4 && !ARC.status.has(c.status||'Unknown')) return false;
+    if (ARC.search) {
+      const q = ARC.search.toLowerCase();
+      if (!c.name.toLowerCase().includes(q) && !c.variantCode.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+  arcRenderTable();
+}
+
+function arcRenderTable() {
+  const tbody = document.getElementById('arcTbody');
+  const bar   = document.getElementById('arcResultsBar');
+  const pager = document.getElementById('arcPager');
+  if (!tbody) return;
+  const col = ARC.sort;
+  const dir = ARC.sortDir;
+  const sorted = [...FILTERED].sort((a,b)=>{
+    const av = (a[col]||'').toString().toLowerCase();
+    const bv = (b[col]||'').toString().toLowerCase();
+    return av<bv?-dir:av>bv?dir:0;
+  });
+  const total = sorted.length;
+  const pages = Math.ceil(total/ARC_PAGE_SIZE)||1;
+  if (ARC.page >= pages) ARC.page = pages-1;
+  const slice = sorted.slice(ARC.page*ARC_PAGE_SIZE, (ARC.page+1)*ARC_PAGE_SIZE);
+  const ctxId = registerContext(sorted);
+  bar.textContent = `${total} coins · page ${ARC.page+1} of ${pages}`;
+  tbody.innerHTML = slice.map((coin, i) => {
+    const globalIdx = ARC.page*ARC_PAGE_SIZE + i;
+    const img = resolveImage(coin);
+    const thumb = img ? `<img src="${img}" alt="" loading="lazy" onerror="this.style.display='none'" style="width:36px;height:36px;object-fit:contain">` : '';
+    return `<tr onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${globalIdx})" style="cursor:pointer" id="arc-row-${esc(coin.variantCode)}">
+      <td style="width:40px;text-align:center">${thumb}</td>
+      <td>${esc(coin.name)}</td>
+      <td>${esc(coin.denom)}</td>
+      <td>${coin.year||'—'}</td>
+      <td>${esc(coin.monarch||'—')}</td>
+      <td>${esc(coin.collection||'—')}</td>
+      <td><span class="badge-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></td>
+      <td>${coin.instCount>0?`<span style="color:var(--got)">×${coin.instCount}</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+  // pager
+  let pagerHTML = '';
+  if (pages > 1) {
+    if (ARC.page > 0) pagerHTML += `<button class="pager-btn" onclick="ARC.page=${ARC.page-1};arcRenderTable()">‹ Prev</button>`;
+    pagerHTML += `<span class="pager-info">${ARC.page+1} / ${pages}</span>`;
+    if (ARC.page < pages-1) pagerHTML += `<button class="pager-btn" onclick="ARC.page=${ARC.page+1};arcRenderTable()">Next ›</button>`;
+  }
+  pager.innerHTML = pagerHTML;
+}
+
+// ── SEARCH OVERLAY ────────────────────────────────────────────────────────────
+function openSearchOverlay() {
+  document.getElementById('searchOverlay').classList.add('open');
+  const inp = document.getElementById('searchPanelInput');
+  if (inp) inp.focus();
+}
+function closeSearchOverlay() {
+  document.getElementById('searchOverlay').classList.remove('open');
+}
+function onSearchPanelInput() {
+  const inp = document.getElementById('searchPanelInput');
+  const val = inp ? inp.value : '';
+  const q = val.trim().toLowerCase();
+  const out = document.getElementById('searchResultsList');
+  if (!out) return;
+  if (!q) { out.innerHTML=''; return; }
+  const hits = ALL_COINS.filter(c=>c.name.toLowerCase().includes(q)||c.variantCode.toLowerCase().includes(q)).slice(0,40);
+  const ctxId = registerContext(hits);
+  out.innerHTML = hits.length
+    ? `<div class="coin-grid">${hits.map((coin,i)=>coinCardHTML(coin,ctxId,i)).join('')}</div>`
+    : `<p style="color:var(--muted);text-align:center;padding:2rem">No results for "${esc(val)}"</p>`;
+}
+function onSearchPanelKey(e) {
+  if (e.key==='Escape') closeSearchOverlay();
+}
+
+// ── COIN LIGHTBOX ─────────────────────────────────────────────────────────────
+let LB_VC = null, LB_IDX = -1;
+
+function openCoinModal(vc, ctxId, idx) {
+  LB_VC = vc; LB_CTX_ID = ctxId; LB_IDX = idx;
+  const modal = document.getElementById('coinModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderLightboxContent(vc);
+  updateLightboxNav();
+}
+function closeCoinModal() {
+  document.getElementById('coinModal').classList.remove('open');
+  document.body.style.overflow = '';
+  LB_VC = null;
+}
+function lightboxNav(dir) {
+  const ctx = _CTX[LB_CTX_ID];
+  if (!ctx) return;
+  const newIdx = LB_IDX + dir;
+  if (newIdx < 0 || newIdx >= ctx.length) return;
+  LB_IDX = newIdx;
+  LB_VC = ctx[newIdx];
+  renderLightboxContent(LB_VC);
+  updateLightboxNav();
+}
+function updateLightboxNav() {
+  const ctx = _CTX[LB_CTX_ID];
+  const l = document.getElementById('modalPrev');
+  const r = document.getElementById('modalNext');
+  if (!l||!r) return;
+  l.disabled = !ctx || LB_IDX <= 0;
+  r.disabled = !ctx || LB_IDX >= ctx.length-1;
+}
+
+function renderLightboxContent(vc) {
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  if (!coin) return;
+  const img = resolveImage(coin);
+  const instances = INSTANCE_DATA[vc] || [];
+  const instHTML = instances.map((inst,i)=>buildInstItemHTML(inst,i,vc)).join('');
+  const addForm = GUEST_MODE ? '' : buildAddInstFormHTML(vc);
+  const editVariantBtn = GUEST_MODE ? '' : `<button class="btn-sm" onclick="openEditVariant('${esc(vc)}')">Edit Variant</button>`;
+  const deleteVariantBtn = GUEST_MODE ? '' : `<button class="btn-sm btn-danger" onclick="confirmDeleteVariant('${esc(vc)}')">Delete Variant</button>`;
+  document.getElementById('modalInner').innerHTML = `
+    <div class="lb-img-panel">
+      ${img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="this.style.display='none'" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom)}
+      <div class="lb-img-actions">${editVariantBtn}${deleteVariantBtn}</div>
+    </div>
+    <div class="lb-meta-panel">
+      <div class="lb-header">
+        <h2 class="lb-title">${esc(coin.name)}</h2>
+        <div class="lb-code">${esc(vc)}</div>
+      </div>
+      <dl class="lb-dl">
+        <dt>Denomination</dt><dd>${esc(coin.denom)}</dd>
+        <dt>Year</dt><dd>${coin.year||'—'}</dd>
+        <dt>Monarch</dt><dd>${esc(coin.monarch||'—')}</dd>
+        <dt>Collection</dt><dd>${esc(coin.collection||'—')}</dd>
+        <dt>Status</dt><dd><span class="badge-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></dd>
+      </dl>
+      <div class="lb-instances">
+        <h3 class="lb-section-title">Your Copies (${instances.length})</h3>
+        ${instHTML || `<p class="lb-empty">No copies recorded.</p>`}
+      </div>
+      ${addForm}
+    </div>`;
+}
+
+function buildInstItemHTML(inst, i, vc) {
+  // Support both real GS format (cond/s1/desc) and new format (condition/pricePaid)
+  const cond  = inst.cond || inst.condition || '';
+  const price = inst.desc || inst.pricePaid || '';
+  const stor  = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+  const notes = inst.notes || '';
+  // Stock check: keyed by inst.id (GS format) or vc::id (new format)
+  const scRaw = _scChecked[inst.id] || _scChecked[`${vc}::${inst.id}`];
+  const lastChecked = scRaw ? new Date(scRaw).toLocaleDateString('en-GB') : '—';
+  const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option${c===cond?' selected':''}>${c}</option>`).join('');
+  return `<div class="inst-item" id="inst-${esc(inst.id)}">
+    <div class="inst-header">
+      <span class="inst-id">${esc(inst.id)}</span>
+      <span class="inst-grade">${esc(cond||'—')}</span>
+      ${price?`<span class="inst-price">${esc(price)}</span>`:''}
+      ${GUEST_MODE?'':
+        `<button class="btn-sm" onclick="toggleInstEdit('${esc(inst.id)}')">Edit</button>
+         <button class="btn-sm btn-danger" onclick="removeInstance('${esc(vc)}','${esc(inst.id)}')">×</button>`}
+    </div>
+    ${stor?`<div class="inst-notes" style="color:var(--muted)">📦 ${esc(stor)}</div>`:''}
+    ${notes?`<div class="inst-notes">${esc(notes)}</div>`:''}
+    <div class="inst-sc">Stock check: ${lastChecked}${GUEST_MODE?'':` <button class="btn-sm" onclick="doStockCheck('${esc(vc)}','${esc(inst.id)}')">✓</button>`}</div>
+    <div class="inst-edit-form" id="iedit-${esc(inst.id)}" style="display:none">
+      <div class="form-grid">
+        <label>Condition<select id="iec-${esc(inst.id)}">${condOpts}</select></label>
+        <label>Storage 1<input id="ies1-${esc(inst.id)}" type="text" value="${esc(inst.s1||'')}"></label>
+        <label>Storage 2<input id="ies2-${esc(inst.id)}" type="text" value="${esc(inst.s2||'')}"></label>
+        <label>Notes<input id="ien-${esc(inst.id)}" type="text" value="${esc(notes)}"></label>
+      </div>
+      <button class="btn-primary" onclick="saveEditInstance('${esc(vc)}','${esc(inst.id)}')">Save</button>
+    </div>
+  </div>`;
+}
+
+function toggleInstEdit(id) {
+  const el = document.getElementById('iedit-'+id);
+  if (el) el.style.display = el.style.display==='none'?'block':'none';
+}
+
+function buildAddInstFormHTML(vc) {
+  const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option>${c}</option>`).join('');
+  return `<div class="lb-add-form">
+    <h3 class="lb-section-title">Add a Copy</h3>
+    <div class="form-grid">
+      <label>Condition<select id="newInstCond">${condOpts}</select></label>
+      <label>Price Paid (£)<input id="newInstPrice" type="number" step="0.01" placeholder="0.00"></label>
+      <label>Date Acquired<input id="newInstDate" type="date"></label>
+      <label>Source<input id="newInstSource" type="text" placeholder="e.g. eBay, Royal Mint…"></label>
+      <label style="grid-column:1/-1">Notes<input id="newInstNotes" type="text"></label>
+    </div>
+    <button class="btn-primary" onclick="saveInstance('${esc(vc)}')">Add Copy</button>
+  </div>`;
+}
+
+// ── IMAGE ZOOM ────────────────────────────────────────────────────────────────
+function openImgZoom(src) {
+  const z = document.getElementById('imgZoom');
+  z.querySelector('img').src = src;
+  z.classList.add('open');
+}
+function closeImgZoom() { document.getElementById('imgZoom').classList.remove('open'); }
+
+// ── ADMIN: INSTANCES ──────────────────────────────────────────────────────────
+async function saveInstance(vc) {
+  const cond  = document.getElementById('newInstCond').value;
+  const price = document.getElementById('newInstPrice').value;
+  const date  = document.getElementById('newInstDate').value;
+  const src   = document.getElementById('newInstSource').value;
+  const notes = document.getElementById('newInstNotes').value;
+  const id = 'INS-' + (NEXT_INST_ID++);
+  const inst = { id, variantCode:vc, cond, desc:price||'', s1:src||'', s2:'', s3:'', notes:notes||'', ptype:'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
+  if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
+  INSTANCE_DATA[vc].push(inst);
+  STORAGE_MAP[id] = inst;
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  if (coin) { coin.instCount = (coin.instCount||0)+1; coin.status='Got'; }
+  // Persist to pending queue (picked up by restorePendingData on reload)
+  try {
+    const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
+    pending.push(inst); localStorage.setItem('coinhub_pending_instances', JSON.stringify(pending));
+  } catch(e){}
+  addAuditLog('add-instance', { id, vc, cond, price, notes });
+  _refreshCoinUI(coin);
+  renderLightboxContent(vc);
+  showToast('Copy added — '+id);
+}
+
+async function saveEditInstance(vc, id) {
+  // Find inst in INSTANCE_DATA or STORAGE_MAP
+  const arr = INSTANCE_DATA[vc] || [];
+  const inst = arr.find(i=>i.id===id) || STORAGE_MAP[id];
+  if (!inst) return;
+  inst.cond  = document.getElementById('iec-'+id).value;
+  inst.s1    = document.getElementById('ies1-'+id)?.value || inst.s1 || '';
+  inst.s2    = document.getElementById('ies2-'+id)?.value || inst.s2 || '';
+  inst.notes = document.getElementById('ien-'+id).value || '';
+  inst.lastEdited = new Date().toISOString().slice(0,10);
+  try {
+    const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits')||'[]');
+    const idx = edits.findIndex(e=>e.id===id); if (idx>=0) edits[idx]=inst; else edits.push(inst);
+    localStorage.setItem('coinhub_pending_inst_edits', JSON.stringify(edits));
+  } catch(e){}
+  addAuditLog('edit-instance', { id, vc });
+  renderLightboxContent(vc);
+  showToast('Instance updated');
+}
+
+async function removeInstance(vc, id) {
+  if (!confirm(`Remove instance ${id}?`)) return;
+  if (INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = INSTANCE_DATA[vc].filter(i=>i.id!==id);
+  delete STORAGE_MAP[id];
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  if (coin) coin.instCount = Math.max(0,(coin.instCount||1)-1);
+  _queueSync({ type:'removeInstance', data:{ id, variantCode:vc } });
+  addAuditLog('remove-instance', { id, vc });
+  _refreshCoinUI(coin);
+  renderLightboxContent(vc);
+  showToast('Instance removed');
+}
+
+// ── ADMIN: VARIANTS ───────────────────────────────────────────────────────────
+function openEditVariant(vc) {
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  if (!coin) return;
+  const m = document.getElementById('editVariantModal');
+  document.getElementById('evCode').value     = vc;
+  document.getElementById('evName').value     = coin.name;
+  document.getElementById('evDenom').value    = coin.denom;
+  document.getElementById('evYear').value     = coin.year||'';
+  document.getElementById('evMonarch').value  = coin.monarch||'';
+  document.getElementById('evCollect').value  = coin.collection||'';
+  document.getElementById('evStatus').value   = coin.status||'Unknown';
+  document.getElementById('evImgUrl').value   = coin.imgUrl||'';
+  m.style.display='flex';
+}
+function closeEditVariant() { document.getElementById('editVariantModal').style.display='none'; }
+
+async function saveEditVariant() {
+  const vc   = document.getElementById('evCode').value;
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  if (!coin) return;
+  coin.name       = document.getElementById('evName').value;
+  coin.denom      = document.getElementById('evDenom').value;
+  coin.year       = document.getElementById('evYear').value;
+  coin.monarch    = document.getElementById('evMonarch').value;
+  coin.collection = document.getElementById('evCollect').value;
+  coin.status     = document.getElementById('evStatus').value;
+  coin.imgUrl     = document.getElementById('evImgUrl').value;
+  _queueSync({ type:'editVariant', data:{ variantCode:vc, ...coin } });
+  addAuditLog('edit-variant', { vc });
+  _refreshCoinUI(coin);
+  renderLightboxContent(vc);
+  closeEditVariant();
+  showToast('Variant updated');
+}
+
+function confirmDeleteVariant(vc) {
+  if (!confirm(`Permanently delete variant ${vc} and all its instances?`)) return;
+  deleteVariant(vc);
+}
+
+async function deleteVariant(vc) {
+  ALL_COINS = ALL_COINS.filter(c=>c.variantCode!==vc);
+  delete INSTANCE_DATA[vc];
+  _queueSync({ type:'deleteVariant', data:{ variantCode:vc } });
+  addAuditLog('delete-variant', { vc });
+  closeCoinModal();
+  router();
+  showToast('Variant deleted');
+}
+
+function _refreshCoinUI(coin) {
+  if (!coin) return;
+  // refresh open lightbox
+  if (LB_VC === coin.variantCode) renderLightboxContent(coin.variantCode);
+  // refresh archive row
+  const row = document.getElementById('arc-row-'+coin.variantCode);
+  if (row) {
+    const statusCell = row.querySelector('.badge-status');
+    if (statusCell) { statusCell.className='badge-status '+(coin.status||'Unknown'); statusCell.textContent=coin.status||'?'; }
+    const ownedCell = row.cells[7];
+    if (ownedCell) ownedCell.innerHTML = coin.instCount>0?`<span style="color:var(--got)">×${coin.instCount}</span>`:'—';
+  }
+}
+
+// ── SYNC QUEUE ────────────────────────────────────────────────────────────────
+const SQ_KEY = 'coinhub_sync_queue';
+function _queueSync(op) {
+  if (GUEST_MODE) return;
+  const q = JSON.parse(localStorage.getItem(SQ_KEY)||'[]');
+  q.push({ ...op, ts: Date.now() });
+  localStorage.setItem(SQ_KEY, JSON.stringify(q));
+  _updateSyncBadge();
+}
+function _updateSyncBadge() {
+  const q = JSON.parse(localStorage.getItem(SQ_KEY)||'[]');
+  const badge = document.getElementById('syncBadge');
+  if (badge) badge.textContent = q.length || '';
+}
+function _getSyncQueue() { return JSON.parse(localStorage.getItem(SQ_KEY)||'[]'); }
+function _clearSyncQueue() { localStorage.removeItem(SQ_KEY); _updateSyncBadge(); }
+
+async function _syncPushNow() {
+  const q = _getSyncQueue();
+  if (!q.length) { showToast('Nothing to sync'); return; }
+  showToast(`Syncing ${q.length} operation(s)…`);
+  // In production this would POST to /api/sync or write back to Google Sheets
+  // For now: store as acknowledged and clear
+  console.log('Sync queue:', q);
+  _clearSyncQueue();
+  showToast('Sync complete (queue cleared)');
+}
+
+// ── AUDIT LOG ─────────────────────────────────────────────────────────────────
+const AL_KEY = 'coinhub_audit_log';
+function addAuditLog(type, data) {
+  const log = JSON.parse(localStorage.getItem(AL_KEY)||'[]');
+  log.unshift({ type, data, ts: new Date().toISOString() });
+  if (log.length > 500) log.length = 500;
+  localStorage.setItem(AL_KEY, JSON.stringify(log));
+}
+
+function showChangeLog() {
+  const log = JSON.parse(localStorage.getItem(AL_KEY)||'[]');
+  const rows = log.slice(0,100).map(e=>`<tr><td>${new Date(e.ts).toLocaleString('en-GB')}</td><td>${e.type}</td><td><code>${JSON.stringify(e.data)}</code></td></tr>`).join('');
+  document.getElementById('logList').innerHTML = rows
+    ? `<table style="width:100%;font-size:.75rem;border-collapse:collapse">${rows}</table>`
+    : '<p style="padding:1rem;color:var(--muted)">No log entries.</p>';
+  document.getElementById('logModalBg').style.display='flex';
+}
+function closeChangeLog() { document.getElementById('logModalBg').style.display='none'; }
+
+function exportChangeLogCSV() {
+  const log = JSON.parse(localStorage.getItem(AL_KEY)||'[]');
+  const csv = 'Timestamp,Type,Data\n' + log.map(e=>`"${e.ts}","${e.type}","${JSON.stringify(e.data).replace(/"/g,'""')}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'coinhub-changelog.csv'; a.click();
+}
+
+// ── STOCK CHECK ───────────────────────────────────────────────────────────────
+const SC_KEY = 'coinhub_sc';
+
+function doStockCheck(vc, instId) {
+  // Key by instId to match _seedScCheckedFromInstances format
+  _scChecked[instId] = Date.now();
+  _scSave();
+  // Also update lastStocktake on the instance object
+  const inst = (INSTANCE_DATA[vc]||[]).find(i=>i.id===instId);
+  if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+  addAuditLog('stock-check', { vc, instId });
+  renderLightboxContent(vc);
+  showToast('Stock check recorded');
+}
+
+function showStockCheck() {
+  const overdue = [];
+  const now = Date.now();
+  const limit = 90*24*60*60*1000;
+  ALL_COINS.forEach(coin=>{
+    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
+      const key = coin.variantCode+'::'+inst.id;
+      const last = _scChecked[key]||0;
+      if (now-last > limit) overdue.push({ coin, inst, last });
+    });
+  });
+  overdue.sort((a,b)=>a.last-b.last);
+  const rows = overdue.slice(0,50).map(({coin,inst,last})=>`<tr>
+    <td>${esc(coin.name)}</td><td>${esc(inst.id)}</td>
+    <td>${last?new Date(last).toLocaleDateString('en-GB'):'Never'}</td>
+    <td><button class="btn-sm" onclick="doStockCheck('${esc(coin.variantCode)}','${esc(inst.id)}')">✓ Check</button></td>
+  </tr>`).join('');
+  const scList = document.getElementById('scList');
+  if (scList) scList.innerHTML = rows
+    ? `<table style="width:100%;font-size:.8rem;border-collapse:collapse">${rows}</table>`
+    : '<p style="padding:1rem;color:var(--muted)">All instances checked within 90 days.</p>';
+  document.getElementById('scModalBg').style.display='flex';
+}
+function closeStockCheck() { document.getElementById('scModalBg').style.display='none'; }
+
+// ── STATS MODAL ───────────────────────────────────────────────────────────────
+function showStats() {
+  const total   = ALL_COINS.length;
+  const got     = ALL_COINS.filter(c=>c.status==='Got').length;
+  const need    = ALL_COINS.filter(c=>c.status==='Need').length;
+  const list    = ALL_COINS.filter(c=>c.status==='List').length;
+  const insts   = Object.values(INSTANCE_DATA).reduce((s,a)=>s+a.length,0);
+  const colls   = new Set(ALL_COINS.map(c=>c.collection).filter(Boolean)).size;
+  document.getElementById('statsBody').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Total Variants</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--got)">${got}</div><div class="stat-lbl">Got</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--need)">${need}</div><div class="stat-lbl">Need</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--list)">${list}</div><div class="stat-lbl">On List</div></div>
+      <div class="stat-card"><div class="stat-num">${insts}</div><div class="stat-lbl">Instances</div></div>
+      <div class="stat-card"><div class="stat-num">${colls}</div><div class="stat-lbl">Collections</div></div>
+    </div>`;
+  document.getElementById('statsModalBg').style.display='flex';
+}
+function closeStats() { document.getElementById('statsModalBg').style.display='none'; }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t=document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.className = 'toast show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── ADMIN MENU ────────────────────────────────────────────────────────────────
+function toggleAdminMenu() {
+  const menu = document.getElementById('adminDropdown');
+  if (!menu) return;
+  const isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open');
+  if (!isOpen) {
+    const close = (e)=>{ if (!e.target.closest('#adminMenuBtn')&&!e.target.closest('#adminDropdown')){ menu.classList.remove('open'); document.removeEventListener('click',close); } };
+    setTimeout(()=>document.addEventListener('click',close),0);
+  }
+}
+function closeAdminMenu() {
+  const menu = document.getElementById('adminDropdown');
+  if (menu) menu.classList.remove('open');
+}
+
+// ── GUEST MODE ────────────────────────────────────────────────────────────────
+function _applyGuestMode(on) {
+  GUEST_MODE = on;
+  document.body.classList.toggle('guest-mode', on);
+  document.getElementById('guestBanner').style.display = on ? 'flex' : 'none';
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=on?'none':'');
+}
+function doLogout() { _applyGuestMode(true); }
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') {
+    const zoom = document.getElementById('imgZoom');
+    if (zoom.classList.contains('open')) { closeImgZoom(); return; }
+    const modal = document.getElementById('coinModal');
+    if (modal.classList.contains('open')) { closeCoinModal(); return; }
+    const search = document.getElementById('searchOverlay');
+    if (search.classList.contains('open')) { closeSearchOverlay(); return; }
+  }
+  if (document.getElementById('coinModal').classList.contains('open')) {
+    if (e.key==='ArrowLeft')  lightboxNav(-1);
+    if (e.key==='ArrowRight') lightboxNav(1);
+  }
+});
+
+// ── SEARCH PAGE RENDERER ──────────────────────────────────────────────────────
+function renderSearchPage(query) {
+  // Search page just opens the overlay; results appear there
+  openSearchOverlay();
+  if (query) {
+    const inp = document.getElementById('searchPanelInput');
+    if (inp) { inp.value = query; onSearchPanelInput(); }
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  _scChecked = JSON.parse(localStorage.getItem(SC_KEY)||'{}');
+  const loadScreen = document.getElementById('loadScreen');
+  try {
+    const coins = await loadFromSheets();
+    if (Array.isArray(coins)) ALL_COINS = coins;
+    restorePendingData();
+    NEXT_INST_ID = Math.max(NEXT_INST_ID, ...Object.values(INSTANCE_DATA).flat().map(i=>parseInt((i.id||'').replace('INS-',''))||0).filter(Boolean)) + 1;
+  } catch(e) {
+    console.error('Load failed:', e);
+    return; // loadFromSheets already sets error HTML
+  }
+  // Reveal UI
+  document.getElementById('topNav').style.display = '';
+  document.getElementById('pageMain').style.display = '';
+  document.getElementById('bottomNav').style.display = '';
+  loadScreen.style.opacity = '0';
+  setTimeout(()=>{ loadScreen.style.display='none'; }, 400);
+  updateHeroStats();
+  window.addEventListener('hashchange', router);
+  router();
+}
+
+// ── LEGACY SYNC STUBS (Notion sync not active in v2) ─────────────────────────
+function _saveAuditLogToServer() { showToast('Audit log saved locally'); }
+function closeSyncQueue() { document.getElementById('syncModalBg').style.display='none'; }
+function showSyncQueue() { document.getElementById('syncModalBg').style.display='flex'; }
+function _syncShowTab(tab) {
+  document.getElementById('syncPushPanel').style.display = tab==='push'?'flex':'none';
+  document.getElementById('syncPullPanel').style.display = tab==='pull'?'flex':'none';
+  document.getElementById('syncTabPush').classList.toggle('active', tab==='push');
+  document.getElementById('syncTabPull').classList.toggle('active', tab==='pull');
+}
+function approveAllSync() { showToast('Approve all — not implemented in v2'); }
+function processQueueNow() { _syncPushNow(); }
+function _syncPullNow() { showToast('Pull from Notion — not implemented in v2'); }
+function _syncSetInterval(mins) { showToast(mins?`Auto-sync: every ${mins} min`:'Auto-sync off'); }
+function _scSyncToNotion() { showToast('Stocktake push — not implemented in v2'); }
+
+// ── STOCK CHECK EXTRA FUNCTIONS ───────────────────────────────────────────────
+function loadStockCheck() {}
+function scCheckAll() {
+  const btn = document.getElementById('scUncheckedBtn');
+  ALL_COINS.forEach(coin=>{
+    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
+      _scChecked[coin.variantCode+'::'+inst.id] = Date.now();
+    });
+  });
+  localStorage.setItem(SC_KEY, JSON.stringify(_scChecked));
+  showToast('All instances marked as checked');
+  showStockCheck();
+}
+function scClearAll() {
+  if (!confirm('Clear all stock check dates?')) return;
+  _scChecked = {};
+  localStorage.removeItem(SC_KEY);
+  showToast('All stock check dates cleared');
+  showStockCheck();
+}
+function scToggleUnchecked() { _scUncheckedOnly = !_scUncheckedOnly; showStockCheck(); }
+function scPrintUnchecked() { window.print(); }
+function scPrintNeeded() { window.print(); }
+
+window.addEventListener('load', ()=>init());
+</script>
+</body>
+</html>
