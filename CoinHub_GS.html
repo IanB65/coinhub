@@ -464,6 +464,32 @@ body.guest-mode .sticky-top{top:82px}
 #lightbox.open{display:flex}
 #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.7)}
 .coin-thumb{cursor:zoom-in}
+
+/* ── MONARCH SIDEBAR PORTRAITS ── */
+.monarch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem}
+.monarch-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .12s,outline .12s;background:var(--paper);position:relative}
+.monarch-card:hover{border-color:var(--gold2)}
+.monarch-card.active{border-color:var(--gold);outline:1px solid var(--gold)}
+.monarch-card-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top center;display:block;filter:sepia(.12) contrast(.95)}
+.monarch-card-ph{width:100%;aspect-ratio:3/4;background:var(--paper3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted)}
+.monarch-card-name{font-size:.45rem;letter-spacing:.05em;text-align:center;padding:.25rem .1rem .2rem;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.2;min-height:1.8em}
+.monarch-card.active .monarch-card-name{color:var(--gold)}
+
+/* ── MONARCH HERO BANNER ── */
+.monarch-hero{display:none;padding:1.2rem 1.5rem 1.1rem;border-bottom:2px solid var(--border);background:linear-gradient(to bottom,var(--paper2),var(--paper));gap:1.4rem;align-items:flex-start}
+.monarch-hero.visible{display:flex}
+.monarch-hero-frame{flex-shrink:0;position:relative;width:100px}
+.monarch-hero-frame::before{content:'';position:absolute;inset:-3px;border:1px solid rgba(139,105,20,.35);pointer-events:none;z-index:1}
+.monarch-hero-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top center;display:block;filter:sepia(.12) contrast(.97);box-shadow:2px 4px 14px rgba(0,0,0,.18)}
+.monarch-hero-body{flex:1;min-width:0}
+.monarch-hero-name{font-family:'Bodoni Moda',serif;font-size:1.4rem;font-weight:900;letter-spacing:.03em;color:var(--ink);line-height:1;margin-bottom:.22rem}
+.monarch-hero-title{font-size:.53rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;line-height:1.45;font-family:'DM Mono',monospace}
+.monarch-hero-dates{display:flex;flex-wrap:wrap;gap:.3rem .9rem;margin-bottom:.7rem}
+.monarch-hero-fact{font-family:'DM Mono',monospace;font-size:.6rem;display:flex;gap:.3rem;align-items:baseline}
+.monarch-hero-fact-label{color:var(--muted);font-size:.5rem;text-transform:uppercase;letter-spacing:.09em}
+.monarch-hero-fact-val{color:var(--ink)}
+.monarch-hero-div{height:1px;background:var(--border);margin-bottom:.65rem;opacity:.6}
+.monarch-hero-bio{font-family:'Cormorant Garamond',serif;font-size:.93rem;font-style:italic;color:var(--ink);line-height:1.65;opacity:.88}
 </style>
 </head>
 <body>
@@ -619,6 +645,11 @@ body.guest-mode .sticky-top{top:82px}
       </div>
     </div>
 
+    <div class="filter-section">
+      <div class="filter-label">Monarch</div>
+      <div class="monarch-grid" id="monarchGrid"></div>
+    </div>
+
     <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
   </aside>
 
@@ -649,6 +680,20 @@ body.guest-mode .sticky-top{top:82px}
       </div>
     </div>
     </div><!-- /sticky-top -->
+
+    <div class="monarch-hero" id="monarchHero">
+      <div class="monarch-hero-frame">
+        <img class="monarch-hero-img" id="monarchHeroImg" src="" alt="" onerror="this.style.display='none'">
+      </div>
+      <div class="monarch-hero-body">
+        <div class="monarch-hero-name" id="monarchHeroName"></div>
+        <div class="monarch-hero-title" id="monarchHeroTitle"></div>
+        <div class="monarch-hero-dates" id="monarchHeroDates"></div>
+        <div class="monarch-hero-div"></div>
+        <div class="monarch-hero-bio" id="monarchHeroBio"></div>
+      </div>
+    </div>
+
     <div id="tableWrap">
       <table class="coin-table" id="coinTable">
         <thead>
@@ -980,6 +1025,7 @@ async function init() {
   buildYearFilter();
   buildMonarchFilter();
   buildCollectionFilter();
+  buildMonarchPortraitGrid();
 
   applyFilters();
 
@@ -1022,6 +1068,63 @@ async function doLogout() {
 }
 
 // Denomination order
+const MONARCH_DATA = {
+  'Queen Victoria': {
+    shortName: 'Victoria',
+    title: 'Queen of the United Kingdom of Great Britain and Ireland · Empress of India (from 1876)',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/500px-Queen_Victoria_by_Bassano.jpg',
+    born: '24 May 1819', died: '22 Jan 1901',
+    accession: '20 Jun 1837',
+    coronation: '28 Jun 1838 · Westminster Abbey',
+    bio: 'Victoria\'s 63-year reign saw the most sweeping changes in British coinage since the Tudor era. Her portrait appeared in three successive effigies — the Young Head (1838), the Jubilee Head (1887), and the Old Head (1893). Her reign introduced the florin (1849), Britain\'s first decimal-adjacent coin, and the bun penny (1860). Victorian coinage is among the most collected of any British monarch, prized for its long span, multiple portrait types, and extraordinary range of denominations.'
+  },
+  'King Edward VII': {
+    shortName: 'Edward VII',
+    title: 'King of the United Kingdom of Great Britain and Ireland · Emperor of India',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/King-Edward-VII_%28cropped%29_%28b%29.jpg/500px-King-Edward-VII_%28cropped%29_%28b%29.jpg',
+    born: '9 Nov 1841', died: '6 May 1910',
+    accession: '22 Jan 1901',
+    coronation: '9 Aug 1902 · Westminster Abbey',
+    bio: 'Edward VII\'s nine-year reign was brief but numismatically significant. His right-facing portrait by George William de Saulles replaced the long-familiar Victorian effigies and established the tradition of alternating the direction of the monarch\'s portrait on successive coinages. The Edwardian coinage is noted for its clean, high-relief design and is prized as the last British issue before the upheaval of the First World War reshaped the monetary system.'
+  },
+  'King George V': {
+    shortName: 'George V',
+    title: 'King of the United Kingdom and the British Dominions · Emperor of India',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/King_George_1923_LCCN2014715558_%28cropped%29.jpg/500px-King_George_1923_LCCN2014715558_%28cropped%29.jpg',
+    born: '3 Jun 1865', died: '20 Jan 1936',
+    accession: '6 May 1910',
+    coronation: '22 Jun 1911 · Westminster Abbey',
+    bio: 'George V\'s reign encompassed one of the most dramatic transformations in British monetary history: the abandonment of the gold standard during World War One and the removal of gold coinage from everyday circulation. His portrait by Bertram Mackennal appeared on coins for 26 years. The silver coinage was debased from sterling (92.5%) to 50% silver in 1920, a decisive break with centuries of tradition. The wreath and modified effigy issues of the 1920s–30s are avidly collected milestones.'
+  },
+  'King George Vi': {
+    shortName: 'George VI',
+    title: 'King of the United Kingdom and the Dominions of the British Commonwealth',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg/500px-King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg',
+    born: '14 Dec 1895', died: '6 Feb 1952',
+    accession: '11 Dec 1936',
+    coronation: '12 May 1937 · Westminster Abbey',
+    bio: 'George VI\'s coinage is notable as the last to carry the IND IMP (Emperor of India) legend, dropped from 1949 following Indian independence — making pre- and post-1948 issues readily distinguishable. Percy Metcalfe\'s portrait was used throughout his reign. The silver-content coins (50% until 1946, then cupro-nickel) chart the postwar transition away from precious-metal coinage, and his 1937 coronation produced the last florins and crowns before decimalisation planning began.'
+  },
+  'Queen Elizabeth II': {
+    shortName: 'Elizabeth II',
+    title: 'Queen of the United Kingdom and other Commonwealth Realms',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Queen_Elizabeth_II_on_her_Coronation_Day.jpg/500px-Queen_Elizabeth_II_on_her_Coronation_Day.jpg',
+    born: '21 Apr 1926', died: '8 Sep 2022',
+    accession: '6 Feb 1952',
+    coronation: '2 Jun 1953 · Westminster Abbey',
+    bio: 'Elizabeth II holds the record for the most portrait changes on British coinage — five distinct effigies over her 70-year reign, from Mary Gillick\'s laureate bust (1953) through Arnold Machin, Raphael Maklouf, Ian Rank-Broadley, and Jody Clark\'s portrait (2015). Her reign encompassed decimalisation on 15 February 1971, the single most significant event in modern British numismatic history, and the explosion of commemorative 50p and £2 coinage from the 1990s onward. More coin designs were issued under Elizabeth II than under any other British monarch.'
+  },
+  'King Charles III': {
+    shortName: 'Charles III',
+    title: 'King of the United Kingdom and 14 other Commonwealth Realms',
+    portrait: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/King_Charles_III_%28July_2023%29.jpg/500px-King_Charles_III_%28July_2023%29.jpg',
+    born: '14 Nov 1948', died: null,
+    accession: '8 Sep 2022',
+    coronation: '6 May 2023 · Westminster Abbey',
+    bio: 'Charles III is the first new monarch on British coinage since 1953. His effigy by Martin Jennings (introduced 2023) follows tradition by facing left — opposite to Elizabeth II\'s right-facing portrait. His accession generated a wave of commemorative coinage: the Royal Mint issued coronation crowns, special BU and proof sets, and new definitive circulation coins throughout 2023. Charles III coinage is already widely collected as the first of a new reign, with first-year issues considered significant numismatic pieces.'
+  }
+};
+
 const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
 
 function buildDenomFilter() {
@@ -1081,6 +1184,67 @@ function buildMonarchFilter() {
     o.value = m; o.textContent = m;
     sel.appendChild(o);
   });
+}
+
+function buildMonarchPortraitGrid() {
+  const monarchs = [...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))];
+  const REIGN_ORDER = ['Queen Victoria','King Edward VII','King George V','King George Vi','Queen Elizabeth II','King Charles III'];
+  monarchs.sort((a,b) => {
+    const ai = REIGN_ORDER.indexOf(a), bi = REIGN_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+  const grid = document.getElementById('monarchGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  monarchs.forEach(m => {
+    const data = MONARCH_DATA[m];
+    const card = document.createElement('div');
+    card.className = 'monarch-card';
+    card.dataset.m = m;
+    const shortName = data ? data.shortName : m.replace(/^(Queen|King)\s+/,'');
+    const imgHtml = data
+      ? `<img class="monarch-card-img" src="${data.portrait}" alt="${m}" onerror="this.parentNode.innerHTML='<div class=\\'monarch-card-ph\\'>${shortName[0]}</div>'">`
+      : `<div class="monarch-card-ph">${shortName[0]}</div>`;
+    card.innerHTML = `${imgHtml}<div class="monarch-card-name">${shortName}</div>`;
+    card.onclick = () => {
+      const isActive = STATE.monarch === m;
+      document.getElementById('monarchSel').value = isActive ? '' : m;
+      applyFilters();
+    };
+    grid.appendChild(card);
+  });
+}
+
+function updateMonarchHero() {
+  const hero = document.getElementById('monarchHero');
+  if (!hero) return;
+  const m = STATE.monarch;
+  if (!m) { hero.classList.remove('visible'); return; }
+  const data = MONARCH_DATA[m];
+  if (!data) { hero.classList.remove('visible'); return; }
+
+  document.getElementById('monarchHeroImg').src = data.portrait;
+  document.getElementById('monarchHeroImg').alt = m;
+  document.getElementById('monarchHeroImg').style.display = '';
+  document.getElementById('monarchHeroName').textContent = m;
+  document.getElementById('monarchHeroTitle').textContent = data.title;
+  document.getElementById('monarchHeroBio').textContent = data.bio;
+
+  const facts = [
+    ['Born', data.born],
+    ['Died', data.died || 'Present'],
+    ['Accession', data.accession],
+    ['Coronation', data.coronation]
+  ];
+  document.getElementById('monarchHeroDates').innerHTML = facts.map(([label, val]) =>
+    `<div class="monarch-hero-fact"><span class="monarch-hero-fact-label">${label}</span><span class="monarch-hero-fact-val">${val}</span></div>`
+  ).join('');
+
+  hero.classList.add('visible');
+  document.querySelectorAll('.monarch-card').forEach(c => c.classList.toggle('active', c.dataset.m === m));
 }
 
 function buildCollectionFilter() {
@@ -1203,6 +1367,7 @@ function applyFilters() {
   sortCoins();
   renderTable();
   updateCollProgress();
+  updateMonarchHero();
 }
 
 function sortCoins() {
@@ -1263,7 +1428,7 @@ function renderTable() {
     const qtyDisplay = c.instCount > 0
       ? `<div class="qty-wrap has-inst"><span class="qty-num">${c.instCount}</span><span class="qty-label">owned</span></div>`
       : `<div class="qty-wrap"><span class="qty-num zero">–</span><span class="qty-label">${c.status==='Need'?'need':c.status==='List'?'list':'none'}</span></div>`;
-    const monarchShort = (c.monarch||'').replace('Queen Elizabeth II','QEII').replace('King Charles III','KCIII').replace('Queen Victoria','QVic').replace('King Edward VII','KVII');
+    const monarchShort = (c.monarch||'').replace('Queen Elizabeth II','QEII').replace('King Charles III','KCIII').replace('Queen Victoria','QVic').replace('King Edward VII','EVII').replace('King George V','GV').replace('King George Vi','GVI');
 
     return `<tr class="coin-row" id="row-${gi}">
       <td style="padding-left:.6rem;width:28px"><button class="expand-btn" id="btn-${gi}" onclick="toggleDetail(${gi})">›</button></td>
