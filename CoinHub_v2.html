@@ -581,7 +581,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
         <a class="admin-dropdown-item" onclick="showStats();closeAdminMenu()">📊 Statistics</a>
         <a class="admin-dropdown-item" onclick="showChangeLog();closeAdminMenu()">📋 Change Log</a>
         <a class="admin-dropdown-item" onclick="showStockCheck();closeAdminMenu()">✓ Stock Check</a>
-        <a class="admin-dropdown-item" onclick="showSyncQueue();closeAdminMenu()">⟳ Notion Sync <span id="syncBadge2" style="display:none;background:var(--need);color:#fff;font-size:.45rem;min-width:14px;height:14px;border-radius:7px;padding:0 3px;margin-left:.3rem;display:inline-flex;align-items:center;justify-content:center"></span></a>
+        <a class="admin-dropdown-item" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" onclick="closeAdminMenu()">⊞ Open Spreadsheet</a>
         <div class="admin-dropdown-sep"></div>
         <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
         <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
@@ -1752,27 +1752,20 @@ function doStockCheck(vc, instId) {
 }
 
 function showStockCheck() {
-  const overdue = [];
-  const now = Date.now();
-  const limit = 90*24*60*60*1000;
-  ALL_COINS.forEach(coin=>{
-    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
-      const key = coin.variantCode+'::'+inst.id;
-      const last = _scChecked[key]||0;
-      if (now-last > limit) overdue.push({ coin, inst, last });
-    });
-  });
-  overdue.sort((a,b)=>a.last-b.last);
-  const rows = overdue.slice(0,50).map(({coin,inst,last})=>`<tr>
-    <td>${esc(coin.name)}</td><td>${esc(inst.id)}</td>
-    <td>${last?new Date(last).toLocaleDateString('en-GB'):'Never'}</td>
-    <td><button class="btn-sm" onclick="doStockCheck('${esc(coin.variantCode)}','${esc(inst.id)}')">✓ Check</button></td>
-  </tr>`).join('');
-  const scList = document.getElementById('scList');
-  if (scList) scList.innerHTML = rows
-    ? `<table style="width:100%;font-size:.8rem;border-collapse:collapse">${rows}</table>`
-    : '<p style="padding:1rem;color:var(--muted)">All instances checked within 90 days.</p>';
-  document.getElementById('scModalBg').style.display='flex';
+  // Populate container dropdown from all s1 values
+  const containers = new Set();
+  Object.values(INSTANCE_DATA).forEach(arr => arr.forEach(inst => {
+    if (inst.s1) containers.add(inst.s1);
+  }));
+  const sel = document.getElementById('scLocationSelect');
+  if (sel) {
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— Select container —</option>' +
+      [...containers].sort().map(c=>`<option value="${esc(c)}"${c===current?' selected':''}>${esc(c)}</option>`).join('');
+    if (current && containers.has(current)) sel.value = current;
+  }
+  document.getElementById('scModalBg').style.display = 'flex';
+  loadStockCheck();
 }
 function closeStockCheck() { document.getElementById('scModalBg').style.display='none'; }
 
@@ -1898,27 +1891,127 @@ function _syncSetInterval(mins) { showToast(mins?`Auto-sync: every ${mins} min`:
 function _scSyncToNotion() { showToast('Stocktake push — not implemented in v2'); }
 
 // ── STOCK CHECK EXTRA FUNCTIONS ───────────────────────────────────────────────
-function loadStockCheck() {}
-function scCheckAll() {
-  const btn = document.getElementById('scUncheckedBtn');
-  ALL_COINS.forEach(coin=>{
-    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
-      _scChecked[coin.variantCode+'::'+inst.id] = Date.now();
+function loadStockCheck() {
+  const container = document.getElementById('scLocationSelect')?.value || '';
+  const emptyMsg  = document.getElementById('scEmptyMsg');
+  const scList    = document.getElementById('scList');
+  const progress  = document.getElementById('scProgress');
+  const barFill   = document.getElementById('scProgressBarFill');
+
+  if (!container) {
+    if (emptyMsg) emptyMsg.style.display = '';
+    if (scList) scList.querySelectorAll('.sc-item').forEach(el=>el.remove());
+    if (progress) progress.textContent = '';
+    if (barFill) barFill.style.width = '0%';
+    return;
+  }
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  // Gather all instances in this container (match s1, s2, or s3)
+  const items = [];
+  ALL_COINS.forEach(coin => {
+    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst => {
+      if (inst.s1===container || inst.s2===container || inst.s3===container) {
+        items.push({ coin, inst });
+      }
     });
   });
-  localStorage.setItem(SC_KEY, JSON.stringify(_scChecked));
-  showToast('All instances marked as checked');
-  showStockCheck();
+
+  // Sort by coin name
+  items.sort((a,b)=>a.coin.name.localeCompare(b.coin.name));
+
+  // Apply unchecked filter
+  const visible = _scUncheckedOnly
+    ? items.filter(({inst})=>!_scChecked[inst.id])
+    : items;
+
+  const checked = items.filter(({inst})=>!!_scChecked[inst.id]).length;
+  const pct = items.length ? Math.round(checked/items.length*100) : 0;
+  if (progress) progress.textContent = `${checked}/${items.length} checked (${pct}%)`;
+  if (barFill) barFill.style.width = pct+'%';
+
+  // Remove old items (keep print header and empty msg)
+  if (scList) {
+    scList.querySelectorAll('.sc-item').forEach(el=>el.remove());
+    visible.forEach(({coin, inst}) => {
+      const isChecked = !!_scChecked[inst.id];
+      const lastRaw   = _scChecked[inst.id];
+      const lastDate  = lastRaw ? new Date(lastRaw).toLocaleDateString('en-GB') : 'Never';
+      const div = document.createElement('div');
+      div.className = 'sc-item' + (isChecked?' checked':'');
+      div.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem';
+      div.innerHTML = `
+        <span style="flex:1;font-family:'Cormorant Garamond',serif">${esc(coin.name)}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)">${esc(inst.id)}</span>
+        <span class="badge-status ${coin.status||'Unknown'}" style="min-width:36px;text-align:center">${coin.status||'?'}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:${isChecked?'var(--got)':'var(--need)'};min-width:70px">${lastDate}</span>
+        <button class="btn-sm${isChecked?' btn-checked':''}" onclick="scToggleItem('${esc(coin.variantCode)}','${esc(inst.id)}')" style="${isChecked?'border-color:var(--got);color:var(--got)':''}">${isChecked?'✓':'○'}</button>`;
+      scList.appendChild(div);
+    });
+    if (!visible.length) {
+      const d = document.createElement('p');
+      d.style.cssText='padding:1rem;color:var(--muted);font-style:italic';
+      d.textContent = _scUncheckedOnly ? 'All items in this container have been checked.' : 'No instances found in this container.';
+      scList.appendChild(d);
+    }
+  }
 }
+
+function scToggleItem(vc, instId) {
+  if (_scChecked[instId]) {
+    delete _scChecked[instId];
+  } else {
+    _scChecked[instId] = Date.now();
+    // Update lastStocktake on instance
+    const inst = (INSTANCE_DATA[vc]||[]).find(i=>i.id===instId);
+    if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+  }
+  _scSave();
+  loadStockCheck();
+}
+
+function scCheckAll() {
+  const container = document.getElementById('scLocationSelect')?.value;
+  ALL_COINS.forEach(coin=>{
+    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
+      if (!container || inst.s1===container || inst.s2===container || inst.s3===container) {
+        _scChecked[inst.id] = Date.now();
+        if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+      }
+    });
+  });
+  _scSave();
+  loadStockCheck();
+  showToast(container ? `All in "${container}" checked` : 'All instances marked as checked');
+}
+
 function scClearAll() {
-  if (!confirm('Clear all stock check dates?')) return;
-  _scChecked = {};
-  localStorage.removeItem(SC_KEY);
-  showToast('All stock check dates cleared');
-  showStockCheck();
+  const container = document.getElementById('scLocationSelect')?.value;
+  if (!confirm(container ? `Clear check dates for "${container}"?` : 'Clear ALL stock check dates?')) return;
+  if (container) {
+    ALL_COINS.forEach(coin=>{
+      (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
+        if (inst.s1===container||inst.s2===container||inst.s3===container) delete _scChecked[inst.id];
+      });
+    });
+  } else {
+    _scChecked = {};
+  }
+  _scSave();
+  loadStockCheck();
+  showToast('Check dates cleared');
 }
-function scToggleUnchecked() { _scUncheckedOnly = !_scUncheckedOnly; showStockCheck(); }
-function scPrintUnchecked() { window.print(); }
+
+function scToggleUnchecked() {
+  _scUncheckedOnly = !_scUncheckedOnly;
+  const btn = document.getElementById('scUncheckedBtn');
+  if (btn) btn.style.borderColor = _scUncheckedOnly ? 'var(--gold)' : '';
+  loadStockCheck();
+}
+function scPrintUnchecked() {
+  const modal = document.querySelector('.sc-modal');
+  if (modal) { modal.classList.add('sc-print-unchecked'); window.print(); modal.classList.remove('sc-print-unchecked'); }
+}
 function scPrintNeeded() { window.print(); }
 
 window.addEventListener('load', ()=>init());
