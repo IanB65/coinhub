@@ -608,6 +608,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
         <a class="admin-dropdown-item" onclick="showChangeLog();closeAdminMenu()">📋 Change Log</a>
         <a class="admin-dropdown-item" onclick="showStockCheck();closeAdminMenu()">✓ Stock Check</a>
         <a class="admin-dropdown-item" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" onclick="closeAdminMenu()">⊞ Open Spreadsheet</a>
+        <a class="admin-dropdown-item" onclick="refreshSheetData();closeAdminMenu()">↻ Refresh Data</a>
         <div class="admin-dropdown-sep"></div>
         <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
         <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
@@ -1955,6 +1956,11 @@ function _applyGuestMode(on) {
   document.querySelectorAll('.admin-only').forEach(el=>el.style.display=on?'none':'');
 }
 function doLogout() { _applyGuestMode(true); }
+function refreshSheetData() {
+  try { localStorage.removeItem(GS_CACHE_KEY); } catch(e) {}
+  showToast('Cache cleared — reloading…');
+  setTimeout(() => location.reload(), 800);
+}
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e=>{
