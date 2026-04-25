@@ -1862,7 +1862,7 @@ function loadStockCheck() {
       <span class="sc-item-name">${coinName}</span>
       <span class="sc-item-meta">${metaParts.join(' · ')}</span>
       <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>
-      <button class="sc-info-btn" onclick="event.preventDefault();scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
+      <button class="sc-info-btn" onclick="event.preventDefault();event.stopPropagation();scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
     listEl.appendChild(row);
 
     const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
