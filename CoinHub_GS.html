@@ -466,13 +466,13 @@ body.guest-mode .sticky-top{top:82px}
 .coin-thumb{cursor:zoom-in}
 
 /* ── MONARCH SIDEBAR PORTRAITS ── */
-.monarch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem}
+.monarch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.25rem}
 .monarch-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .12s,outline .12s;background:var(--paper);position:relative}
 .monarch-card:hover{border-color:var(--gold2)}
 .monarch-card.active{border-color:var(--gold);outline:1px solid var(--gold)}
-.monarch-card-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top center;display:block;filter:sepia(.12) contrast(.95)}
-.monarch-card-ph{width:100%;aspect-ratio:3/4;background:var(--paper3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted)}
-.monarch-card-name{font-size:.45rem;letter-spacing:.05em;text-align:center;padding:.25rem .1rem .2rem;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.2;min-height:1.8em}
+.monarch-card-img{width:100%;aspect-ratio:2/3;object-fit:cover;object-position:top center;display:block;filter:sepia(.12) contrast(.95)}
+.monarch-card-ph{width:100%;aspect-ratio:2/3;background:var(--paper3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted)}
+.monarch-card-name{font-size:.42rem;letter-spacing:.04em;text-align:center;padding:.15rem .1rem .12rem;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .monarch-card.active .monarch-card-name{color:var(--gold)}
 
 /* ── MONARCH HERO BANNER ── */
@@ -637,17 +637,17 @@ body.guest-mode .sticky-top{top:82px}
     </div>
 
     <div class="filter-section">
+      <div class="filter-label">Monarch</div>
+      <div class="monarch-grid" id="monarchGrid"></div>
+    </div>
+
+    <div class="filter-section">
       <div class="filter-label">Status</div>
       <div class="status-row">
         <button class="status-toggle" data-s="Got" onclick="toggleStatus('Got')">Got</button>
         <button class="status-toggle" data-s="Need" onclick="toggleStatus('Need')">Need</button>
         <button class="status-toggle" data-s="List" onclick="toggleStatus('List')">List</button>
       </div>
-    </div>
-
-    <div class="filter-section">
-      <div class="filter-label">Monarch</div>
-      <div class="monarch-grid" id="monarchGrid"></div>
     </div>
 
     <button class="clear-btn" onclick="clearFilters()">✕ Clear all filters</button>
