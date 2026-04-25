@@ -2049,23 +2049,40 @@ function loadStockCheck() {
   if (progress) progress.textContent = `${checked}/${items.length} checked (${pct}%)`;
   if (barFill) barFill.style.width = pct+'%';
 
-  // Remove old items (keep print header and empty msg)
+  // Remove old items and detail panels
   if (scList) {
-    scList.querySelectorAll('.sc-item').forEach(el=>el.remove());
+    scList.querySelectorAll('.sc-item, .sc-detail').forEach(el=>el.remove());
     visible.forEach(({coin, inst}) => {
-      const isChecked = !!_scChecked[inst.id];
-      const lastRaw   = _scChecked[inst.id];
+      const iid = inst.id;
+      const isChecked = !!_scChecked[iid];
+      const lastRaw   = _scChecked[iid];
       const lastDate  = lastRaw ? new Date(lastRaw).toLocaleDateString('en-GB') : 'Never';
       const div = document.createElement('div');
       div.className = 'sc-item' + (isChecked?' checked':'');
+      div.id = `sc-row-${iid}`;
       div.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem';
       div.innerHTML = `
         <span style="flex:1;font-family:'Cormorant Garamond',serif">${esc(coin.name)}</span>
-        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)">${esc(inst.id)}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)">${esc(iid)}</span>
         <span class="badge-status ${coin.status||'Unknown'}" style="min-width:36px;text-align:center">${coin.status||'?'}</span>
         <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:${isChecked?'var(--got)':'var(--need)'};min-width:70px">${lastDate}</span>
-        <button class="btn-sm${isChecked?' btn-checked':''}" onclick="scToggleItem('${esc(coin.variantCode)}','${esc(inst.id)}')" style="${isChecked?'border-color:var(--got);color:var(--got)':''}">${isChecked?'✓':'○'}</button>`;
+        <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>
+        <button class="btn-sm${isChecked?' btn-checked':''}" onclick="scToggleItem('${esc(coin.variantCode)}','${iid}')" style="${isChecked?'border-color:var(--got);color:var(--got)':''}">${isChecked?'✓':'○'}</button>`;
       scList.appendChild(div);
+
+      // Detail panel
+      const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+      const detail = document.createElement('div');
+      detail.className = 'sc-detail';
+      detail.id = `sc-detail-${iid}`;
+      detail.innerHTML = [
+        `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val">${iid}</span></div>`,
+        storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
+        inst.cond ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
+        inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Packaging</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
+        coin.variantCode ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val">${coin.variantCode}</span></div>` : '',
+      ].join('');
+      scList.appendChild(detail);
     });
     if (!visible.length) {
       const d = document.createElement('p');
@@ -2074,6 +2091,14 @@ function loadStockCheck() {
       scList.appendChild(d);
     }
   }
+}
+
+function scToggleDetail(iid) {
+  const detail = document.getElementById('sc-detail-' + iid);
+  const btn = document.querySelector('#sc-row-' + iid + ' .sc-info-btn');
+  if (!detail) return;
+  const open = detail.classList.toggle('open');
+  if (btn) btn.classList.toggle('open', open);
 }
 
 function scToggleItem(vc, instId) {
