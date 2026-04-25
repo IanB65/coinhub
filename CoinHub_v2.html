@@ -413,6 +413,10 @@ body.guest-mode #bottomNav{bottom:0}
 .sc-loc-bar{flex:1;height:4px;background:var(--paper3);border-radius:2px;overflow:hidden}
 .sc-loc-bar-fill{height:100%;background:var(--got);border-radius:2px}
 .sc-loc-count{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);min-width:4rem;text-align:right;flex-shrink:0}
+.sc-loc-date{font-size:.62rem;font-family:'DM Mono',monospace;color:var(--muted);min-width:7rem;text-align:right;flex-shrink:0;opacity:.7}
+.sc-loc-row.sc-loc-done .sc-loc-name{color:var(--got)}
+.sc-loc-row.sc-loc-done .sc-loc-bar-fill{background:var(--got)}
+.sc-loc-row.sc-loc-pristine .sc-loc-bar-fill{background:var(--need);opacity:.3}
 .sc-empty{font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0}
 #scUncheckedBtn.active{border-color:var(--need)!important;color:var(--need)!important;background:var(--need-bg)!important}
 .sc-print-header{display:none}
@@ -1884,7 +1888,9 @@ function showStockCheck() {
     if (current && containers.has(current)) sel.value = current;
   }
   document.getElementById('scModalBg').style.display = 'flex';
-  loadStockCheck();
+  const loc = sel ? sel.value : '';
+  if (!loc && !document.querySelector('#scList .sc-loc-sum')) _scBuildSummary();
+  else loadStockCheck();
 }
 function closeStockCheck() { document.getElementById('scModalBg').style.display='none'; }
 
@@ -2010,86 +2016,159 @@ function _syncSetInterval(mins) { showToast(mins?`Auto-sync: every ${mins} min`:
 function _scSyncToNotion() { showToast('Stocktake push — not implemented in v2'); }
 
 // ── STOCK CHECK EXTRA FUNCTIONS ───────────────────────────────────────────────
-function loadStockCheck() {
-  const container = document.getElementById('scLocationSelect')?.value || '';
-  const emptyMsg  = document.getElementById('scEmptyMsg');
-  const scList    = document.getElementById('scList');
-  const progress  = document.getElementById('scProgress');
-  const barFill   = document.getElementById('scProgressBarFill');
+function _scFmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+}
 
-  if (!container) {
-    if (emptyMsg) emptyMsg.style.display = '';
-    if (scList) scList.querySelectorAll('.sc-item').forEach(el=>el.remove());
-    if (progress) progress.textContent = '';
-    if (barFill) barFill.style.width = '0%';
+function _scBuildSummary() {
+  const locations = Object.keys(STORAGE_MAP);
+  const listEl = document.getElementById('scList');
+  const div = document.createElement('div');
+  div.className = 'sc-loc-sum';
+  const hdr = document.createElement('div');
+  hdr.className = 'sc-loc-heading';
+  hdr.textContent = 'All Locations — Stocktake Progress';
+  div.appendChild(hdr);
+  let anyFound = false;
+  locations.forEach(loc => {
+    const iids = [];
+    Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
+      records.forEach(inst => { if (inst.s1 === loc) iids.push(inst.id); });
+    });
+    anyFound = true;
+    if (!iids.length) {
+      const row = document.createElement('div');
+      row.className = 'sc-loc-row sc-loc-pristine';
+      row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+        <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:0%"></div></div>
+        <span class="sc-loc-count" style="opacity:.4">empty</span>
+        <span class="sc-loc-date">—</span>`;
+      div.appendChild(row);
+      return;
+    }
+    const total = iids.length;
+    const checkedDates = iids.map(iid => _scChecked[iid]).filter(Boolean).sort();
+    const done = checkedDates.length;
+    const pct = Math.round(done / total * 100);
+    const lastDate = checkedDates.length ? checkedDates[checkedDates.length - 1] : null;
+    const cls = done === total ? ' sc-loc-done' : done === 0 ? ' sc-loc-pristine' : '';
+    const row = document.createElement('div');
+    row.className = 'sc-loc-row' + cls;
+    row.title = 'Click to open ' + loc;
+    row.onclick = () => { document.getElementById('scLocationSelect').value = loc; loadStockCheck(); };
+    row.innerHTML = `<span class="sc-loc-name">${loc}</span>
+      <div class="sc-loc-bar"><div class="sc-loc-bar-fill" style="width:${pct}%"></div></div>
+      <span class="sc-loc-count">${done}/${total} · ${pct}%</span>
+      <span class="sc-loc-date">${lastDate ? _scFmtDate(lastDate) : '—'}</span>`;
+    div.appendChild(row);
+  });
+  if (!anyFound) {
+    const empty = document.createElement('div');
+    empty.className = 'sc-empty';
+    empty.textContent = 'No coins found in any location.';
+    div.appendChild(empty);
+  }
+  listEl.appendChild(div);
+}
+
+function loadStockCheck() {
+  const loc    = document.getElementById('scLocationSelect')?.value || '';
+  const emptyMsg = document.getElementById('scEmptyMsg');
+  const listEl   = document.getElementById('scList');
+  const progress = document.getElementById('scProgress');
+  const barFill  = document.getElementById('scProgressBarFill');
+  const wrap     = document.getElementById('scProgressWrap');
+
+  listEl.querySelectorAll('.sc-group-label, .sc-item, .sc-detail, .sc-loc-sum').forEach(el=>el.remove());
+
+  if (!loc) {
+    if (emptyMsg) emptyMsg.style.display='none';
+    if (progress) progress.textContent='';
+    if (barFill) barFill.style.width='0%';
+    if (wrap) wrap.style.display='none';
+    _scBuildSummary();
     return;
   }
-  if (emptyMsg) emptyMsg.style.display = 'none';
+  if (emptyMsg) emptyMsg.style.display='none';
 
-  // Gather all instances in this container (match s1, s2, or s3)
+  // Gather instances where s1 === loc
   const items = [];
-  ALL_COINS.forEach(coin => {
-    (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst => {
-      if (inst.s1===container || inst.s2===container || inst.s3===container) {
-        items.push({ coin, inst });
+  Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
+    records.forEach(inst => {
+      if (inst.s1 === loc) {
+        const coin = ALL_COINS.find(c=>c.variantCode===vc);
+        items.push({ inst, vc, coin, coinName: coin ? coin.name : vc });
       }
     });
   });
 
-  // Sort by coin name
-  items.sort((a,b)=>a.coin.name.localeCompare(b.coin.name));
+  // Sort by s2 then s3
+  items.sort((a,b) => {
+    const s2 = (a.inst.s2||'').localeCompare(b.inst.s2||'');
+    return s2 !== 0 ? s2 : (a.inst.s3||'').localeCompare(b.inst.s3||'');
+  });
 
-  // Apply unchecked filter
-  const visible = _scUncheckedOnly
-    ? items.filter(({inst})=>!_scChecked[inst.id])
-    : items;
+  const total   = items.length;
+  const checked = items.filter(({inst})=>!!_scChecked[inst.id||inst.insId]).length;
+  const pct     = total ? Math.round(checked/total*100) : 0;
+  if (progress) progress.textContent = `${checked} / ${total} · ${pct}%`;
+  if (barFill)  barFill.style.width  = pct+'%';
+  if (wrap)     wrap.style.display   = 'flex';
 
-  const checked = items.filter(({inst})=>!!_scChecked[inst.id]).length;
-  const pct = items.length ? Math.round(checked/items.length*100) : 0;
-  if (progress) progress.textContent = `${checked}/${items.length} checked (${pct}%)`;
-  if (barFill) barFill.style.width = pct+'%';
+  let lastS2 = null;
+  items.forEach(({ inst, coin, coinName }) => {
+    const iid         = inst.id || inst.insId;
+    const checkedDate = _scChecked[iid] || '';
+    const isChecked   = !!checkedDate;
 
-  // Remove old items and detail panels
-  if (scList) {
-    scList.querySelectorAll('.sc-item, .sc-detail').forEach(el=>el.remove());
-    visible.forEach(({coin, inst}) => {
-      const iid = inst.id;
-      const isChecked = !!_scChecked[iid];
-      const lastRaw   = _scChecked[iid];
-      const lastDate  = lastRaw ? new Date(lastRaw).toLocaleDateString('en-GB') : 'Never';
-      const div = document.createElement('div');
-      div.className = 'sc-item' + (isChecked?' checked':'');
-      div.id = `sc-row-${iid}`;
-      div.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem';
-      div.innerHTML = `
-        <span style="flex:1;font-family:'Cormorant Garamond',serif">${esc(coin.name)}</span>
-        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted)">${esc(iid)}</span>
-        <span class="badge-status ${coin.status||'Unknown'}" style="min-width:36px;text-align:center">${coin.status||'?'}</span>
-        <span style="font-family:'DM Mono',monospace;font-size:.65rem;color:${isChecked?'var(--got)':'var(--need)'};min-width:70px">${lastDate}</span>
-        <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>
-        <button class="btn-sm${isChecked?' btn-checked':''}" onclick="scToggleItem('${esc(coin.variantCode)}','${iid}')" style="${isChecked?'border-color:var(--got);color:var(--got)':''}">${isChecked?'✓':'○'}</button>`;
-      scList.appendChild(div);
-
-      // Detail panel
-      const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
-      const detail = document.createElement('div');
-      detail.className = 'sc-detail';
-      detail.id = `sc-detail-${iid}`;
-      detail.innerHTML = [
-        `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val">${iid}</span></div>`,
-        storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
-        inst.cond ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
-        inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Packaging</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
-        coin.variantCode ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val">${coin.variantCode}</span></div>` : '',
-      ].join('');
-      scList.appendChild(detail);
-    });
-    if (!visible.length) {
-      const d = document.createElement('p');
-      d.style.cssText='padding:1rem;color:var(--muted);font-style:italic';
-      d.textContent = _scUncheckedOnly ? 'All items in this container have been checked.' : 'No instances found in this container.';
-      scList.appendChild(d);
+    // Group label
+    const grp = inst.s2 || '(no sub-location)';
+    if (grp !== lastS2) {
+      const g = document.createElement('div');
+      g.className = 'sc-group-label';
+      g.textContent = grp;
+      listEl.appendChild(g);
+      lastS2 = grp;
     }
+
+    // Meta: year · denom · cond · ptype · s3
+    const metaParts = [
+      coin ? coin.year : null,
+      coin ? coin.denom : null,
+      inst.cond,
+      inst.ptype,
+      inst.s3
+    ].filter(Boolean);
+
+    const row = document.createElement('div');
+    row.className = 'sc-item' + (isChecked ? ' checked' : '');
+    row.id = `sc-row-${iid}`;
+    row.innerHTML = `<input type="checkbox" ${isChecked?'checked':''} onchange="scToggleItem('${esc(inst.vc||coin?.variantCode||'')}','${iid}',this.checked)" style="cursor:pointer">
+      <span class="sc-item-name">${esc(coinName)}</span>
+      <span class="sc-item-meta">${metaParts.join(' · ')}</span>
+      <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
+    listEl.appendChild(row);
+
+    // Detail panel
+    const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
+    const detail = document.createElement('div');
+    detail.className = 'sc-detail';
+    detail.id = `sc-detail-${iid}`;
+    detail.innerHTML = [
+      `<div class="sc-detail-row"><span class="sc-detail-label">Instance</span><span class="sc-detail-val">${iid}</span></div>`,
+      storageParts ? `<div class="sc-detail-row"><span class="sc-detail-label">Storage</span><span class="sc-detail-val">${storageParts}</span></div>` : '',
+      inst.cond  ? `<div class="sc-detail-row"><span class="sc-detail-label">Condition</span><span class="sc-detail-val">${inst.cond}</span></div>` : '',
+      inst.ptype ? `<div class="sc-detail-row"><span class="sc-detail-label">Packaging</span><span class="sc-detail-val">${inst.ptype}</span></div>` : '',
+      (inst.vc||coin?.variantCode) ? `<div class="sc-detail-row"><span class="sc-detail-label">Variant</span><span class="sc-detail-val">${inst.vc||coin?.variantCode}</span></div>` : '',
+    ].join('');
+    listEl.appendChild(detail);
+  });
+
+  if (!items.length) {
+    if (emptyMsg) { emptyMsg.textContent='No instances found in this location.'; emptyMsg.style.display=''; }
   }
 }
 
@@ -2101,17 +2180,34 @@ function scToggleDetail(iid) {
   if (btn) btn.classList.toggle('open', open);
 }
 
-function scToggleItem(vc, instId) {
-  if (_scChecked[instId]) {
-    delete _scChecked[instId];
-  } else {
-    _scChecked[instId] = Date.now();
-    // Update lastStocktake on instance
+function scToggleItem(vc, instId, checked) {
+  if (checked) {
+    _scChecked[instId] = new Date().toISOString().slice(0,10);
     const inst = (INSTANCE_DATA[vc]||[]).find(i=>i.id===instId);
-    if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+    if (inst) inst.lastStocktake = _scChecked[instId];
+  } else {
+    delete _scChecked[instId];
   }
   _scSave();
-  loadStockCheck();
+  // Update row visuals without full reload
+  const row = document.getElementById('sc-row-' + instId);
+  if (row) {
+    row.classList.toggle('checked', checked);
+    const nameEl = row.querySelector('.sc-item-name');
+    if (nameEl) nameEl.style.textDecoration = checked ? 'line-through' : '';
+    if (nameEl) nameEl.style.color = checked ? 'var(--got)' : '';
+  }
+  // Update progress counter
+  const loc = document.getElementById('scLocationSelect')?.value || '';
+  const all = [];
+  Object.entries(INSTANCE_DATA).forEach(([v, records]) => records.forEach(inst => { if (inst.s1===loc) all.push(inst.id); }));
+  const done = all.filter(iid => _scChecked[iid]).length;
+  const total = all.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const prog = document.getElementById('scProgress');
+  if (prog) prog.textContent = `${done} / ${total} · ${pct}%`;
+  const barFill = document.getElementById('scProgressBarFill');
+  if (barFill) barFill.style.width = pct + '%';
 }
 
 function scCheckAll() {
