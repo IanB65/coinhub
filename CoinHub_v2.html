@@ -95,7 +95,7 @@ body.guest-mode #bottomNav{bottom:0}
 .section-link:hover{border-color:var(--gold)}
 
 /* ── HOME: HERO ── */
-.hero{background:var(--dark);position:relative;overflow:hidden;padding:5rem 2rem 4.5rem}
+.hero{background:var(--dark);position:relative;overflow:visible;padding:5rem 2rem 4.5rem}
 @media(max-width:767px){.hero{padding:3rem 1rem 3rem}}
 .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(139,105,20,.12) 0%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(139,105,20,.07) 0%,transparent 55%);pointer-events:none}
 .hero-coins{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='36' fill='none' stroke='%23F0C84A' stroke-width='1'/%3E%3Ccircle cx='40' cy='40' r='28' fill='none' stroke='%23F0C84A' stroke-width='.5'/%3E%3C/svg%3E");background-size:80px 80px;pointer-events:none}
@@ -184,7 +184,7 @@ body.guest-mode #bottomNav{bottom:0}
 
 /* ── DENOM CARDS ── */
 .denom-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.6rem}
-.denom-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.9rem .5rem .7rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);text-decoration:none;color:var(--ink);transition:all .15s;gap:.15rem;position:relative;overflow:hidden}
+.denom-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.9rem .5rem .7rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);text-decoration:none;color:var(--ink);transition:all .15s;gap:.15rem;position:relative;overflow:hidden;min-height:150px}
 .denom-card::before{content:'';position:absolute;inset:4px;border-radius:calc(var(--r) - 2px);border:1px solid var(--border);opacity:.45;pointer-events:none}
 .denom-card:hover{border-color:var(--gold2);background:var(--paper);box-shadow:0 3px 12px rgba(0,0,0,.12);transform:translateY(-1px)}
 .denom-card:hover .denom-card-val{color:var(--gold)}
@@ -1230,9 +1230,9 @@ function buildHeroSuggestions() {
   const q = input.value.trim().toLowerCase();
   if (!q) { box.classList.remove('open'); return; }
 
-  const collHits = [...new Set(ALL_COINS.map(c=>c.collection))].filter(c=>c&&c.toLowerCase().includes(q)).slice(0,4);
-  const monHits  = [...new Set(ALL_COINS.map(c=>c.monarch))].filter(m=>m&&m.toLowerCase().includes(q)).slice(0,3);
-  const coinHits = ALL_COINS.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.variantCode||'').toLowerCase().includes(q)).slice(0,5);
+  const collHits = [...new Set(ALL_COINS.map(c=>c.collection))].filter(c=>c&&c.toLowerCase().includes(q)).slice(0,10);
+  const monHits  = [...new Set(ALL_COINS.map(c=>c.monarch))].filter(m=>m&&m.toLowerCase().includes(q)).slice(0,10);
+  const coinHits = ALL_COINS.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.variantCode||'').toLowerCase().includes(q)).slice(0,30);
 
   let html = '';
   if (collHits.length) html += `<div class="suggest-group"><div class="suggest-label">Collections</div>${collHits.map(c=>`<div class="suggest-item" onclick="location.hash='collection/${encodeURIComponent(c)}';closeHeroSuggest()"><span class="suggest-item-label">${esc(c)}</span></div>`).join('')}</div>`;
