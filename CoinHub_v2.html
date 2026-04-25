@@ -823,6 +823,13 @@ const MONARCH_META = {
     portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/King_George_1923_LCCN2014715558_%28cropped%29.jpg/500px-King_George_1923_LCCN2014715558_%28cropped%29.jpg',
     bio:'George V\'s reign encompassed one of the most dramatic transformations in British monetary history: the abandonment of the gold standard during World War One and the removal of gold coinage from everyday circulation. His portrait by Bertram Mackennal appeared on coins for 26 years. The silver coinage was debased from sterling (92.5%) to 50% silver in 1920 — a decisive break with centuries of tradition.'
   },
+  'King George III':    {
+    cypher:'GR III', reign:'1760–1820',
+    title:'King of Great Britain and Ireland · King of Hanover',
+    born:'4 Jun 1738', died:'29 Jan 1820', accession:'25 Oct 1760', coronation:'22 Sep 1761 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/George_III_of_the_United_Kingdom-e.jpg/500px-George_III_of_the_United_Kingdom-e.jpg',
+    bio:'George III\'s 60-year reign saw the most radical change in British copper coinage for centuries. The 1797 Cartwheel issues — Matthew Boulton\'s steam-struck pennies and twopences, so heavy they were said to be worth their weight — were a technological watershed. Earlier silver coinage suffered acute shortages, and much everyday trade relied on private trade tokens. His reign also witnessed the Bank of England\'s first paper money issues during the 1797 suspension of gold payments.'
+  },
   'King Edward VII':    {
     cypher:'ER VII', reign:'1901–1910',
     title:'King of the United Kingdom of Great Britain and Ireland · Emperor of India',
@@ -1105,7 +1112,7 @@ function renderHome() {
   }).join('');
 
   // ── Monarchs ──
-  const monarchOrder = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII'];
+  const monarchOrder = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII','King George III'];
   const monarchCards = monarchOrder.filter(m=>monStats[m]).map(name => {
     const meta = MONARCH_META[name] || { cypher:name.slice(0,4), reign:'', desc:'' };
     const { got, total } = monStats[name];
@@ -1293,7 +1300,7 @@ function renderMonarchs() {
     if (c.status==='Got') monStats[c.monarch].got++;
     if (!monStats[c.monarch].img) monStats[c.monarch].img = resolveImage(c);
   });
-  const order = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII'];
+  const order = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII','King George III'];
   const rest  = Object.keys(monStats).filter(m=>!order.includes(m)).sort();
   const all   = [...order.filter(m=>monStats[m]), ...rest];
   const cards = all.map(name => {
