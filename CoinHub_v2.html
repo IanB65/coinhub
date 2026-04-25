@@ -176,6 +176,11 @@ body.guest-mode #bottomNav{bottom:0}
 .year-chip.has-coins{border-color:var(--border)}
 .year-chip.got{background:var(--got-bg);border-color:var(--got);color:var(--got)}
 .year-chip-count{font-size:.52rem;opacity:.65;margin-left:.2rem}
+/* ── YEAR DRILL-DOWN ── */
+.by-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem}
+.by-btn{font-family:'DM Mono',monospace;font-size:.7rem;padding:.4rem .9rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--ink);background:var(--paper2);transition:all .12s}
+.by-btn:hover{border-color:var(--gold2);color:var(--gold)}
+.by-btn.active{border-color:var(--gold);background:var(--gold);color:#fff;font-weight:600}
 
 /* ── DENOM CARDS ── */
 .denom-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.6rem}
@@ -1112,18 +1117,8 @@ function renderHome() {
     </a>`;
   }).join('');
 
-  // ── Years by decade ──
-  const decades = {};
-  Object.keys(yearStats).forEach(y => {
-    const d = Math.floor(+y/10)*10;
-    if (!decades[d]) decades[d] = [];
-    decades[d].push(+y);
-  });
-  const yearsHTML = Object.keys(decades).sort((a,b)=>+b-+a).map(dec => {
-    const years = decades[dec].sort((a,b)=>b-a);
-    const chips = years.map(y => `<a class="year-chip" href="#archive" onclick="arcJumpYear(${y})">${y}<span class="year-chip-count">${yearStats[y]}</span></a>`).join('');
-    return `<div class="decade-section"><div class="decade-label">${dec}s</div><div class="year-chips">${chips}</div></div>`;
-  }).join('');
+  // ── Years drill-down (stored at module level so onclick handlers work) ──
+  window._byYearStats = yearStats;
 
   // ── Denom cards ──
   const denomCards = DENOM_ORDER.filter(d=>denomStats[d]).map(d => {
@@ -1149,7 +1144,7 @@ function renderHome() {
     </div>
     <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="section-head"><h2 class="section-title">Browse by Year</h2><a class="section-link" href="#years">Full year index →</a></div>
-      ${yearsHTML}
+      <div id="home-year-browser"></div>
     </div>
     <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="home-cta">
@@ -1160,6 +1155,25 @@ function renderHome() {
       </div>
     </div>
   </div>`;
+  renderHomeYearBrowser();
+}
+
+// ── HOME YEAR DRILL-DOWN ─────────────────────────────────────────────────────
+let _byCentury = null, _byDecade = null;
+function renderHomeYearBrowser() {
+  const el = document.getElementById('home-year-browser');
+  if (!el || !window._byYearStats) return;
+  const ys = window._byYearStats;
+  const allYears = Object.keys(ys).map(Number);
+  const centuries = [...new Set(allYears.map(y => Math.floor(y/100)*100))].sort((a,b)=>b-a);
+  if (_byCentury === null || !centuries.includes(_byCentury)) _byCentury = centuries[0];
+  const decadesInCent = [...new Set(allYears.filter(y=>Math.floor(y/100)*100===_byCentury).map(y=>Math.floor(y/10)*10))].sort((a,b)=>b-a);
+  if (_byDecade === null || !decadesInCent.includes(_byDecade)) _byDecade = decadesInCent[0];
+  const yearsInDec = allYears.filter(y=>Math.floor(y/10)*10===_byDecade).sort((a,b)=>b-a);
+  const centBtns = centuries.map(c=>`<button class="by-btn${c===_byCentury?' active':''}" onclick="_byCentury=${c};_byDecade=null;renderHomeYearBrowser()">${c}s</button>`).join('');
+  const decBtns = decadesInCent.map(d=>`<button class="by-btn${d===_byDecade?' active':''}" onclick="_byDecade=${d};renderHomeYearBrowser()">${d}s</button>`).join('');
+  const chips = yearsInDec.map(y=>`<a class="year-chip" href="#archive" onclick="arcJumpYear(${y})">${y}<span class="year-chip-count">${ys[y]}</span></a>`).join('');
+  el.innerHTML = `<div class="by-row">${centBtns}</div><div class="by-row">${decBtns}</div><div class="year-chips">${chips}</div>`;
 }
 
 // ── HOME SEARCH ──────────────────────────────────────────────────────────────
