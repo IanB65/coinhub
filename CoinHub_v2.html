@@ -1157,7 +1157,7 @@ function renderHome() {
 // ── HOME DENOM BROWSER ───────────────────────────────────────────────────────
 const _DENOM_GROUPS = {
   'Decimal':    ['1p','2p','5p','10p','20p','50p','£1','£2','£5'],
-  'Pre-decimal':['Farthing','½d','1d','3d','6d','1s','2s','2s 6d','Crown'],
+  'Pre-decimal':['Farthing','Half Penny','Penny','Threepence','Sixpence','Shilling','Florin','Half Crown','Crown'],
   'Other':      ['Medal','Other']
 };
 let _byDenomGroup = 'Decimal';
@@ -1393,6 +1393,7 @@ function coinCardHTML(coin, ctxId, idx) {
 
 // ── ARCHIVE PAGE ──────────────────────────────────────────────────────────────
 function arcJumpYear(y) { ARC.year = String(y); router(); }
+function arcJumpDenom(d) { ARC.denom = d; router(); }
 
 function renderArchive() {
   const el = document.getElementById('page-archive');
