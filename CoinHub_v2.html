@@ -145,13 +145,27 @@ body.guest-mode #bottomNav{bottom:0}
 .monarch-card{cursor:pointer;text-align:center;text-decoration:none;display:block;transition:transform .18s;flex-shrink:0}
 @media(max-width:767px){.monarch-card{width:140px;scroll-snap-align:start}}
 .monarch-card:hover{transform:translateY(-3px)}
-.monarch-coin{width:100%;aspect-ratio:1;border-radius:50%;background:var(--dark2);overflow:hidden;margin-bottom:.75rem;position:relative;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:border-color .18s;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.monarch-coin{width:100%;aspect-ratio:3/4;border-radius:var(--r);background:var(--dark2);overflow:hidden;margin-bottom:.75rem;position:relative;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:border-color .18s;box-shadow:2px 4px 14px rgba(0,0,0,.22)}
 .monarch-card:hover .monarch-coin{border-color:var(--gold2)}
-.monarch-coin img{width:100%;height:100%;object-fit:cover}
-.monarch-cypher{font-family:'Bodoni Moda',serif;font-size:1.4rem;font-weight:700;color:var(--gold2);letter-spacing:.04em}
+.monarch-coin img{width:100%;height:100%;object-fit:cover;object-position:top center;filter:sepia(.1) contrast(.97)}
+.monarch-cypher{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:700;color:var(--gold2);letter-spacing:.04em}
 .monarch-name{font-family:'Bodoni Moda',serif;font-size:.85rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;line-height:1.2}
 .monarch-reign{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;color:var(--muted)}
 .monarch-count{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);margin-top:.2rem}
+/* monarch detail hero */
+.mon-hero{display:flex;gap:2rem;align-items:flex-start;padding:2rem var(--page-pad) 1.5rem;background:linear-gradient(to bottom,var(--paper2),var(--paper));border-bottom:1px solid var(--border)}
+.mon-hero-frame{flex-shrink:0;width:110px;position:relative}
+.mon-hero-frame::before{content:'';position:absolute;inset:-4px;border:1px solid rgba(139,105,20,.3);pointer-events:none;z-index:1}
+.mon-hero-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top center;display:block;filter:sepia(.1) contrast(.97);box-shadow:3px 5px 16px rgba(0,0,0,.2)}
+.mon-hero-body{flex:1;min-width:0}
+.mon-hero-name{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:900;letter-spacing:.03em;color:var(--ink);line-height:1;margin-bottom:.25rem}
+.mon-hero-title{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);margin-bottom:.8rem;font-family:'DM Mono',monospace;line-height:1.5}
+.mon-hero-facts{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin-bottom:.8rem}
+.mon-hero-fact{font-family:'DM Mono',monospace;font-size:.62rem;display:flex;gap:.35rem}
+.mon-hero-fact-label{color:var(--muted);font-size:.5rem;text-transform:uppercase;letter-spacing:.09em}
+.mon-hero-div{height:1px;background:var(--border);margin-bottom:.7rem;opacity:.5}
+.mon-hero-bio{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);line-height:1.65;opacity:.88}
+.mon-hero-stats{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.6rem}
 
 /* ── YEAR CHIPS ── */
 .decade-section{margin-bottom:1.2rem}
@@ -769,13 +783,55 @@ const INSTANCE_DATA = {};
 const STORAGE_MAP = {};
 
 const MONARCH_META = {
-  'King Charles III':   { cypher:'CR III', reign:'2022–present', desc:'Current monarch. His effigy first appeared on UK coins in 2023.' },
-  'Queen Elizabeth II': { cypher:'ER II',  reign:'1952–2022',    desc:'Britain\'s longest-reigning monarch, whose portrait graced coins for seven decades.' },
-  'King George Vi':     { cypher:'GR VI',  reign:'1936–1952',    desc:'Father of Queen Elizabeth II, who reigned through the Second World War.' },
-  'King George V':      { cypher:'GR V',   reign:'1910–1936',    desc:'Reigned through the First World War and oversaw the transition to the House of Windsor.' },
-  'Queen Victoria':     { cypher:'VR',     reign:'1837–1901',    desc:'One of Britain\'s longest-reigning monarchs, spanning both pre-decimal and early coinage reforms.' },
-  'King Edward VII':    { cypher:'ER VII', reign:'1901–1910',    desc:'The Edwardian era brought distinctive coin designs following the Victorian period.' },
-  'King Edward VIII':   { cypher:'ER VIII',reign:'1936',         desc:'Brief reign; very few coins were minted before his abdication.' },
+  'King Charles III':   {
+    cypher:'CR III', reign:'2022–present',
+    title:'King of the United Kingdom and 14 other Commonwealth Realms',
+    born:'14 Nov 1948', died:null, accession:'8 Sep 2022', coronation:'6 May 2023 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/King_Charles_III_%28July_2023%29.jpg/500px-King_Charles_III_%28July_2023%29.jpg',
+    bio:'Charles III is the first new monarch on British coinage since 1953. His effigy by Martin Jennings (introduced 2023) follows tradition by facing left — opposite to Elizabeth II\'s right-facing portrait. His accession generated a wave of commemorative coinage including coronation crowns, special BU and proof sets, and new definitive circulation coins. Charles III issues are already widely collected as the first of a new reign.'
+  },
+  'Queen Elizabeth II': {
+    cypher:'ER II', reign:'1952–2022',
+    title:'Queen of the United Kingdom and other Commonwealth Realms',
+    born:'21 Apr 1926', died:'8 Sep 2022', accession:'6 Feb 1952', coronation:'2 Jun 1953 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Queen_Elizabeth_II_on_her_Coronation_Day.jpg/500px-Queen_Elizabeth_II_on_her_Coronation_Day.jpg',
+    bio:'Elizabeth II holds the record for the most portrait changes on British coinage — five distinct effigies over her 70-year reign, from Mary Gillick\'s laureate bust (1953) through Arnold Machin, Raphael Maklouf, Ian Rank-Broadley, and Jody Clark\'s portrait (2015). Her reign encompassed decimalisation on 15 February 1971, the single most significant event in modern British numismatic history, and the explosion of commemorative 50p and £2 coinage from the 1990s onward.'
+  },
+  'King George Vi':     {
+    cypher:'GR VI', reign:'1936–1952',
+    title:'King of the United Kingdom and the Dominions of the British Commonwealth',
+    born:'14 Dec 1895', died:'6 Feb 1952', accession:'11 Dec 1936', coronation:'12 May 1937 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg/500px-King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg',
+    bio:'George VI\'s coinage is notable as the last to carry the IND IMP (Emperor of India) legend, dropped from 1949 following Indian independence. Percy Metcalfe\'s portrait was used throughout his reign. The silver-content coins (50% until 1946, then cupro-nickel) chart the postwar transition away from precious-metal coinage, and his 1937 coronation year produced the last florins and crowns before decimalisation planning began.'
+  },
+  'King George V':      {
+    cypher:'GR V', reign:'1910–1936',
+    title:'King of the United Kingdom and the British Dominions · Emperor of India',
+    born:'3 Jun 1865', died:'20 Jan 1936', accession:'6 May 1910', coronation:'22 Jun 1911 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/King_George_1923_LCCN2014715558_%28cropped%29.jpg/500px-King_George_1923_LCCN2014715558_%28cropped%29.jpg',
+    bio:'George V\'s reign encompassed one of the most dramatic transformations in British monetary history: the abandonment of the gold standard during World War One and the removal of gold coinage from everyday circulation. His portrait by Bertram Mackennal appeared on coins for 26 years. The silver coinage was debased from sterling (92.5%) to 50% silver in 1920 — a decisive break with centuries of tradition.'
+  },
+  'King Edward VII':    {
+    cypher:'ER VII', reign:'1901–1910',
+    title:'King of the United Kingdom of Great Britain and Ireland · Emperor of India',
+    born:'9 Nov 1841', died:'6 May 1910', accession:'22 Jan 1901', coronation:'9 Aug 1902 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/King-Edward-VII_%28cropped%29_%28b%29.jpg/500px-King-Edward-VII_%28cropped%29_%28b%29.jpg',
+    bio:'Edward VII\'s nine-year reign was brief but numismatically significant. His right-facing portrait by George William de Saulles established the tradition of alternating the direction of the monarch\'s portrait on successive coinages. The Edwardian coinage is noted for its clean, high-relief design and is prized as the last British issue before the First World War reshaped the monetary system.'
+  },
+  'Queen Victoria':     {
+    cypher:'VR', reign:'1837–1901',
+    title:'Queen of the United Kingdom of Great Britain and Ireland · Empress of India (from 1876)',
+    born:'24 May 1819', died:'22 Jan 1901', accession:'20 Jun 1837', coronation:'28 Jun 1838 · Westminster Abbey',
+    portrait:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/500px-Queen_Victoria_by_Bassano.jpg',
+    bio:'Victoria\'s 63-year reign saw the most sweeping changes in British coinage since the Tudor era. Her portrait appeared in three successive effigies — the Young Head (1838), the Jubilee Head (1887), and the Old Head (1893). Her reign introduced the florin (1849), Britain\'s first decimal-adjacent coin, and the bun penny (1860). Victorian coinage spans an extraordinary range of denominations and is among the most collected of any British monarch.'
+  },
+  'King Edward VIII':   {
+    cypher:'ER VIII', reign:'1936',
+    title:'King of the United Kingdom and the British Dominions · Emperor of India',
+    born:'23 Jun 1894', died:'28 May 1972', accession:'20 Jan 1936', coronation:'Never crowned — abdicated 11 Dec 1936',
+    portrait:null,
+    bio:'Edward VIII\'s reign of less than a year ended in abdication. Very few coins bearing his effigy entered circulation, making them among the rarest and most sought-after pieces in British numismatics. Pattern coins and proof strikes from 1936 are highly prized by collectors.'
+  },
 };
 
 const FEATURED_COLLECTIONS = [
@@ -1198,11 +1254,15 @@ function renderMonarchs() {
   const rest  = Object.keys(monStats).filter(m=>!order.includes(m)).sort();
   const all   = [...order.filter(m=>monStats[m]), ...rest];
   const cards = all.map(name => {
-    const meta = MONARCH_META[name] || { cypher:name.slice(0,6), reign:'', desc:'' };
-    const { got, total, img } = monStats[name];
-    const imgEl = img ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none'">` : '';
+    const meta = MONARCH_META[name] || { cypher:name.slice(0,6), reign:'', portrait:null };
+    const { got, total } = monStats[name];
+    const portraitSrc = meta.portrait;
+    const imgEl = portraitSrc
+      ? `<img src="${portraitSrc}" alt="${esc(name)}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+      : '';
+    const fallback = `<div style="${portraitSrc?'display:none;':''}width:100%;height:100%;align-items:center;justify-content:center;display:flex">${monarchSVG(meta.cypher)}</div>`;
     return `<a class="monarch-card" href="#monarch/${encodeURIComponent(name)}">
-      <div class="monarch-coin">${imgEl}${!img?monarchSVG(meta.cypher):''}</div>
+      <div class="monarch-coin">${imgEl}${fallback}</div>
       <div class="monarch-name">${esc(name)}</div>
       <div class="monarch-reign">${esc(meta.reign)}</div>
       <div class="monarch-count">${got} owned · ${total} variants</div>
@@ -1217,14 +1277,33 @@ function renderMonarchDetail(name) {
   const el = document.getElementById('page-monarch-detail');
   const coins = ALL_COINS.filter(c=>c.monarch===name).sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name));
   if (!coins.length) { el.innerHTML=`<div style="padding:3rem;text-align:center;color:var(--muted)">No coins found for this monarch</div>`; return; }
-  const meta = MONARCH_META[name] || { cypher:'', reign:'', desc:'' };
+  const meta = MONARCH_META[name] || { cypher:'', reign:'', portrait:null, title:'', born:'', died:null, accession:'', coronation:'', bio:'' };
   const got = coins.filter(c=>c.status==='Got').length;
-  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner">
-    <a class="page-hero-back" href="#monarchs">← Monarchs</a>
-    <h1 class="page-hero-title">${esc(name)}</h1>
-    <p class="page-hero-sub">${esc(meta.reign)}${meta.desc?' · '+esc(meta.desc):''}</p>
-    <p class="page-hero-sub" style="margin-top:.3rem">${got} owned · ${coins.length} variants</p>
-  </div></div>
+  const facts = [
+    ['Born', meta.born],
+    ['Died', meta.died || 'Present'],
+    ['Accession', meta.accession],
+    ['Coronation', meta.coronation],
+  ].filter(([,v])=>v).map(([label,val])=>
+    `<div class="mon-hero-fact"><span class="mon-hero-fact-label">${label}</span><span>${esc(val)}</span></div>`
+  ).join('');
+  const portraitHtml = meta.portrait
+    ? `<img class="mon-hero-img" src="${meta.portrait}" alt="${esc(name)}" onerror="this.style.display='none'">`
+    : `<div style="width:100%;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;background:var(--dark2)">${monarchSVG(meta.cypher)}</div>`;
+  el.innerHTML = `
+    <div style="padding:.8rem var(--page-pad);border-bottom:1px solid var(--border)">
+      <a class="page-hero-back" href="#monarchs" style="font-size:.7rem;color:var(--muted);text-decoration:none;font-family:'DM Mono',monospace">← Monarchs</a>
+    </div>
+    <div class="mon-hero">
+      <div class="mon-hero-frame">${portraitHtml}</div>
+      <div class="mon-hero-body">
+        <div class="mon-hero-name">${esc(name)}</div>
+        <div class="mon-hero-title">${esc(meta.title||meta.reign)}</div>
+        <div class="mon-hero-facts">${facts}</div>
+        ${meta.bio?`<div class="mon-hero-div"></div><div class="mon-hero-bio">${esc(meta.bio)}</div>`:''}
+        <div class="mon-hero-stats">${got} owned · ${coins.length} variants · ${meta.reign}</div>
+      </div>
+    </div>
   <div class="section-wrap"><div class="section-block">${coinGridHTML(coins)}</div></div>`;
 }
 
