@@ -1120,19 +1120,14 @@ function renderHome() {
   // ── Years drill-down (stored at module level so onclick handlers work) ──
   window._byYearStats = yearStats;
 
-  // ── Denom cards ──
-  const denomCards = DENOM_ORDER.filter(d=>denomStats[d]).map(d => {
-    const cnt = denomStats[d];
-    return `<a class="denom-card" href="#archive" onclick="arcJumpDenom('${esc(d)}')">\
-<span class="denom-card-val">${esc(d)}</span>\
-<span class="denom-card-cnt">${cnt} variants</span></a>`;
-  }).join('');
+  // ── Denom groups (stored for onclick handlers) ──
+  window._byDenomStats = denomStats;
 
   el.innerHTML = heroHTML + `
   <div class="section-wrap">
     <div class="section-block">
       <div class="section-head"><h2 class="section-title">Browse by Denomination</h2></div>
-      <div class="denom-cards">${denomCards}</div>
+      <div id="home-denom-browser"></div>
     </div>
     <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="section-head"><h2 class="section-title">Collections</h2><a class="section-link" href="#collections">View all →</a></div>
@@ -1156,6 +1151,30 @@ function renderHome() {
     </div>
   </div>`;
   renderHomeYearBrowser();
+  renderHomeDenomBrowser();
+}
+
+// ── HOME DENOM BROWSER ───────────────────────────────────────────────────────
+const _DENOM_GROUPS = {
+  'Decimal':    ['1p','2p','5p','10p','20p','50p','£1','£2','£5'],
+  'Pre-decimal':['Farthing','½d','1d','3d','6d','1s','2s','2s 6d','Crown'],
+  'Other':      ['Medal','Other']
+};
+let _byDenomGroup = 'Decimal';
+function renderHomeDenomBrowser() {
+  const el = document.getElementById('home-denom-browser');
+  if (!el || !window._byDenomStats) return;
+  const ds = window._byDenomStats;
+  const groupBtns = Object.keys(_DENOM_GROUPS).map(g =>
+    `<button class="by-btn${g===_byDenomGroup?' active':''}" onclick="_byDenomGroup='${g}';renderHomeDenomBrowser()">${g}</button>`
+  ).join('');
+  const cards = (_DENOM_GROUPS[_byDenomGroup]||[]).filter(d=>ds[d]).map(d =>
+    `<a class="denom-card" href="#archive" onclick="arcJumpDenom('${esc(d)}')">\
+<span class="denom-card-val">${esc(d)}</span>\
+<span class="denom-card-cnt">${ds[d]} variants</span></a>`
+  ).join('');
+  const empty = cards ? '' : `<p style="color:var(--muted);font-size:.8rem;font-family:'DM Mono',monospace">No coins in this group yet</p>`;
+  el.innerHTML = `<div class="by-row" style="margin-bottom:.75rem">${groupBtns}</div><div class="denom-cards">${cards}${empty}</div>`;
 }
 
 // ── HOME YEAR DRILL-DOWN ─────────────────────────────────────────────────────
