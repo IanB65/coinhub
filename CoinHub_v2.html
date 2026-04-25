@@ -177,11 +177,14 @@ body.guest-mode #bottomNav{bottom:0}
 .year-chip.got{background:var(--got-bg);border-color:var(--got);color:var(--got)}
 .year-chip-count{font-size:.52rem;opacity:.65;margin-left:.2rem}
 
-/* ── DENOM PILLS ── */
-.denom-pills{display:flex;flex-wrap:wrap;gap:.5rem}
-.denom-pill{font-family:'DM Mono',monospace;font-size:.72rem;padding:.4rem 1rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--ink);background:var(--paper2);transition:all .12s;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
-.denom-pill:hover{border-color:var(--gold2);background:var(--paper);color:var(--gold)}
-.denom-pill-count{font-size:.55rem;color:var(--muted)}
+/* ── DENOM CARDS ── */
+.denom-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.6rem}
+.denom-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.9rem .5rem .7rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2);text-decoration:none;color:var(--ink);transition:all .15s;gap:.15rem;position:relative;overflow:hidden}
+.denom-card::before{content:'';position:absolute;inset:4px;border-radius:calc(var(--r) - 2px);border:1px solid var(--border);opacity:.45;pointer-events:none}
+.denom-card:hover{border-color:var(--gold2);background:var(--paper);box-shadow:0 3px 12px rgba(0,0,0,.12);transform:translateY(-1px)}
+.denom-card:hover .denom-card-val{color:var(--gold)}
+.denom-card-val{font-family:'DM Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--ink);line-height:1}
+.denom-card-cnt{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:.2rem}
 
 /* ── HOME CTA ── */
 .home-cta{background:var(--dark);border-radius:var(--r);padding:2.5rem 2rem;text-align:center;margin:0}
@@ -1122,15 +1125,21 @@ function renderHome() {
     return `<div class="decade-section"><div class="decade-label">${dec}s</div><div class="year-chips">${chips}</div></div>`;
   }).join('');
 
-  // ── Denom pills ──
-  const denomPills = DENOM_ORDER.filter(d=>denomStats[d]).map(d => {
+  // ── Denom cards ──
+  const denomCards = DENOM_ORDER.filter(d=>denomStats[d]).map(d => {
     const cnt = denomStats[d];
-    return `<a class="denom-pill" href="#archive" onclick="arcJumpDenom('${esc(d)}')">${esc(d)}<span class="denom-pill-count">${cnt}</span></a>`;
+    return `<a class="denom-card" href="#archive" onclick="arcJumpDenom('${esc(d)}')">\
+<span class="denom-card-val">${esc(d)}</span>\
+<span class="denom-card-cnt">${cnt} variants</span></a>`;
   }).join('');
 
   el.innerHTML = heroHTML + `
   <div class="section-wrap">
     <div class="section-block">
+      <div class="section-head"><h2 class="section-title">Browse by Denomination</h2></div>
+      <div class="denom-cards">${denomCards}</div>
+    </div>
+    <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="section-head"><h2 class="section-title">Collections</h2><a class="section-link" href="#collections">View all →</a></div>
       <div class="card-scroll">${featuredCards}</div>
     </div>
@@ -1141,10 +1150,6 @@ function renderHome() {
     <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="section-head"><h2 class="section-title">Browse by Year</h2><a class="section-link" href="#years">Full year index →</a></div>
       ${yearsHTML}
-    </div>
-    <div class="section-block" style="border-top:1px solid var(--border)">
-      <div class="section-head"><h2 class="section-title">Browse by Denomination</h2></div>
-      <div class="denom-pills">${denomPills}</div>
     </div>
     <div class="section-block" style="border-top:1px solid var(--border)">
       <div class="home-cta">
