@@ -1392,8 +1392,8 @@ function coinCardHTML(coin, ctxId, idx) {
 }
 
 // ── ARCHIVE PAGE ──────────────────────────────────────────────────────────────
-function arcJumpYear(y) { ARC.year = String(y); router(); }
-function arcJumpDenom(d) { ARC.denom = d; router(); }
+function arcJumpYear(y) { ARC = { denom:null, status:new Set(['Got','Need','List','Unknown']), year:String(y), monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
+function arcJumpDenom(d) { ARC = { denom:d, status:new Set(['Got','Need','List','Unknown']), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
 
 function renderArchive() {
   const el = document.getElementById('page-archive');
