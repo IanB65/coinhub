@@ -1794,7 +1794,7 @@ function loadStockCheck() {
   const printHdr = document.getElementById('scPrintHeader');
 
   // Clear previous coin rows
-  listEl.querySelectorAll('.sc-group-label, .sc-item, .sc-loc-sum').forEach(el => el.remove());
+  listEl.querySelectorAll('.sc-group-label, .sc-item, .sc-detail, .sc-loc-sum').forEach(el => el.remove());
   printHdr.innerHTML = '';
   const wrap = document.getElementById('scProgressWrap');
 
@@ -1855,14 +1855,14 @@ function loadStockCheck() {
       inst.ptype,
       inst.s3
     ].filter(Boolean);
-    const row = document.createElement('label');
+    const row = document.createElement('div');
     row.className = `sc-item${checkedCls}`;
     row.id = `sc-row-${iid}`;
-    row.innerHTML = `<input type="checkbox" ${checkedDate?'checked':''} onchange="scToggle('${iid}',this.checked)">
+    row.innerHTML = `<input type="checkbox" ${checkedDate?'checked':''} onchange="scToggle('${iid}',this.checked)" style="cursor:pointer">
       <span class="sc-item-name">${coinName}</span>
       <span class="sc-item-meta">${metaParts.join(' · ')}</span>
       <span class="sc-item-date">${_scFmtDate(checkedDate)}</span>
-      <button class="sc-info-btn" onclick="event.preventDefault();event.stopPropagation();scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
+      <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
     listEl.appendChild(row);
 
     const storageParts = [inst.s1, inst.s2, inst.s3].filter(Boolean).join(' › ');
