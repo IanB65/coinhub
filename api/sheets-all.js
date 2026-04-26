@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const TABS = ['Variants', 'Instances', 'Images', 'Storage'];
 
+// Accepts both owner and guest tokens (read-only endpoint)
 function verifyToken(req) {
   const auth = req.headers['authorization'] || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';

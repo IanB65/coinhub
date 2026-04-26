@@ -25,7 +25,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .logo span{color:var(--ink);font-weight:400;font-style:italic}
 .logo small{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
 .hbtns{display:flex;gap:.5rem}
-.btn{padding:.35rem .8rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--muted);transition:all .12s}
+.btn{padding:.35rem .8rem;border:1px solid var(--border);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--muted);transition:all .12s;text-decoration:none;display:inline-block}
 .btn:hover{border-color:var(--gold2);color:var(--gold2)}
 .btn.primary{background:var(--gold);border-color:var(--gold);color:#fff}
 .btn.primary:hover{background:var(--gold2);border-color:var(--gold2)}
@@ -35,7 +35,6 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 h2{font-family:'Bodoni Moda',serif;font-size:1rem;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-bottom:1rem}
 
-/* Create form */
 .create-card{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:2rem}
 .form-row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem}
 .field{flex:1;min-width:140px}
@@ -43,7 +42,6 @@ label{display:block;font-size:.5rem;letter-spacing:.12em;text-transform:uppercas
 input,select{width:100%;padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ink);outline:none;transition:border-color .15s}
 input:focus,select:focus{border-color:var(--gold2)}
 
-/* Token list */
 .token-list{display:flex;flex-direction:column;gap:.6rem}
 .token-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.8rem 1rem}
 .token-card.expired{opacity:.55}
@@ -63,8 +61,7 @@ input:focus,select:focus{border-color:var(--gold2)}
 .msg.ok{background:var(--got-bg);color:var(--got);border:1px solid var(--got);display:block}
 .msg.err{background:var(--need-bg);color:var(--need);border:1px solid var(--need);display:block}
 
-.link-copied{font-size:.52rem;color:var(--got);margin-left:.4rem;opacity:0;transition:opacity .3s}
-.link-copied.show{opacity:1}
+.note{font-size:.54rem;color:var(--muted);margin-top:.5rem;font-style:italic}
 </style>
 </head>
 <body>
@@ -103,66 +100,80 @@ input:focus,select:focus{border-color:var(--gold2)}
   <div class="msg" id="createMsg"></div>
 </div>
 
-<h2>Active Guest Links</h2>
-<div class="token-list" id="tokenList">
-  <div class="empty">Loading…</div>
-</div>
-
-<!-- New link modal -->
-<div id="newLinkBox" style="display:none;margin-top:1rem;background:var(--got-bg);border:1px solid var(--got);border-radius:var(--r);padding:1rem">
+<div id="newLinkBox" style="display:none;margin-bottom:2rem;background:var(--got-bg);border:1px solid var(--got);border-radius:var(--r);padding:1rem">
   <div style="font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--got);margin-bottom:.5rem">Guest link created — share this with your guest:</div>
   <div id="newLinkText" class="token-link" onclick="copyLink(this.textContent, this)"></div>
-  <div style="font-size:.55rem;color:var(--muted);margin-top:.4rem">Click the link to copy. The link works immediately — no password needed for the guest.</div>
+  <div style="font-size:.55rem;color:var(--muted);margin-top:.4rem">Click the link to copy. The link gives read-only access — no password needed for the guest.</div>
 </div>
 
+<h2>Active Guest Links</h2>
+<p class="note" style="margin-bottom:1rem">Links are stored in this browser. Removing a link here does not immediately revoke it — it will stop working when it expires.</p>
+<div class="token-list" id="tokenList"></div>
+
 <script>
-async function loadGuests() {
-  const list = document.getElementById('tokenList');
+const TK = 'coinhub_token';
+const GK = 'coinhub_guests';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function getOwnerToken() { return localStorage.getItem(TK) || ''; }
+
+function checkAuth() {
+  const token = getOwnerToken();
+  if (!token) { location.href = '/'; return false; }
   try {
-    const r = await fetch('/api/auth/guest');
-    if (!r.ok) { list.innerHTML = '<div class="empty">Could not load guest tokens.</div>'; return; }
-    const { guests } = await r.json();
-    if (!guests.length) { list.innerHTML = '<div class="empty">No guest links yet.</div>'; return; }
-    list.innerHTML = '';
-    guests.forEach(g => list.appendChild(renderToken(g)));
-  } catch {
-    list.innerHTML = '<div class="empty">Error loading guests.</div>';
-  }
+    const p = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    if (p.exp < Math.floor(Date.now()/1000) || p.role === 'guest') { location.href = '/'; return false; }
+  } catch { location.href = '/'; return false; }
+  return true;
 }
 
-function renderToken(g) {
-  const card = document.createElement('div');
-  card.className = 'token-card' + (g.expired ? ' expired' : '');
-  card.id = 'token-' + g.id;
-
-  const exp = new Date(g.exp * 1000);
-  const created = new Date(g.createdAt * 1000);
-  const expStr = exp.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'}) + ' ' + exp.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
-  const createdStr = created.toLocaleDateString(undefined, {day:'numeric',month:'short',year:'numeric'});
-
-  card.innerHTML = `
-    <div class="token-head">
-      <span class="token-label">${esc(g.label)}</span>
-      <span class="badge ${g.expired ? 'expired' : 'active'}">${g.expired ? 'Expired' : 'Active'}</span>
-    </div>
-    <div class="token-meta">
-      Created ${esc(createdStr)} &nbsp;·&nbsp;
-      ${g.expired ? 'Expired' : 'Expires'} ${esc(expStr)}
-    </div>
-    <div class="token-actions">
-      ${!g.expired ? `<button class="btn danger" onclick="revokeGuest('${g.id}', this)">Revoke Access</button>` : ''}
-      <button class="btn" onclick="removeExpired('${g.id}', this)" ${!g.expired ? 'style="display:none"' : ''}>Remove</button>
-    </div>
-  `;
-  return card;
+function doLogout() {
+  localStorage.removeItem(TK);
+  location.href = '/';
 }
 
+// ── Guest storage (localStorage) ──────────────────────────────────────────────
+function getGuests() {
+  try { return JSON.parse(localStorage.getItem(GK) || '[]'); } catch { return []; }
+}
+function saveGuests(guests) { localStorage.setItem(GK, JSON.stringify(guests)); }
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function loadGuests() {
+  const list = document.getElementById('tokenList');
+  const now = Math.floor(Date.now() / 1000);
+  const guests = getGuests();
+  if (!guests.length) { list.innerHTML = '<div class="empty">No guest links yet.</div>'; return; }
+  list.innerHTML = '';
+  guests.forEach(g => {
+    const expired = g.exp < now;
+    const exp = new Date(g.exp * 1000);
+    const created = new Date(g.createdAt * 1000);
+    const expStr = exp.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) + ' ' + exp.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+    const createdStr = created.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+    const card = document.createElement('div');
+    card.className = 'token-card' + (expired ? ' expired' : '');
+    card.id = 'token-' + g.uid;
+    card.innerHTML = `
+      <div class="token-head">
+        <span class="token-label">${esc(g.label)}</span>
+        <span class="badge ${expired ? 'expired' : 'active'}">${expired ? 'Expired' : 'Active'}</span>
+      </div>
+      <div class="token-meta">Created ${esc(createdStr)} &nbsp;·&nbsp; ${expired ? 'Expired' : 'Expires'} ${esc(expStr)}</div>
+      <div class="token-link" onclick="copyLink('${esc(g.link)}', this)">${esc(g.link)}</div>
+      <div class="token-actions">
+        <button class="btn danger" onclick="removeGuest('${g.uid}')">Remove</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ── Create ────────────────────────────────────────────────────────────────────
 async function createGuest() {
   const btn = document.getElementById('createBtn');
   const msg = document.getElementById('createMsg');
   const label = document.getElementById('newLabel').value.trim();
   const expiresInSeconds = parseInt(document.getElementById('newDuration').value);
-
   if (!label) { showMsg(msg, 'err', 'Enter a name for this guest.'); return; }
 
   msg.className = 'msg';
@@ -172,55 +183,39 @@ async function createGuest() {
   try {
     const r = await fetch('/api/auth/guest', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getOwnerToken() },
       body: JSON.stringify({ label, expiresInSeconds }),
     });
     const d = await r.json();
-    if (!r.ok) { showMsg(msg, 'err', d.error || 'Failed to create guest link.'); }
-    else {
-      document.getElementById('newLabel').value = '';
-      const box = document.getElementById('newLinkBox');
-      document.getElementById('newLinkText').textContent = d.link;
-      box.style.display = 'block';
-      box.scrollIntoView({ behavior: 'smooth' });
-      loadGuests();
-    }
+    if (!r.ok) { showMsg(msg, 'err', d.error || 'Failed to create guest link.'); return; }
+
+    // Store in localStorage
+    const guests = getGuests();
+    const uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    guests.unshift({ uid, token: d.token, link: d.link, label: d.label, exp: d.exp, createdAt: d.createdAt });
+    saveGuests(guests);
+
+    document.getElementById('newLabel').value = '';
+    const box = document.getElementById('newLinkBox');
+    document.getElementById('newLinkText').textContent = d.link;
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth' });
+    loadGuests();
   } catch {
     showMsg(msg, 'err', 'Network error.');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Generate Guest Link';
-}
-
-async function revokeGuest(id, btn) {
-  if (!confirm('Revoke this guest\'s access immediately?')) return;
-  btn.disabled = true;
-  btn.textContent = 'Revoking…';
-  try {
-    const r = await fetch('/api/auth/guest', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    if (r.ok) { document.getElementById('token-' + id)?.remove(); loadGuests(); }
-    else { btn.disabled = false; btn.textContent = 'Revoke Access'; }
-  } catch { btn.disabled = false; btn.textContent = 'Revoke Access'; }
-}
-
-async function removeExpired(id, btn) {
-  btn.disabled = true;
-  await fetch('/api/auth/guest', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
-  });
-  document.getElementById('token-' + id)?.remove();
-  if (!document.querySelector('.token-card')) {
-    document.getElementById('tokenList').innerHTML = '<div class="empty">No guest links yet.</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Guest Link';
   }
 }
 
+// ── Remove ────────────────────────────────────────────────────────────────────
+function removeGuest(uid) {
+  saveGuests(getGuests().filter(g => g.uid !== uid));
+  loadGuests();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function copyLink(text, el) {
   navigator.clipboard.writeText(text).then(() => {
     const orig = el.style.background;
@@ -229,21 +224,11 @@ function copyLink(text, el) {
   });
 }
 
-async function doLogout() {
-  await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-  location.href = '/login';
-}
+function showMsg(el, type, text) { el.className = 'msg ' + type; el.textContent = text; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function showMsg(el, type, text) {
-  el.className = 'msg ' + type;
-  el.textContent = text;
-}
-
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-loadGuests();
+// ── Boot ──────────────────────────────────────────────────────────────────────
+if (checkAuth()) loadGuests();
 </script>
 </body>
 </html>
