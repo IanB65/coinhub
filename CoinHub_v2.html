@@ -574,7 +574,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
   <div style="background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2.5rem 2rem;width:min(340px,90vw);box-shadow:0 8px 40px rgba(0,0,0,.5);text-align:center">
     <div style="font-family:'Bodoni Moda',serif;font-size:1.8rem;font-weight:900;letter-spacing:.15em;color:var(--ink);margin-bottom:.2rem">COIN<span style="font-weight:400;font-style:italic">hub</span></div>
     <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem">British Coin Archive</div>
-    <form id="loginForm" onsubmit="doLogin(event)">
+    <form id="loginForm" onsubmit="doLogin(event)" novalidate>
       <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required
         style="display:block;width:100%;padding:.65rem .8rem;margin-bottom:.65rem;border:1px solid var(--border);border-radius:3px;background:var(--paper2);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--ink);outline:none">
       <div id="loginTotpWrap" style="display:none;margin-bottom:.65rem">
