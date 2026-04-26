@@ -890,7 +890,9 @@ function _tokenValid(t) {
     return p.exp > Math.floor(Date.now() / 1000);
   } catch { return false; }
 }
+let _loginStep = 1; // 1 = password only, 2 = password + totp
 function showLoginOverlay() {
+  _loginStep = 1;
   document.getElementById('loginErr').textContent = '';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginTotp').value = '';
@@ -909,20 +911,24 @@ async function doLogin(e) {
   const btn = document.getElementById('loginBtn');
   const errEl = document.getElementById('loginErr');
   const pass = document.getElementById('loginPass').value;
-  const totp = document.getElementById('loginTotp').value.replace(/\s/g,'');
   btn.disabled = true; btn.textContent = 'Signing in…'; errEl.textContent = '';
+  // Step 1: password only. Step 2: password + totp (only once field is shown).
+  const bodyObj = { password: pass };
+  if (_loginStep === 2) bodyObj.totp = document.getElementById('loginTotp').value.replace(/\s/g,'');
   try {
     const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pass, totp: totp || undefined }),
+      body: JSON.stringify(bodyObj),
     });
     const data = await res.json();
     if (res.ok) {
+      _loginStep = 1;
       _setToken(data.token);
       hideLoginOverlay();
       init();
     } else if (data.need_totp) {
+      _loginStep = 2;
       document.getElementById('loginTotpWrap').style.display = '';
       document.getElementById('loginTotp').focus();
       errEl.textContent = 'Enter the 6-digit code from your authenticator app';
