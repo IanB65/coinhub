@@ -39,7 +39,7 @@ function makeToken(secret) {
   const h = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
   const p = Buffer.from(JSON.stringify({
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 8 * 3600,
+    exp: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
   })).toString('base64url');
   const sig = crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest('base64url');
   return `${h}.${p}.${sig}`;
