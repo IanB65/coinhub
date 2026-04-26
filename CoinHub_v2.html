@@ -578,7 +578,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
       <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required
         style="display:block;width:100%;padding:.65rem .8rem;margin-bottom:.65rem;border:1px solid var(--border);border-radius:3px;background:var(--paper2);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--ink);outline:none">
       <div id="loginTotpWrap" style="display:none;margin-bottom:.65rem">
-        <input id="loginTotp" type="text" inputmode="numeric" pattern="[0-9 ]*" maxlength="7" placeholder="6-digit authenticator code" autocomplete="one-time-code"
+        <input id="loginTotp" type="text" inputmode="numeric" maxlength="7" placeholder="6-digit authenticator code" autocomplete="off"
           style="display:block;width:100%;padding:.65rem .8rem;border:1px solid var(--border);border-radius:3px;background:var(--paper2);font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.3em;color:var(--ink);outline:none;text-align:center">
       </div>
       <button type="submit" id="loginBtn"
