@@ -1,6 +1,27 @@
+const crypto = require('crypto');
 const ALLOWED_TABS = ['Variants', 'Instances', 'Images'];
 
+function verifyToken(req) {
+  const auth = req.headers['authorization'] || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return false;
+  const secret = process.env.COINHUB_JWT_SECRET;
+  if (!secret) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const [h, p, sig] = parts;
+    const expected = crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest('base64url');
+    if (sig.length !== expected.length) return false;
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
+    const payload = JSON.parse(Buffer.from(p, 'base64url').toString());
+    return payload.exp > Math.floor(Date.now() / 1000);
+  } catch { return false; }
+}
+
 module.exports = async function handler(req, res) {
+  if (!verifyToken(req)) return res.status(401).json({ error: 'Unauthorised' });
+
   const tab = req.query.tab;
   if (!ALLOWED_TABS.includes(tab)) {
     return res.status(400).json({ error: `Invalid tab. Allowed: ${ALLOWED_TABS.join(', ')}` });
@@ -24,15 +45,12 @@ module.exports = async function handler(req, res) {
 
     const data = await sheetsRes.json();
     const rows = data.values || [];
-
-    // Pad all rows to header width
     const width = rows[0]?.length || 0;
     const padded = rows.map(r => {
       while (r.length < width) r.push('');
       return r;
     });
 
-    // Convert to CSV
     const csv = padded.map(row =>
       row.map(cell => {
         const s = String(cell ?? '');

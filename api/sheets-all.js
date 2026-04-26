@@ -1,6 +1,27 @@
+const crypto = require('crypto');
 const TABS = ['Variants', 'Instances', 'Images', 'Storage'];
 
+function verifyToken(req) {
+  const auth = req.headers['authorization'] || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return false;
+  const secret = process.env.COINHUB_JWT_SECRET;
+  if (!secret) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const [h, p, sig] = parts;
+    const expected = crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest('base64url');
+    if (sig.length !== expected.length) return false;
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
+    const payload = JSON.parse(Buffer.from(p, 'base64url').toString());
+    return payload.exp > Math.floor(Date.now() / 1000);
+  } catch { return false; }
+}
+
 module.exports = async function handler(req, res) {
+  if (!verifyToken(req)) return res.status(401).json({ error: 'Unauthorised' });
+
   const apiKey = process.env.GOOGLE_API_KEY;
   const sheetId = process.env.GOOGLE_SHEET_ID;
 

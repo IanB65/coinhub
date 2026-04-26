@@ -569,6 +569,25 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 </head>
 <body>
 
+<!-- ── LOGIN OVERLAY ── -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:var(--dark);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif">
+  <div style="background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2.5rem 2rem;width:min(340px,90vw);box-shadow:0 8px 40px rgba(0,0,0,.5);text-align:center">
+    <div style="font-family:'Bodoni Moda',serif;font-size:1.8rem;font-weight:900;letter-spacing:.15em;color:var(--ink);margin-bottom:.2rem">COIN<span style="font-weight:400;font-style:italic">hub</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem">British Coin Archive</div>
+    <form id="loginForm" onsubmit="doLogin(event)">
+      <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required
+        style="display:block;width:100%;padding:.65rem .8rem;margin-bottom:.65rem;border:1px solid var(--border);border-radius:3px;background:var(--paper2);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--ink);outline:none">
+      <div id="loginTotpWrap" style="display:none;margin-bottom:.65rem">
+        <input id="loginTotp" type="text" inputmode="numeric" pattern="[0-9 ]*" maxlength="7" placeholder="6-digit authenticator code" autocomplete="one-time-code"
+          style="display:block;width:100%;padding:.65rem .8rem;border:1px solid var(--border);border-radius:3px;background:var(--paper2);font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.3em;color:var(--ink);outline:none;text-align:center">
+      </div>
+      <button type="submit" id="loginBtn"
+        style="width:100%;padding:.7rem;background:var(--gold);color:var(--paper);border:none;border-radius:3px;font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;letter-spacing:.06em;cursor:pointer;transition:background .15s">Sign In</button>
+      <div id="loginErr" style="margin-top:.7rem;font-size:.85rem;color:var(--need);min-height:1.2em"></div>
+    </form>
+  </div>
+</div>
+
 <!-- ── LOAD SCREEN ── -->
 <div id="loadScreen">
   <div class="load-logo">COIN<span style="color:var(--ink);font-weight:400;font-style:italic">hub</span></div>
@@ -860,6 +879,60 @@ const FEATURED_COLLECTIONS = [
   'Britannia Characters Commemorative','Military',
 ];
 
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+const _TK = 'coinhub_token';
+function _getToken() { return localStorage.getItem(_TK) || ''; }
+function _setToken(t) { localStorage.setItem(_TK, t); }
+function _clearToken() { localStorage.removeItem(_TK); }
+function _tokenValid(t) {
+  try {
+    const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    return p.exp > Math.floor(Date.now() / 1000);
+  } catch { return false; }
+}
+function showLoginOverlay() {
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginTotp').value = '';
+  document.getElementById('loginTotpWrap').style.display = 'none';
+  document.getElementById('loginOverlay').style.display = 'flex';
+}
+function hideLoginOverlay() { document.getElementById('loginOverlay').style.display = 'none'; }
+async function authFetch(url, opts = {}) {
+  opts.headers = { ...(opts.headers || {}), 'Authorization': 'Bearer ' + _getToken() };
+  const r = await fetch(url, opts);
+  if (r.status === 401) { _clearToken(); showLoginOverlay(); throw new Error('Session expired — please log in again'); }
+  return r;
+}
+async function doLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginErr');
+  const pass = document.getElementById('loginPass').value;
+  const totp = document.getElementById('loginTotp').value.replace(/\s/g,'');
+  btn.disabled = true; btn.textContent = 'Signing in…'; errEl.textContent = '';
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass, totp: totp || undefined }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      _setToken(data.token);
+      hideLoginOverlay();
+      init();
+    } else if (data.need_totp) {
+      document.getElementById('loginTotpWrap').style.display = '';
+      document.getElementById('loginTotp').focus();
+      errEl.textContent = 'Enter the 6-digit code from your authenticator app';
+    } else {
+      errEl.textContent = data.error || 'Login failed';
+    }
+  } catch { errEl.textContent = 'Network error — try again'; }
+  finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+
 // ── STATE ────────────────────────────────────────────────────────────────────
 let ALL_COINS = [];
 let FILTERED  = [];
@@ -954,7 +1027,7 @@ async function loadFromSheets() {
 
   try {
     setMsg('Fetching coin data…');
-    const res = await fetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
+    const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
     const { variants:varRows, instances:instRows, images:imgRows, storage:storRows } = await res.json();
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
@@ -1955,7 +2028,7 @@ function _applyGuestMode(on) {
   document.getElementById('guestBanner').style.display = on ? 'flex' : 'none';
   document.querySelectorAll('.admin-only').forEach(el=>el.style.display=on?'none':'');
 }
-function doLogout() { _applyGuestMode(true); }
+function doLogout() { _clearToken(); location.reload(); }
 function refreshSheetData() {
   try { localStorage.removeItem(GS_CACHE_KEY); } catch(e) {}
   showToast('Cache cleared — reloading…');
@@ -2267,7 +2340,17 @@ function scPrintUnchecked() {
 }
 function scPrintNeeded() { window.print(); }
 
-window.addEventListener('load', ()=>init());
+window.addEventListener('load', () => {
+  const tok = _getToken();
+  if (_tokenValid(tok)) {
+    hideLoginOverlay();
+    init();
+  } else {
+    _clearToken();
+    document.getElementById('loadScreen').style.display = 'none';
+    // loginOverlay is already visible
+  }
+});
 </script>
 </body>
 </html>
