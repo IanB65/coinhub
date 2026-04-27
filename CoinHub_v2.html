@@ -628,6 +628,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
         <a class="admin-dropdown-item" onclick="showStockCheck();closeAdminMenu()">✓ Stock Check</a>
         <a class="admin-dropdown-item" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" onclick="closeAdminMenu()">⊞ Open Spreadsheet</a>
         <a class="admin-dropdown-item" onclick="refreshSheetData();closeAdminMenu()">↻ Refresh Data</a>
+        <a class="admin-dropdown-item" onclick="updateValues();closeAdminMenu()">💰 Update Values</a>
         <div class="admin-dropdown-sep"></div>
         <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
         <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
@@ -780,6 +781,18 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
   </div>
 </div>
 
+<!-- ── UPDATE VALUES PROGRESS OVERLAY ── -->
+<div id="valuesProgressOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(12,12,10,.7);align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:var(--r);padding:2rem;width:min(400px,90vw);text-align:center;font-family:'Cormorant Garamond',serif">
+    <div style="font-family:'Bodoni Moda',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--ink)">Updating Values</div>
+    <div id="valuesProgText" style="font-size:.95rem;color:var(--muted);margin-bottom:1rem">Starting…</div>
+    <div style="background:#e8e3d9;border-radius:999px;height:8px;overflow:hidden">
+      <div id="valuesProgBar" style="height:100%;width:0%;background:var(--gold);transition:width .3s"></div>
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Values are fetched from Numista and saved to your spreadsheet</div>
+  </div>
+</div>
+
 <!-- ── EDIT VARIANT MODAL ── -->
 <div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onclick="if(event.target===this)closeEditVariant()">
   <div style="background:var(--paper);border-radius:var(--r);padding:1.5rem;width:min(520px,92vw);max-height:90vh;overflow-y:auto;position:relative">
@@ -813,6 +826,7 @@ const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal',
 const COTUK_MAP = {};
 const INSTANCE_DATA = {};
 const STORAGE_MAP = {};
+const VALUES_MAP = {}; // { variantCode: { numistaId, estimatedValue, lastUpdated } }
 
 const MONARCH_META = {
   'King Charles III':   {
@@ -1020,12 +1034,13 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances, storageMap } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap, valuesMap } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         setMsg('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
         Object.assign(INSTANCE_DATA, instances);
         Object.assign(STORAGE_MAP, storageMap || {});
+        Object.assign(VALUES_MAP, valuesMap || {});
         _seedScCheckedFromInstances(instances);
         return coins;
       }
@@ -1036,11 +1051,15 @@ async function loadFromSheets() {
     setMsg('Fetching coin data…');
     const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
-    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows } = await res.json();
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, values:valRows } = await res.json();
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
+    for (let i=1; i<(valRows||[]).length; i++) {
+      const r=valRows[i]; if (!r[0]?.trim()) continue;
+      const ev = parseFloat(r[2]); VALUES_MAP[r[0].trim()] = { numistaId:r[1]?.trim()||'', estimatedValue:isNaN(ev)?null:ev, lastUpdated:r[3]?.trim()||'' };
+    }
 
     for (let i=1; i<instRows.length; i++) {
       const r = instRows[i]; const vc = r[1]?.trim(); if (!vc) continue;
@@ -1054,10 +1073,11 @@ async function loadFromSheets() {
       const r = varRows[i]; const vc = r[iVC]?.trim(); if (!vc) continue;
       const instCount = (INSTANCE_DATA[vc]||[]).length;
       const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
-      coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', instCount, parsed:parseVariant(vc) });
+      const vm = VALUES_MAP[vc];
+      coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
 
-    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP} })); } catch(e) {}
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, valuesMap:{...VALUES_MAP} })); } catch(e) {}
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
@@ -1698,6 +1718,7 @@ function renderLightboxContent(vc) {
         <dt>Monarch</dt><dd>${esc(coin.monarch||'—')}</dd>
         <dt>Collection</dt><dd>${esc(coin.collection||'—')}</dd>
         <dt>Status</dt><dd><span class="badge-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></dd>
+        <dt>Est. Value</dt><dd id="ev-${esc(vc)}">${coin.estimatedValue !== null ? '£'+coin.estimatedValue.toFixed(2) : '—'}</dd>
       </dl>
       <div class="lb-instances">
         <h3 class="lb-section-title">Your Copies (${instances.length})</h3>
@@ -1990,6 +2011,9 @@ function showStats() {
   const list    = ALL_COINS.filter(c=>c.status==='List').length;
   const insts   = Object.values(INSTANCE_DATA).reduce((s,a)=>s+a.length,0);
   const colls   = new Set(ALL_COINS.map(c=>c.collection).filter(Boolean)).size;
+  const portCoins = ALL_COINS.filter(c=>c.status==='Got' && c.estimatedValue !== null);
+  const portVal = portCoins.reduce((s,c)=>s+(c.estimatedValue * Math.max(1,c.instCount)),0);
+  const portStr = portCoins.length ? '£'+portVal.toFixed(2) : '—';
   document.getElementById('statsBody').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Total Variants</div></div>
@@ -1998,6 +2022,7 @@ function showStats() {
       <div class="stat-card"><div class="stat-num" style="color:var(--list)">${list}</div><div class="stat-lbl">On List</div></div>
       <div class="stat-card"><div class="stat-num">${insts}</div><div class="stat-lbl">Instances</div></div>
       <div class="stat-card"><div class="stat-num">${colls}</div><div class="stat-lbl">Collections</div></div>
+      <div class="stat-card" style="grid-column:1/-1"><div class="stat-num" style="color:var(--gold)">${portStr}</div><div class="stat-lbl">Est. Portfolio Value${portCoins.length ? ' ('+portCoins.length+' coins valued)' : ' — run Update Values first'}</div></div>
     </div>`;
   document.getElementById('statsModalBg').style.display='flex';
 }
@@ -2040,6 +2065,83 @@ function refreshSheetData() {
   try { localStorage.removeItem(GS_CACHE_KEY); } catch(e) {}
   showToast('Cache cleared — reloading…');
   setTimeout(() => location.reload(), 800);
+}
+
+// ── UPDATE VALUES (Numista) ───────────────────────────────────────────────────
+async function updateValues() {
+  if (GUEST_MODE) { showToast('Log in to update values'); return; }
+
+  const gotCoins = ALL_COINS.filter(c => c.status === 'Got');
+  if (!gotCoins.length) { showToast('No owned coins to value'); return; }
+
+  const overlay = document.getElementById('valuesProgressOverlay');
+  const progText = document.getElementById('valuesProgText');
+  const progBar  = document.getElementById('valuesProgBar');
+  overlay.style.display = 'flex';
+
+  const BATCH = 15;
+  let done = 0, found = 0, priced = 0;
+  const total = gotCoins.length;
+
+  try {
+    for (let i = 0; i < gotCoins.length; i += BATCH) {
+      const batch = gotCoins.slice(i, i + BATCH).map(c => ({
+        variantCode: c.variantCode,
+        name: c.name,
+        year: c.year,
+        numistaId: VALUES_MAP[c.variantCode]?.numistaId || null,
+      }));
+
+      const res = await authFetch('/api/numista-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coins: batch }),
+      });
+
+      if (res.ok) {
+        const { results } = await res.json();
+        for (const r of results) {
+          if (r.found) {
+            found++;
+            VALUES_MAP[r.variantCode] = {
+              numistaId: r.numistaId,
+              estimatedValue: r.estimatedValue,
+              lastUpdated: new Date().toISOString().split('T')[0],
+            };
+            const coin = ALL_COINS.find(c => c.variantCode === r.variantCode);
+            if (coin) coin.estimatedValue = r.estimatedValue;
+            if (r.estimatedValue !== null) priced++;
+            // Update open lightbox live
+            const el = document.getElementById('ev-' + r.variantCode);
+            if (el) el.textContent = r.estimatedValue !== null ? '£' + r.estimatedValue.toFixed(2) : '—';
+          }
+        }
+      }
+
+      done += batch.length;
+      const pct = Math.round((done / total) * 100);
+      progText.textContent = `Checking ${done} / ${total} coins…`;
+      progBar.style.width = pct + '%';
+    }
+
+    // Persist updated valuesMap into cache
+    try {
+      const raw = localStorage.getItem(GS_CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        cached.valuesMap = { ...VALUES_MAP };
+        cached.coins = cached.coins.map(c => ({ ...c, estimatedValue: ALL_COINS.find(x=>x.variantCode===c.variantCode)?.estimatedValue ?? c.estimatedValue }));
+        localStorage.setItem(GS_CACHE_KEY, JSON.stringify(cached));
+      }
+    } catch(e) {}
+
+    progText.textContent = `Done! ${priced} of ${found} matched coins have price data.`;
+    progBar.style.width = '100%';
+    setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+  } catch(e) {
+    progText.textContent = 'Error: ' + e.message;
+    setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+  }
 }
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
