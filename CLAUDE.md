@@ -1,173 +1,224 @@
 # CoinHub — Claude Code Project Guide
+**Last updated:** April 2026
 
-## What this project is
+> Read this file at the start of every session. It contains everything needed to work on CoinHub without asking Ian to repeat context.
 
-CoinHub is a **single-file HTML/CSS/JS app** (`CoinHub.html`) for Ian's UK coin collection.
-It is served locally by `auth_server.py` (Python stdlib only, no dependencies) at `http://localhost:8090`.
+---
 
-- **~415 KB** self-contained file — no framework, no build step
-- **1,430+ coin variants**, **1,496 instance records**, **646 image map entries**
-- Auth: email + PBKDF2 password + TOTP 2FA
-- Notion sync: UI changes are queued; Claude processes them via the Notion MCP server
+## What CoinHub is
 
-### Files
+A **single-file HTML/CSS/JS gallery website** for Ian's UK coin collection.
+- No framework, no build step
+- Data lives in a **Google Sheet** (fetched at runtime via Vercel serverless functions)
+- Hosted on **Vercel**, served at **coins.ghghome.co.uk**
+
+---
+
+## Working directory
+
+**Always work here:** `C:/Users/ian/Documents/coinhub/`
+
+### Key files
+| File | Purpose |
+|------|---------|
+| `CoinHub_v2.html` | **THE LIVE APP** — this is what's served at coins.ghghome.co.uk |
+| `CoinHub_GS.html` | Previous Google Sheets version (superseded by v2) |
+| `CoinHub.html` | Legacy Notion-backed file — **do not edit** |
+| `index.html` | Redirects `coins.ghghome.co.uk/` → `CoinHub_v2.html` |
+| `api/` | Vercel serverless functions (Node.js) |
+| `vercel.json` | Vercel routing config |
+| `CLAUDE.md` | This file |
+
+---
+
+## Hosting architecture
+
 ```
-CoinHub.html                ← THE APP
-auth_server.py              ← Python auth + file server (port 8090)
-.coinhub_auth               ← Hashed login credentials
-.coinhub_config             ← Notion API token + database IDs
-.coinhub_sync_queue.json    ← Pending Notion sync operations (process then clear to [])
-CLAUDE.md                   ← This file
-CoinHub_MASTER_Handover.md  ← Full project handover with credentials
+User browser
+    │
+    ▼
+coins.ghghome.co.uk  (Cloudflare DNS — DNS-only CNAME, no proxy)
+    │
+    ▼
+Vercel  (project: ianb65s-projects/coinhub, hobby plan)
+    │  auto-deploys on every push to main branch
+    ▼
+GitHub repo: IanB65/coinhub  (branch: main)
 ```
 
-### On session start
-Read `.coinhub_sync_queue.json`. If it has items, process them via the Notion MCP then clear to `[]`.
+**To deploy:** `git add` → `git commit` → `git push` from `C:/Users/ian/Documents/coinhub/`  
+Vercel auto-deploys within ~30 seconds. No manual deploy step needed.
+
+**NOT used:** GitHub Pages, Netlify — ignore any related config files.
+
+---
+
+## Google Sheets backend
+
+**Spreadsheet ID:** `1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4`  
+**URL:** https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit
+
+### Tabs and columns
+
+**Variants** — one row per coin variant
+| Col | Name | Notes |
+|-----|------|-------|
+| A | variantCode | canonical ID, e.g. `UK-COMM-£2-2026-ZSLL-` |
+| B | name | short descriptive name |
+| C | denomination | e.g. `50p`, `£2`, `£5` |
+| D | collection | e.g. `Commemorative`, `Definitives` |
+| E | monarch | `King Charles III` / `Queen Elizabeth II` |
+| F | year | 4-digit number |
+| G | status | `Got` / `Need` / `List` |
+| H | imageUrl | coin image URL |
+| I | notes | free text |
+| J | dateAdded | YYYY-MM-DD |
+| K | lastModified | YYYY-MM-DD |
+
+**Instances** — one row per physical coin owned  
+**Images** — supplementary image records  
+**Storage** — storage container/location data  
+**NewCoinsInbox** — staging area for newly found coins pending approval (see workflow below)  
+**ChangeLog, Config, Collections, Conditions, PreservationTypes** — reference/config tabs
+
+### Variant code format
+```
+UK-{type}-{denom}-{year}-{id}-
+
+UK-D-50P-2025-GRND-        Definitive 50p 2025
+UK-COMM-£2-2026-ZSLL-      Commemorative £2 2026 (ZSL London Zoo)
+UK-PD-FART-1922-           Pre-decimal Farthing 1922
+```
+Types: `D` (definitive), `PD` (pre-decimal), `COMM` (commemorative)  
+Monarch rule: King Charles III for year ≥ 2023, Queen Elizabeth II for year ≤ 2022
+
+---
+
+## API endpoints (Vercel functions in `api/`)
+
+All endpoints are available at `https://coins.ghghome.co.uk/api/...`
+
+| File | Route | Auth | Purpose |
+|------|-------|------|---------|
+| `sheets-all.js` | `/api/sheets-all` | JWT | Read all sheet tabs (Variants, Instances, Images, Storage) |
+| `sheets-write.js` | `/api/sheets-write` | JWT | Update instance lastStocktake dates in Instances tab |
+| `sheets.js` | `/api/sheets` | JWT | General sheet read |
+| `images-update.js` | `/api/images-update` | JWT | Update image URLs |
+| `numista-sync.js` | `/api/numista-sync` | JWT | Sync coin values from Numista |
+| `inbox-stage.js` | `/api/inbox-stage` | Service key | Append new coins to NewCoinsInbox tab (deduplicates against Variants + inbox) |
+| `inbox-approve.js` | `/api/inbox-approve` | Service key | Move approved NewCoinsInbox rows → Variants tab, then delete them from inbox |
+| `auth/` | `/api/auth/*` | — | Login, logout, guest access, whoami |
+
+### Auth types
+- **JWT** — used by the CoinHub web app. Tokens signed with `COINHUB_JWT_SECRET`.
+- **Service key** — used by scheduled tasks. Header: `x-service-key: <value>`. Env var: `COINHUB_SERVICE_KEY`.
+
+### Environment variables (set in Vercel project settings)
+| Var | Purpose |
+|-----|---------|
+| `GOOGLE_API_KEY` | Google Sheets read-only API key |
+| `GOOGLE_SHEET_ID` | Sheet ID (same as above) |
+| `GOOGLE_CLIENT_ID` | OAuth client ID (for write operations) |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret |
+| `GOOGLE_REFRESH_TOKEN` | OAuth refresh token |
+| `COINHUB_JWT_SECRET` | Signs JWT tokens for web app auth |
+| `COINHUB_SERVICE_KEY` | Simple shared secret for scheduled task auth |
+
+---
+
+## New coins workflow
+
+New coins are found automatically each week and staged for Ian's review before being written to the sheet.
+
+### Weekly scan (every Monday 9am)
+Scheduled task: **`weekly-new-coins-check`** (in Claude Code sidebar → Routines)
+
+What it does:
+1. Fetches https://www.royalmint.com/new-coins/ and commemorative pages
+2. Searches westminstercollection.co.uk for new UK releases
+3. POSTs found coins to `/api/inbox-stage` — automatically skips coins already in Variants or the inbox
+4. Reports how many were staged
+
+### Review
+Ian opens the Google Sheet → `NewCoinsInbox` tab, reviews staged coins, ticks the `approved` checkbox for any to add.
+
+**NewCoinsInbox columns:** variantCode, name, denomination, collection, monarch, year, imageUrl, sourceUrl, price, approved (checkbox), dateFound
+
+### Approval (manual trigger)
+Scheduled task: **`coins-inbox-approve`** (run manually from sidebar)
+
+What it does:
+1. Reads all rows in `NewCoinsInbox` where `approved = TRUE`
+2. Appends them to `Variants` tab (status = `Need`, dateAdded = today)
+3. Deletes the approved rows from `NewCoinsInbox`
 
 ---
 
 ## Design system
 
-### Typography
+### Fonts
 | Font | Use |
 |------|-----|
-| `Bodoni Moda` (serif) | Logo, quantity numbers |
-| `Cormorant Garamond` (serif) | Coin names, detail text |
-| `DM Mono` (monospace) | UI chrome, codes, labels, all controls |
+| `Bodoni Moda` | Logo, headings, quantity numbers |
+| `Cormorant Garamond` | Body text, coin names |
+| `DM Mono` | Codes, labels, UI chrome |
 
 ### CSS custom properties
 ```css
 --ink:    #0C0C0A   /* primary text */
 --paper:  #F5F2EB   /* page background */
---paper2: #EDE9DF   /* sidebar background */
---paper3: #E4DFD2   /* hover / detail panel */
---gold:   #8B6914   /* brand / logo */
+--paper2: #EDE9DF   /* sidebar / alternate rows */
+--paper3: #E4DFD2   /* subtle backgrounds */
+--gold:   #8B6914   /* brand / primary accent */
 --gold2:  #C49A2A   /* interactive gold */
 --gold3:  #F0C84A   /* highlight gold */
---got:    #2D6A4F   /* "Got" status — green */
+--got:    #2D6A4F   /* Got — green */
 --got-bg: #D8F3DC
---need:   #9B2335   /* "Need" status — red */
+--need:   #9B2335   /* Need — red */
 --need-bg:#FFE4E8
---list:   #1A3A6B   /* "List" status — blue */
+--list:   #1A3A6B   /* List — blue */
 --list-bg:#DBEAFE
---border: #C8BFA8   /* dividers */
---muted:  #4A4438   /* secondary text */
---r:      2px       /* border-radius */
+--border: #C8BFA8
+--muted:  #4A4438
+--r:      3px
 ```
 
-### Visual style rules
+### Style rules
 - Parchment / antiquarian aesthetic — warm off-whites, ink tones, gold accents
-- No rounded cards; sharp borders with `--r: 2px`
-- No box shadows; use borders and background colour changes instead
-- Grain overlay on `body::before` (do not remove)
-- Transitions: `0.12s` for most UI, `0.15s` for expand animations
-- Font sizes are small and precise — do not increase arbitrarily
-- Use `letter-spacing` and `text-transform:uppercase` for labels/headings
+- No modern/tech UI — no gradients, no heavy shadows
+- Grain overlay on `body::before` — do not remove
+- Transitions: `0.12s` for most UI
 
 ---
 
-## Cross-platform web development rules
+## Cross-platform rules
 
-**All changes to CoinHub.html must work on:**
-- Windows desktop (Chrome, Edge, Firefox)
-- iOS Safari (iPhone and iPad)
-- Android Chrome
+Changes must work on: Windows desktop (Chrome/Edge/Firefox), iOS Safari, Android Chrome.
 
-### Responsive layout strategy
-- **Mobile breakpoint:** `max-width: 767px`
-- **Tablet breakpoint:** `max-width: 1024px`
-- At mobile widths, the sidebar (`260px 1fr` grid) must collapse — sidebar becomes a drawer or moves above the table
-- Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">` (already present)
-- Use `min-width: 0` on grid children to prevent overflow
-
-### Touch & iOS-specific rules
-- Minimum tap target size: **44×44 px** (Apple HIG requirement)
-- Never use `:hover` as the only interaction indicator — pair with `:active` for touch
-- iOS Safari ignores `position:sticky` on elements inside `overflow:hidden` — avoid that combination
-- iOS Safari bottom bar: add `padding-bottom: env(safe-area-inset-bottom)` to fixed/sticky footers
-- Use `-webkit-overflow-scrolling: touch` on scrollable containers for iOS momentum scrolling
-- `appearance: none; -webkit-appearance: none` on `<select>` and `<input>` (already applied)
-- Avoid `100vh` for full-screen layouts on iOS — use `100dvh` or `min-height: -webkit-fill-available`
-- Test fixed headers: iOS Safari's URL bar shrinks/grows and can cause layout jumps
-
-### CSS best practices
-- **Mobile-first** where adding new components; **desktop-first** is acceptable when editing existing CSS
-- Use CSS custom properties (already established) — never hard-code colours inline
-- Prefer `gap` over margins for flex/grid spacing
-- Use `flex-wrap: wrap` for rows that must reflow on narrow screens
-- `overflow-x: hidden` on `body` prevents horizontal scroll from layout bugs
-- Scrollable containers need explicit `overflow-y: auto` and a `max-height`
-
-### JavaScript cross-platform rules
-- Event listeners: prefer `addEventListener` over inline `on*` attributes
-- Touch events: where click handlers drive UI, they work on touch too — no need to add separate touch handlers unless you need swipe/drag
-- `localStorage` works everywhere but can be blocked in private browsing (handle the exception)
-- `fetch` is supported everywhere — no polyfills needed
-- Avoid `innerText` on table cells — use `textContent` instead (better performance)
-- Use `requestAnimationFrame` for any animation driven by JS
-
-### Images
-- Always set explicit `width` and `height` attributes on `<img>` to prevent layout shift
-- Use `loading="lazy"` for coin images that are off-screen
-- Provide `alt` text on all images
-
-### Forms & inputs
-- On mobile, set `inputmode` attribute to get the right soft keyboard:
-  - `inputmode="numeric"` for number fields
-  - `inputmode="email"` for email
-  - `inputmode="search"` for search boxes
-- `font-size` on `<input>` must be **≥ 16px** to prevent iOS Safari from auto-zooming on focus
-
-### Performance
-- The single-file approach means all JS/CSS is inline — keep it that way
-- Avoid DOM queries in tight loops — cache selectors
-- Use `document.createDocumentFragment()` when building large lists of rows
-- `will-change: transform` on elements that animate (use sparingly)
+- Mobile breakpoint: `max-width: 767px`
+- Minimum tap target: 44×44px
+- `font-size` on `<input>` must be ≥ 16px (prevents iOS Safari zoom)
+- Use `100dvh` not `100vh` for full-screen on iOS
+- Pair `:hover` with `:active` for touch devices
 
 ---
 
-## CoinHub HTML structure
+## Critical rules — do not break
 
-```
-<head>
-  <style> ← all CSS
-<body>
-  #loadScreen        ← full-screen loading overlay
-  <header>           ← sticky top bar, logo + stats
-  .app               ← CSS grid: 260px sidebar | 1fr main
-    .filters         ← left panel: denomination pills, filters, collection list
-    .main            ← right panel: results bar + sticky sort row + coin table
-      .coin-table    ← <table> with expandable detail rows
-  <script>           ← all JS: COTUK_MAP, INSTANCE_DATA, RAW, UI functions
-```
-
-### Key JS globals
-| Name | Description |
-|------|-------------|
-| `COTUK_MAP` | `{ variantCode: imageUrl }` — 646 entries |
-| `INSTANCE_DATA` | `{ variantCode: [instances] }` — 1,496 records |
-| `RAW` | coin variant rows built by `buildCoinData()` |
-| `state` | current filter/sort state |
-| `render()` | re-renders the table from current state |
-| `syncQueue` | pending Notion operations |
+1. Use `COTUK_MAP` directly, never `window.COTUK_MAP`
+2. Use `coin.variantCode`, never `coin.id` (coin.id does not exist)
+3. `INSTANCE_DATA` must be at script level (global), not inside any function
+4. `onerror` attributes must be single-line HTML
+5. Do not edit `CoinHub.html` (legacy) unless Ian explicitly asks
+6. Do not add Netlify/GitHub Pages config — hosting is Vercel only
+7. Notion sync is disabled — do not process `.coinhub_sync_queue.json` on session start
 
 ---
 
-## Notion databases
-| Name | ID |
-|------|----|
-| variant | `1bf05769-e1ee-81c7-81dc-000b9d014020` |
-| instance | `1a605769-e1ee-80d2-b868-000b80373e62` |
-| storage_container | `1d705769-e1ee-80e8-8821-000b783319c7` |
-| storage_page | `1d805769-e1ee-807a-9b01-000b22c54e0c` |
-| storage_slot | `1d805769-e1ee-801e-b1a4-000b9de0b849` |
-| location | `1d805769-e1ee-8042-b4dd-000b1393168e` |
+## Notion (reference only — not actively used)
 
----
-
-## Auth server notes
-- `auth_server.py` runs on port `8090`
-- Serves `CoinHub.html` at `/`
-- Handles `/api/login`, `/api/logout`, `/api/sync-queue` endpoints
-- Sessions use signed cookies; remember-device tokens stored for 7 days
-- TOTP is optional but enabled for Ian's account
+Notion MCP connects to Ian's **second** Notion account (not primary).  
+Coin Variant database: `1bf05769-e1ee-81c7-81dc-000b9d014020`  
+Instance database: `1a605769-e1ee-80d2-b868-000b80373e62`  
+Parent page: `1a505769-e1ee-806a-883d-c8df0a47b311`  
+The Notion sync workflow has been replaced by the Google Sheets backend.
