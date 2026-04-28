@@ -1855,15 +1855,30 @@ async function saveInstance(vc) {
   STORAGE_MAP[id] = inst;
   const coin = ALL_COINS.find(c=>c.variantCode===vc);
   if (coin) { coin.instCount = (coin.instCount||0)+1; coin.status='Got'; }
-  // Persist to pending queue (picked up by restorePendingData on reload)
-  try {
-    const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
-    pending.push(inst); localStorage.setItem('coinhub_pending_instances', JSON.stringify(pending));
-  } catch(e){}
   addAuditLog('add-instance', { id, vc, cond, price, notes });
   _refreshCoinUI(coin);
   renderLightboxContent(vc);
-  showToast('Copy added — '+id);
+  showToast('Copy added — saving to sheet…');
+  try {
+    const r = await authFetch('/api/instances-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', instance: inst }),
+    });
+    if (r.ok) {
+      showToast('Copy added — '+id);
+    } else {
+      const err = await r.json().catch(()=>({}));
+      // Fall back to localStorage pending queue so it survives refresh
+      const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
+      pending.push(inst); localStorage.setItem('coinhub_pending_instances', JSON.stringify(pending));
+      showToast('Saved locally — sheet sync failed: ' + (err.error||r.status));
+    }
+  } catch(e) {
+    const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
+    pending.push(inst); localStorage.setItem('coinhub_pending_instances', JSON.stringify(pending));
+    showToast('Saved locally — will sync when online');
+  }
 }
 
 async function saveEditInstance(vc, id) {
@@ -1894,12 +1909,34 @@ async function removeInstance(vc, id) {
   if (INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = INSTANCE_DATA[vc].filter(i=>i.id!==id);
   delete STORAGE_MAP[id];
   const coin = ALL_COINS.find(c=>c.variantCode===vc);
-  if (coin) coin.instCount = Math.max(0,(coin.instCount||1)-1);
-  _queueSync({ type:'removeInstance', data:{ id, variantCode:vc } });
+  if (coin) { coin.instCount = Math.max(0,(coin.instCount||1)-1); if (!coin.instCount) coin.status='Need'; }
+  // Remove from local pending queue (covers instances never written to sheet)
+  try {
+    const pending = JSON.parse(localStorage.getItem('coinhub_pending_instances')||'[]');
+    const filtered = pending.filter(i=>i.id!==id);
+    localStorage.setItem('coinhub_pending_instances', JSON.stringify(filtered));
+  } catch(e){}
   addAuditLog('remove-instance', { id, vc });
   _refreshCoinUI(coin);
   renderLightboxContent(vc);
-  showToast('Instance removed');
+  showToast('Removing from sheet…');
+  try {
+    const r = await authFetch('/api/instances-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove', id }),
+    });
+    if (r.ok) {
+      showToast('Instance removed');
+    } else {
+      const err = await r.json().catch(()=>({}));
+      // If not in sheet (e.g. was only local), that's fine; otherwise warn
+      if (r.status !== 404) showToast('UI updated — sheet delete failed: ' + (err.error||r.status));
+      else showToast('Instance removed');
+    }
+  } catch(e) {
+    showToast('UI updated — could not reach sheet');
+  }
 }
 
 // ── ADMIN: VARIANTS ───────────────────────────────────────────────────────────
