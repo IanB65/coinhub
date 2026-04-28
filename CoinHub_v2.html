@@ -970,6 +970,8 @@ let NEXT_INST_ID = 1520;
 // Archive state
 let ARC = { denom:null, status:new Set(), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 };
 const ARC_PAGE_SIZE = 100;
+let _arcPreset = false; // set by arcJumpYear/arcJumpDenom so router doesn't reset their state
+let _lastPage = '';
 
 // Lightbox state (declared in lightbox section below)
 let LB_CTX_ID = null;
@@ -1137,6 +1139,12 @@ function router() {
   });
 
   const show = id => { const el = document.getElementById(id); if (el) el.classList.add('active'); };
+
+  if (page === 'archive' && _lastPage !== 'archive' && !_arcPreset) {
+    ARC = { denom:null, status:new Set(['Got','Need','List','Unknown']), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 };
+  }
+  _arcPreset = false;
+  _lastPage = page;
 
   if (page === 'home')              { show('page-home');             renderHome(); }
   else if (page === 'collections')  { show('page-collections');      renderCollections(); }
@@ -1516,8 +1524,8 @@ function coinCardHTML(coin, ctxId, idx) {
 }
 
 // ── ARCHIVE PAGE ──────────────────────────────────────────────────────────────
-function arcJumpYear(y) { ARC = { denom:null, status:new Set(['Got','Need','List','Unknown']), year:String(y), monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
-function arcJumpDenom(d) { ARC = { denom:d, status:new Set(['Got','Need','List','Unknown']), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
+function arcJumpYear(y) { _arcPreset = true; ARC = { denom:null, status:new Set(['Got','Need','List','Unknown']), year:String(y), monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
+function arcJumpDenom(d) { _arcPreset = true; ARC = { denom:d, status:new Set(['Got','Need','List','Unknown']), year:'', monarch:'', collection:'', search:'', sort:'year', sortDir:1, page:0 }; router(); }
 
 function renderArchive() {
   const el = document.getElementById('page-archive');
@@ -1596,6 +1604,9 @@ function syncArchiveUI() {
   if (m) m.value = ARC.monarch || '';
   if (y) y.value = ARC.year || '';
   if (s) s.value = ARC.search || '';
+  document.querySelectorAll('.arc-status-chips input[type=checkbox]').forEach(cb => {
+    cb.checked = ARC.status.has(cb.value);
+  });
 }
 
 function arcApplyFilters() {
