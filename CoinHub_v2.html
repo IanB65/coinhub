@@ -1517,19 +1517,31 @@ function arcJumpDenom(d) { ARC = { denom:d, status:new Set(['Got','Need','List',
 function renderArchive() {
   const el = document.getElementById('page-archive');
   if (!el._built) { el.innerHTML = buildArchiveShell(); el._built = true; wireArchiveEvents(); }
+  populateArchiveDropdowns();
   syncArchiveUI();
   arcApplyFilters();
 }
 
-function buildArchiveShell() {
+function populateArchiveDropdowns() {
+  const denomSel = document.getElementById('arcDenom');
+  const monSel   = document.getElementById('arcMonarch');
+  if (!denomSel || !monSel) return;
+  const cur = denomSel.value;
   const uniqueDenoms = [...new Set(ALL_COINS.map(c=>c.denom).filter(Boolean))]
     .sort((a,b)=>(DENOM_SORT_KEY[a]??99)-(DENOM_SORT_KEY[b]??99));
-  const denomOpts = `<option value="">All</option>`+uniqueDenoms.map(d=>`<option value="${d}">${d}</option>`).join('');
-  const monarchs = ['All',...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))].map(m=>`<option value="${m==='All'?'':m}">${m}</option>`).join('');
+  denomSel.innerHTML = `<option value="">All</option>`+uniqueDenoms.map(d=>`<option value="${d}">${d}</option>`).join('');
+  denomSel.value = cur;
+  const curMon = monSel.value;
+  const uniqueMonarchs = [...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))];
+  monSel.innerHTML = `<option value="">All</option>`+uniqueMonarchs.map(m=>`<option value="${m}">${m}</option>`).join('');
+  monSel.value = curMon;
+}
+
+function buildArchiveShell() {
   return `<div class="arc-toolbar">
     <div class="arc-filters">
-      <select id="arcDenom" onchange="ARC.denom=this.value||null;ARC.page=0;arcApplyFilters()">${denomOpts}</select>
-      <select id="arcMonarch" onchange="ARC.monarch=this.value;ARC.page=0;arcApplyFilters()">${monarchs}</select>
+      <select id="arcDenom" onchange="ARC.denom=this.value||null;ARC.page=0;arcApplyFilters()"><option value="">All</option></select>
+      <select id="arcMonarch" onchange="ARC.monarch=this.value||null;ARC.page=0;arcApplyFilters()"><option value="">All</option></select>
       <input id="arcYear" type="number" placeholder="Year" style="width:90px" oninput="ARC.year=this.value;ARC.page=0;arcApplyFilters()">
       <input id="arcSearch" type="text" placeholder="Search name / code…" oninput="ARC.search=this.value;ARC.page=0;arcApplyFilters()">
     </div>
