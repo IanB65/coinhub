@@ -1792,10 +1792,10 @@ function buildInstItemHTML(inst, i, vc) {
       <div class="form-grid">
         <label>Condition<select id="iec-${esc(inst.id)}">${condOpts}</select></label>
         <label>Price Paid (£)<input id="iep-${esc(inst.id)}" type="number" step="0.01" value="${esc(price)}" placeholder="0.00"></label>
-        <label>Preservation Type<select id="iept-${esc(inst.id)}">${(()=>{const pts=[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.ptype).filter(Boolean)))].sort();return`<option value="">— None —</option>`+pts.map(p=>`<option value="${esc(p)}"${p===inst.ptype?' selected':''}>${esc(p)}</option>`).join('');})()}</select></label>
-        <label>Storage 1<input id="ies1-${esc(inst.id)}" type="text" value="${esc(inst.s1||'')}"></label>
-        <label>Storage 2<input id="ies2-${esc(inst.id)}" type="text" value="${esc(inst.s2||'')}"></label>
-        <label>Storage 3<input id="ies3-${esc(inst.id)}" type="text" value="${esc(inst.s3||'')}"></label>
+        <label>Preservation Type<select id="iept-${esc(inst.id)}">${(()=>{const u=k=>[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i[k]).filter(Boolean)))].sort();return`<option value="">— None —</option>`+u('ptype').map(p=>`<option value="${esc(p)}"${p===inst.ptype?' selected':''}>${esc(p)}</option>`).join('');})()}</select></label>
+        <label>Storage 1<select id="ies1-${esc(inst.id)}">${(()=>{const u=[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.s1).filter(Boolean)))].sort();return`<option value="">— None —</option>`+u.map(v=>`<option value="${esc(v)}"${v===inst.s1?' selected':''}>${esc(v)}</option>`).join('');})()}</select></label>
+        <label>Storage 2<select id="ies2-${esc(inst.id)}">${(()=>{const u=[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.s2).filter(Boolean)))].sort();return`<option value="">— None —</option>`+u.map(v=>`<option value="${esc(v)}"${v===inst.s2?' selected':''}>${esc(v)}</option>`).join('');})()}</select></label>
+        <label>Storage 3<select id="ies3-${esc(inst.id)}">${(()=>{const u=[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.s3).filter(Boolean)))].sort();return`<option value="">— None —</option>`+u.map(v=>`<option value="${esc(v)}"${v===inst.s3?' selected':''}>${esc(v)}</option>`).join('');})()}</select></label>
         <label style="grid-column:1/-1">Notes<input id="ien-${esc(inst.id)}" type="text" value="${esc(notes)}"></label>
       </div>
       <button class="btn-primary" onclick="saveEditInstance('${esc(vc)}','${esc(inst.id)}')">Save</button>
@@ -1810,10 +1810,9 @@ function toggleInstEdit(id) {
 
 function buildAddInstFormHTML(vc) {
   const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option>${c}</option>`).join('');
-  const containers = [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i.s1).filter(Boolean)))].sort();
-  const s1Opts = `<option value="">— None —</option>` + containers.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
-  const ptypes = [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i.ptype).filter(Boolean)))].sort();
-  const ptypeOpts = `<option value="">— None —</option>` + ptypes.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  const mkOpts = (vals, cur='') => `<option value="">— None —</option>` + vals.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
+  const uniq = key => [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i[key]).filter(Boolean)))].sort();
+  const s1Opts = mkOpts(uniq('s1')), s2Opts = mkOpts(uniq('s2')), s3Opts = mkOpts(uniq('s3')), ptypeOpts = mkOpts(uniq('ptype'));
   return `<div class="lb-add-form">
     <h3 class="lb-section-title">Add a Copy</h3>
     <div class="form-grid">
@@ -1821,8 +1820,8 @@ function buildAddInstFormHTML(vc) {
       <label>Price Paid (£)<input id="newInstPrice" type="number" step="0.01" placeholder="0.00"></label>
       <label>Preservation Type<select id="newInstPtype">${ptypeOpts}</select></label>
       <label>Storage 1<select id="newInstS1">${s1Opts}</select></label>
-      <label>Storage 2<input id="newInstS2" type="text" placeholder="e.g. Page 1, Slot 3…"></label>
-      <label>Storage 3<input id="newInstS3" type="text" placeholder="e.g. 02"></label>
+      <label>Storage 2<select id="newInstS2">${s2Opts}</select></label>
+      <label>Storage 3<select id="newInstS3">${s3Opts}</select></label>
       <label>Source<input id="newInstSource" type="text" placeholder="e.g. eBay, Royal Mint…"></label>
       <label style="grid-column:1/-1">Notes<input id="newInstNotes" type="text"></label>
     </div>
