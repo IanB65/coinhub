@@ -1,0 +1,5274 @@
+{
+  "broken": [
+    {
+      "code": "UK-D-50P-2011-ARCH-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11arc.jpg",
+      "status": 404,
+      "name": "Archery",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-ATHL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_09bp.jpg",
+      "status": 404,
+      "name": "Athletics",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-BASK-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11bas.jpg",
+      "status": 404,
+      "name": "Basketball",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-BOXI-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11box.jpg",
+      "status": 404,
+      "name": "Boxing",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-AQUA-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11aqu.jpg",
+      "status": 404,
+      "name": "Aquatics",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-BOCC-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11boc.jpg",
+      "status": 404,
+      "name": "Boccia",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-CANO-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11can.jpg",
+      "status": 404,
+      "name": "Canoeing",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-BADM-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11bad.jpg",
+      "status": 404,
+      "name": "Badminton",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-EQUE-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11equ.jpg",
+      "status": 404,
+      "name": "Equestrian",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-CYCL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11cyc.jpg",
+      "status": 404,
+      "name": "Cycling",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-FOOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11foo.jpg",
+      "status": 404,
+      "name": "Football",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-FENC-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11fen.jpg",
+      "status": 404,
+      "name": "Fencing",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-GOAL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11goa.jpg",
+      "status": 404,
+      "name": "Goalball",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-GYMN-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11gym.jpg",
+      "status": 404,
+      "name": "Gymnastics",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-HOCK-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11hoc.jpg",
+      "status": 404,
+      "name": "Hockey",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-HAND-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11han.jpg",
+      "status": 404,
+      "name": "Handball",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-JUDO-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11jud.jpg",
+      "status": 404,
+      "name": "Judo",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-PENT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11pen.jpg",
+      "status": 404,
+      "name": "Modern Pentathlon",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-ROWI-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11row.jpg",
+      "status": 404,
+      "name": "Rowing",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-SAIL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11yac.jpg",
+      "status": 404,
+      "name": "Sailing",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-SHOO-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11sho.jpg",
+      "status": 404,
+      "name": "Shooting",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-TAEK-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11tae.jpg",
+      "status": 404,
+      "name": "Taekwondo",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-TENN-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11ten.jpg",
+      "status": 404,
+      "name": "Tennis",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-TRIA-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11tri.jpg",
+      "status": 404,
+      "name": "Triathlon",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-TTEN-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11tat.jpg",
+      "status": 404,
+      "name": "Table Tennis",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-VOLL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11vol.jpg",
+      "status": 404,
+      "name": "Volleyball",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-WRES-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11wre.jpg",
+      "status": 404,
+      "name": "Wrestling",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-WCRU-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11wru.jpg",
+      "status": 404,
+      "name": "Wheelchair Rugby",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2011-WEIG-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_11wei.jpg",
+      "status": 404,
+      "name": "Weightlifting",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "London 2012 Olympics"
+    },
+    {
+      "code": "UK-D-50P-2016-GB",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_16gb.jpg",
+      "status": 404,
+      "name": "",
+      "year": "",
+      "denom": "",
+      "collection": ""
+    },
+    {
+      "code": "UK-D-50P-2017-PR-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_17pr.jpg",
+      "status": 404,
+      "name": "Beatrix Potter - The Tale of Peter Rabbit",
+      "year": "2017",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-2018-GLOU-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_18tg.jpg",
+      "status": 404,
+      "name": "Beatrix Potter - The Tailor Of Gloucester",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-2026-DENN-",
+      "url": "https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/denis-the-menace/product-images/uk26dmbu-75-years-of-dennis-the-menace-2026-uk-50p-brilliant-uncirculated-coin-reverse-pack-front.jpg",
+      "status": 0,
+      "name": "Dennis the Menace",
+      "year": "2026",
+      "denom": "50p",
+      "collection": "Characters"
+    },
+    {
+      "code": "UK-D-50P-2026-WPKD-",
+      "url": "https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/winnie-the-pooh/coin-1---kindness/product-images/uk26wp1bu---100-years-of-winnie-the-pooh---kindness-2026-uk-50p-brilliant-uncirculated-coin-reverse-pack-front.jpg",
+      "status": 0,
+      "name": "Winnie the Pooh - Kindness",
+      "year": "2026",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2018-PADP-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_18pp.jpg",
+      "status": 404,
+      "name": "Paddington at the Palace",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Paddington Bear"
+    },
+    {
+      "code": "UK-D-50P-2018-MOUS-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_18mt.jpg",
+      "status": 404,
+      "name": "Beatrix Potter - Mrs. Tittlemouse",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-2019-GRUF-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_19gru.jpg",
+      "status": 404,
+      "name": "The Gruffalo",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Characters"
+    },
+    {
+      "code": "UK-D-50P-2019-PADL-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_20psp.jpg",
+      "status": 404,
+      "name": "Paddington at the Tower of London",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Paddington Bear"
+    },
+    {
+      "code": "UK-D-50P-2020-EUEX-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_20b.jpg",
+      "status": 404,
+      "name": "Withdrawal from the European Union",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "EU"
+    },
+    {
+      "code": "UK-D-50P-2018-PADS-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_18ps.jpg",
+      "status": 404,
+      "name": "Paddington at the Station",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Paddington Bear"
+    },
+    {
+      "code": "UK-D-50P-2020-DIVE-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_20oly.jpg",
+      "status": 404,
+      "name": "Diversity Built Britain",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2021-BAIR-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_21b.jpg",
+      "status": 404,
+      "name": "Innovations in Science - John Logie Baird",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Science"
+    },
+    {
+      "code": "UK-D-50P-2022-JUBI-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/dec/50/50_22pj.jpg",
+      "status": 404,
+      "name": "The Platinum Jubilee of Her Majesty Queen Elizabeth II",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-PD-FART-1934-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/fa/fa29.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1934",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/fa/fa29.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1935",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/fa/fa29.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1936",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1937-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1937",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1940",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1938-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1938",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1939",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1941",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1944",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1942-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1942",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1945",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1948",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1943",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1947",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1949",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1946",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1950",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1951",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/fa/fa56.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1954",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/fa/fa56.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1953",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1952-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/fa/fa51.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1952",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/fa/fa56.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1955",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1920-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1920",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1918-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1918",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FART-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/fa/fa56.jpg",
+      "status": 0,
+      "name": "Farthing",
+      "year": "1956",
+      "denom": "Farthing",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1921",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1922-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1922",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1935",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1947",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1941",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1945",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1939",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/2s/2s31.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1936",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1948",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1949",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1955",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1953",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1950",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1956",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1954",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/2s/2s49.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1951",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1958",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1957",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1960",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1959",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1962",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1961",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1965",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1964",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1963",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1966",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-FLOR-1967-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/2s/2s70p.jpg",
+      "status": 0,
+      "name": "Florin (or Two Shillings, 2/-)",
+      "year": "1967",
+      "denom": "Florin",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1861-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1861",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1874-H-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1874",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1875-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1875",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1862-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1862",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1884-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1884",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1888-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1888",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1897-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1897",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1898-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1898",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1903-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1903",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1900-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1900",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1902-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1902",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1901-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1901",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1899-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/ha/ha90.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1899",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1905-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1905",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1904-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1904",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1907-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1907",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1908-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1908",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1909-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1909",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1911-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1911",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1910-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/ha/ha10.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1910",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1914-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1914",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1913-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1913",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1912-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1912",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1915-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1915",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1916-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1916",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1917-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1917",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1921",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1922-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1922",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1920-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1920",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1919-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1919",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1918-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1918",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1923-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1923",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1924-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1924",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1925-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1925",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1929-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1929",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1926-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1926",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1927-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1927",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1928-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1928",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1930-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1930",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1931-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1931",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1932-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1932",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1933-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1933",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1936",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1935",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1934-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/ha/ha36.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1934",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1939",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1938-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1938",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1937-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1937",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1940",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1941",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1942-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1942",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1945",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1947",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1944",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1943",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1946",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1948",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1949",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1952-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1952",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1950",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1956",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1954",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/ha/ha52r.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1951",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1953",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1955",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1957",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1961",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1959",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1958",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1960",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1964",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1963",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1962",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1965",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1966",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HALF-1967-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/ha/ha70p.jpg",
+      "status": 0,
+      "name": "Half Penny",
+      "year": "1967",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/hc/hc34.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1921",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1948",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1949",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1943",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1947",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1950",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/hc/hc52.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1951",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1954",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1955",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1956",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1953",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1960",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1958",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1957",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1959",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1964",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1963",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1962",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1961",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1965",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1967-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1967",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-HCRO-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/hc/hc70p.jpg",
+      "status": 0,
+      "name": "Half Crown (Two Shillings and sixpence\ufffdor 2/6)",
+      "year": "1966",
+      "denom": "Half Crown",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1860-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1860",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1862-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1862",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1865-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1865",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1871-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1871",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1872-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1872",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1868-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1868",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1873-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1873",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1867-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1867",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1875-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1875",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1874-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1874",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1876-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1876",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1878-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1878",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1882-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1882",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1879-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1879",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1887-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1887",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1888-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1888",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1886-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1886",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1883-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1883",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1890-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1890",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1889-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1889",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1891-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1891",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1892-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1892",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1895-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1895",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1894-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1894",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1893-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1893",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1896-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1896",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1897-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1897",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1898-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1898",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1901-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1901",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1900-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1900",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1899-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/1d/1d89.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1899",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1902-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1902",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1903-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1903",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1904-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1904",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1905-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1905",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1907-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1907",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1908-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1908",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1909-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1909",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1906-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1906",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1912H-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1912",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1911-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1911",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1912-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1912",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1910-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1d/e71d08s.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1910",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1913-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1913",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1915-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1915",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1916-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1916",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1914-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1914",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1917-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1917",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1918-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1918",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1918H-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1918",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1918KN-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1918",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1919-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1919",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1919H-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1919",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1922-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1922",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1919KN-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1919",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1926-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1926",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1920-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1920",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1921",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1928-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1928",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1927-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1927",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1931-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1931",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1929-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1929",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1930-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1930",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1932-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1932",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1934-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1934",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1936",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1937-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1937",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1d/1d36.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1935",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1938-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1938",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1939",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1944",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1940",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1946",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1945",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1947",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1948",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1d/1d52.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1949",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1953",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1964",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1961",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1963",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1965",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1962",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1967-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1967",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-PENN-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1d/1d70p.jpg",
+      "status": 0,
+      "name": "Penny (or 1d)",
+      "year": "1966",
+      "denom": "Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1921",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1920-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1920",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1902-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/1s/1s10.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1902",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1922-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1922",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1926-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1926",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1925-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1925",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1923-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1923",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1924-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1924",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1927-TYPE1-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1927",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1929-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1929",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1928-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1928",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1927-TYPE2-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1927",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1932-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1932",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1930-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1930",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1931-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1931",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1933-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1933",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1934-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1934",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1935",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/1s/1s33.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1936",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1937-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1937",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1939-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1939",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1940",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1939",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1941",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1941-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1941",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1942-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1942",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1943",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1942-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1942",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1943-SCOT",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1943",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1944",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1944-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1944",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1945-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1945",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1945",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1946",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1947",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1947-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1947",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1946-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1946",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1948",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1948-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1948",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1949",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1950",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1950-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1950",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1949-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1949",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1954",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1953",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1951-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1951",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1953-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1953",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/1s/1s51s.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1951",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1954-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1954",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1955",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1955-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1955",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1956",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1956-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1956",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1957",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1959",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1958-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1958",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1957-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1957",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1958",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1959-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1959",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1960",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1960-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1960",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1961",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1962",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1961-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1961",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1962-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1962",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1963",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1964",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1963-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1963",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1966-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1966",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1965",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1966",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1965-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1965",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SHIL-1964-SCOT-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/1s/1s70sp.jpg",
+      "status": 0,
+      "name": "Shilling (or 1/-)",
+      "year": "1964",
+      "denom": "Shilling",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1906-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/e7/6d/6d03.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1906",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1911-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/6d/6d28.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1911",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1938-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1938",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1937-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1937",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1912-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g5/6d/6d28.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1912",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1939",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1942-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1942",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1940",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1941",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1943",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1946",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1944",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1947",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1945",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1949",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1948",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1950",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1951",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1952-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/6d/6d50.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1952",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1953",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1957",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1954",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1956",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1955",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1958",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1959",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1960",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1962-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1962",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1961-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1961",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1963-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1963",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1964-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1964",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1966-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1966",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1965-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1965",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-SIXP-1967-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/6d/6d70p.jpg",
+      "status": 0,
+      "name": "Sixpence (or 6d)",
+      "year": "1967",
+      "denom": "Sixpence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1860-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1860",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1868-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1868",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1867-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1867",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1873-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1873",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1870-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1870",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1879-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1879",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1874-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1874",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1884-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1884",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1885-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1885",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1886-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1886",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1899-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1899",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1890-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1890",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1895-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1895",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1900-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1900",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1893-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1893",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1902-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1902",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1907-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1907",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1911-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1911",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1917-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1917",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1912-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1912",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1916-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1916",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1915-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1915",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1920-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1920",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1918-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1918",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1921-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1921",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1919-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1919",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1922-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1922",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1931-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1931",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1926-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1926",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1930-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1930",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1934-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1934",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1933-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1933",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1935-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1935",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1936-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qv/3d/3d90.jpg",
+      "status": 0,
+      "name": "Threepence (Silver)",
+      "year": "1936",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1938-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1938",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1937-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1937",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1939-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1939",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1943-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1943",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1941-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1941",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1942-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1942",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1940-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1940",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1944-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1944",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1945-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1945",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1947-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1947",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1946-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1946",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1949-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1949",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1948-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1948",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1952-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1952",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1951-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1951",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1950-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/g6/3d/3dedge.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1950",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1953-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1953",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1955-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1955",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1956-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1956",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1954-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1954",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1957-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1957",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1959-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1959",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1958-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1958",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-PD-THRE-1960-",
+      "url": "https://www.coins-of-the-uk.co.uk/pics/qe/3d/3d70p.jpg",
+      "status": 0,
+      "name": "Threepence (or 3d)",
+      "year": "1960",
+      "denom": "Threepence",
+      "collection": "Pre Decimal"
+    }
+  ],
+  "missing": [
+    {
+      "code": "UK-COMM-\u00a32-2020-MAYF-",
+      "name": "Mayflower 400th Anniversary",
+      "year": "2020",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2020-VEDA-",
+      "name": "VE Day 75th Anniversary",
+      "year": "2020",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2022-25YR-",
+      "name": "25th Anniversary of the \u00a32 Coin",
+      "year": "2022",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2022-BELL-",
+      "name": "Alexander Graham Bell",
+      "year": "2022",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2022-FACP-",
+      "name": "FA Cup 150th Anniversary",
+      "year": "2022",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2024-NTLG-",
+      "name": "National Gallery 200th Anniversary",
+      "year": "2024",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a32-2025-ORWL-",
+      "name": "George Orwell",
+      "year": "2025",
+      "denom": "\u00a32",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-D-\u00a32-1997-TECH-",
+      "name": "Technology Advances",
+      "year": "1997",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-1998-TECH-",
+      "name": "Technology Advances",
+      "year": "1998",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-1999-TECH-",
+      "name": "Technology Advances",
+      "year": "1999",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2000-TECH-",
+      "name": "Technology Advances",
+      "year": "2000",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2001-TECH-",
+      "name": "Technology Advances",
+      "year": "2001",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2002-TECH-",
+      "name": "Technology Advances",
+      "year": "2002",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2003-TECH-",
+      "name": "Technology Advances",
+      "year": "2003",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2004-TECH-",
+      "name": "Technology Advances",
+      "year": "2004",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2006-TECH-",
+      "name": "Technology Advances",
+      "year": "2006",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2008-TECH-",
+      "name": "Technology Advances",
+      "year": "2008",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2011-TECH-",
+      "name": "Technology Advances",
+      "year": "2011",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2018-BRIT-",
+      "name": "Britannia",
+      "year": "2018",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2019-BRIT-",
+      "name": "Britannia",
+      "year": "2019",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2022-BRIT-",
+      "name": "Britannia",
+      "year": "2022",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a32-2026-FLOR-",
+      "name": "Floral",
+      "year": "2026",
+      "denom": "\u00a32",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-\u00a35-2007-DIAM-",
+      "name": "Diamond Wedding Crown",
+      "year": "2007",
+      "denom": "\u00a35",
+      "collection": "2007 Proof Set"
+    },
+    {
+      "code": "UK-D-\u00a35-2023-KC75-",
+      "name": "King Charles III 75th",
+      "year": "2023",
+      "denom": "\u00a35",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a35-2026-ANGL-",
+      "name": "The Angel",
+      "year": "2026",
+      "denom": "\u00a35",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a35-2026-LYHR-",
+      "name": "Lunar Year of the Horse",
+      "year": "2026",
+      "denom": "\u00a35",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-COMM-\u00a35-2026-PNYD-",
+      "name": "The Penny Drops",
+      "year": "2026",
+      "denom": "\u00a35",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-D-\u00a35-2022-JUBI-",
+      "name": "The Platinum Jubilee of Her Majesty Queen Elizabeth II",
+      "year": "2022",
+      "denom": "\u00a35",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2007-BRIT2-PROOF-",
+      "name": "Britannia - revised inscription",
+      "year": "2007",
+      "denom": "50p",
+      "collection": "2007 Proof Set"
+    },
+    {
+      "code": "UK-D-50P-2007-SCOU-PROOF-",
+      "name": "The Centenary of the Foundation of the Scouting Movement",
+      "year": "2007",
+      "denom": "50p",
+      "collection": "2007 Proof Set"
+    },
+    {
+      "code": "UK-D-50P-2018-PR-",
+      "name": "Beatrix Potter - Peter Rabbit 2018",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-2019-PR-",
+      "name": "Beatrix Potter - Peter Rabbit 2019",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-2020-PR-",
+      "name": "Beatrix Potter - Peter Rabbit 2020",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Beatrix Potter"
+    },
+    {
+      "code": "UK-D-50P-1969-BRIT-",
+      "name": "Britannia",
+      "year": "1969",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1970-BRIT-",
+      "name": "Britannia",
+      "year": "1970",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1971-BRIT-",
+      "name": "Britannia",
+      "year": "1971",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1972-BRIT-",
+      "name": "Britannia",
+      "year": "1972",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1973-BRIT-",
+      "name": "Britannia",
+      "year": "1973",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1974-BRIT-",
+      "name": "Britannia",
+      "year": "1974",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1975-BRIT-",
+      "name": "Britannia",
+      "year": "1975",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1976-BRIT-",
+      "name": "Britannia",
+      "year": "1976",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1977-BRIT-",
+      "name": "Britannia",
+      "year": "1977",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1978-BRIT-",
+      "name": "Britannia",
+      "year": "1978",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1979-BRIT-",
+      "name": "Britannia",
+      "year": "1979",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1980-BRIT-",
+      "name": "Britannia",
+      "year": "1980",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1981-BRIT-",
+      "name": "Britannia",
+      "year": "1981",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1982-BRIT-",
+      "name": "Britannia",
+      "year": "1982",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1982-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1982",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1983-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1983",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1984-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1984",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1985-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1985",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1986-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1986",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1987-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1987",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1988-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1988",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1989-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1989",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1990-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1990",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1991-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1991",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1992-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1992",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1993-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1993",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1994-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1994",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1995-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1995",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1996-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1996",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1997-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1997",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1997-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1997",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1998-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1998",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1998-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1998",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1999-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1999",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-1999-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "1999",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2000-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2000",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2000-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2000",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2001-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2001",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2001-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2001",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2002-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2002",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2002-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2002",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2003-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2003",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2003-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2003",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2004-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2004",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2004-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2004",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2005-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2005",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2005-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2005",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2006-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2006",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2006-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2006",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2007-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2007",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2007-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2007",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2008-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2008",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2008-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2008",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2019-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2019-BRIT2-",
+      "name": "Britannia - revised inscription",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Britannia"
+    },
+    {
+      "code": "UK-D-50P-2019-GRUM-",
+      "name": "Gruffalo and the Mouse",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Characters"
+    },
+    {
+      "code": "UK-D-50P-2023-LWW-",
+      "name": "The Lion, the Witch & the Wardrobe",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Characters"
+    },
+    {
+      "code": "UK-D-50P-2025-ZOG1-",
+      "name": "The ZOG",
+      "year": "2025",
+      "denom": "50p",
+      "collection": "Characters"
+    },
+    {
+      "code": "UK-D-50P-2026-CONC-",
+      "name": "Concorde 50th Anniversary",
+      "year": "2026",
+      "denom": "50p",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-D-50P-2023-SALM-",
+      "name": "Atlantic Salmon",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-50P-2023-SALMP-",
+      "name": "Atlantic Salmon Privy Mark",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-50P-2024-SALM-",
+      "name": "Atlantic Salmon",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-50P-2025-SALM-",
+      "name": "Atlantic Salmon",
+      "year": "2025",
+      "denom": "50p",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-50P-2026-SALM-",
+      "name": "Atlantic Salmon",
+      "year": "2026",
+      "denom": "50p",
+      "collection": "Definitives"
+    },
+    {
+      "code": "UK-D-50P-2020-HYLA-",
+      "name": "Hylaeosaurus",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2020-IGUA-",
+      "name": "Iguanodon",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2020-MEGA-",
+      "name": "Megalosaurus",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2021-DIMO-",
+      "name": "Dimorphodon",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2021-ODON-",
+      "name": "Temnodontosaurus",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2021-PLES-",
+      "name": "Plesiosaurus",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2024-DIPL-",
+      "name": "Diplodocus",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2024-STEG-",
+      "name": "Stegosaurus",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-2024-TREX-",
+      "name": "Tyrannosaurus",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "Dinosaurs"
+    },
+    {
+      "code": "UK-D-50P-1973-EU-",
+      "name": "The United Kingdom's Accession to the European Economic Community",
+      "year": "1973",
+      "denom": "50p",
+      "collection": "EU"
+    },
+    {
+      "code": "UK-D-50P-1992-EU-",
+      "name": "The United Kingdom's Presidency of the Council of Ministers and the Completio...",
+      "year": "1992",
+      "denom": "50p",
+      "collection": "EU"
+    },
+    {
+      "code": "UK-D-50P-1993-EU-",
+      "name": "The United Kingdom's Presidency of the Council of Ministers and the Completio...",
+      "year": "1993",
+      "denom": "50p",
+      "collection": "EU"
+    },
+    {
+      "code": "UK-D-50P-2022-HP-",
+      "name": "Harry Potter",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Harry Potter"
+    },
+    {
+      "code": "UK-D-50P-2022-HPHE",
+      "name": "Hogwarts Express",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Harry Potter"
+    },
+    {
+      "code": "UK-D-50P-2023-HPDU-",
+      "name": "Albus Dumbledore",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Harry Potter"
+    },
+    {
+      "code": "UK-D-50P-2023-HPHW-",
+      "name": "Hogwarts",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Harry Potter"
+    },
+    {
+      "code": "UK-D-50P-2023-KC3-",
+      "name": "The Coronation of His Majesty King Charles III",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "King Charles III"
+    },
+    {
+      "code": "UK-D-50P-1994-DDAY-",
+      "name": "The 50th Anniversary of the D-Day Landings",
+      "year": "1994",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "UK-D-50P-2019-BOFB-",
+      "name": "The 75th Anniversary of the Battle of Britain\ufffd",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "UK-D-50P-2019-DDAY-",
+      "name": "The 50th Anniversary of the D-Day Landings",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "UK-D-50P-2019-HAST-",
+      "name": "Millennial Anniversary of the Battle of Hastings",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "UK-D-50P-2019-VC1-",
+      "name": "The 150th Anniversary of the Institution of the Victoria Cross",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "UK-D-50P-2019-VC2-",
+      "name": "The 150th Anniversary of the Institution of the Victoria Cross",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Military"
+    },
+    {
+      "code": "IOM-D-50P-2019-CROC-",
+      "name": "Crocodile",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "IOM-D-50P-2019-FLYI-",
+      "name": "Flying",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "IOM-D-50P-2019-HOOK-",
+      "name": "Captain Hook",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "IOM-D-50P-2019-PPAN-",
+      "name": "Peter Pan",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "IOM-D-50P-2019-TINK-",
+      "name": "Tinkerbell",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "IOM-D-50P-2019-WEND-",
+      "name": "Wendy & Nana",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Peter Pan"
+    },
+    {
+      "code": "UK-D-50P-2019-HAWK-",
+      "name": "Innovations in Science - Stephen Hawking",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Science"
+    },
+    {
+      "code": "UK-D-50P-2020-FRAN-",
+      "name": "Rosalind Franklin",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Science"
+    },
+    {
+      "code": "UK-D-50P-2021-BABB-",
+      "name": "Innovations in Science - Charles Babbage",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Science"
+    },
+    {
+      "code": "UK-D-50P-2022-TURI-",
+      "name": "Innovations in Science - Alan Turing",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Science"
+    },
+    {
+      "code": "UK-D-50P-2008-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2008",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2009-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2009",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2010-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2010",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2011-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2011",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2012-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2012",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2013-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2013",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2014-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2014",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2015-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2015",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2016-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2016",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2017-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2017",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2018-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2019-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2020-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2021-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2022-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2023-SHIE-",
+      "name": "The Royal Arms",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Shield"
+    },
+    {
+      "code": "UK-D-50P-2018-SNOW-",
+      "name": "The Snowman 2018",
+      "year": "2018",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2019-SNOW-",
+      "name": "The Snowman 2019",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2020-SNOW-",
+      "name": "The Snowman 2020",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2021-SNOW-",
+      "name": "The Snowman 2021",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2022-SNOW-",
+      "name": "The Snowman and The Snowdog",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2023-SNOW-",
+      "name": "The Snowman 2023",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Snowman"
+    },
+    {
+      "code": "UK-D-50P-2016-GB -",
+      "name": "Team GB 2016",
+      "year": "2016",
+      "denom": "50p",
+      "collection": "Sports"
+    },
+    {
+      "code": "UK-D-50P-2019-BAN-",
+      "name": "The 50th Anniversary of the First Four-Minute Mile by Roger Bannister",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "Sports"
+    },
+    {
+      "code": "UK-D-50P-2020-GB -",
+      "name": "Team GB 2020",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Sports"
+    },
+    {
+      "code": "UK-D-50P-2021-GB -",
+      "name": "Team GB 2021",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Sports"
+    },
+    {
+      "code": "UK-D-50P-2023-SWDV-",
+      "name": "Star Wars Darth Vader and Emperor Palpatine",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Starwars"
+    },
+    {
+      "code": "UK-D-50P-2023-SWLS-",
+      "name": "Star Wars Luke Skywalker and Princess Leia",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Starwars"
+    },
+    {
+      "code": "UK-D-50P-2023-SWR2-",
+      "name": "Star Wars R2-D2 and C-3PO",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "Starwars"
+    },
+    {
+      "code": "UK-D-50P-2024-SWHS-",
+      "name": "Star Wars Han Solo and Chewbacca",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "Starwars"
+    },
+    {
+      "code": "UK-D-50P-2019-FIFT-",
+      "name": "Fifty Years of the Fifty Pence",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2019-GG-",
+      "name": "Celebrating 100 Years of Girlguiding UK",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2019-KEW-",
+      "name": "The 250th Anniversary of the Foundation of the Royal Botanic Gardens",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2019-SCOU",
+      "name": "The Centenary of the Foundation of the Scouting Movement",
+      "year": "2019",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2021-INSU-",
+      "name": "100 Years Since the Discovery of Insulin",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2022-BBC-",
+      "name": "The 100th Anniversary of Our BBC",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2022-PRID-",
+      "name": "Celebrating 50 Years of Pride",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2022-QEII-",
+      "name": "Her Majesty Queen Elizabeth II",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2023-NHS-",
+      "name": "75 Years of the National Health Service",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2023-WIND-",
+      "name": "75 Years of the Windrush Generation",
+      "year": "2023",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2024-RNLI-",
+      "name": "The 200th Anniversary of the RNLI",
+      "year": "2024",
+      "denom": "50p",
+      "collection": "UK Anniversary"
+    },
+    {
+      "code": "UK-D-50P-2020-CR-",
+      "name": "Christopher Robin",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2020-PIGL-",
+      "name": "Piglet",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2020-WP-",
+      "name": "Winnie the Pooh",
+      "year": "2020",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2021-OWL-",
+      "name": "Owl",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2021-TIGG-",
+      "name": "Tigger",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2021-WP&F1-",
+      "name": "Winnie the Pooh & friends",
+      "year": "2021",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2022-EEYO-",
+      "name": "Eeyore",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2022-KANG-",
+      "name": "Kanga and Roo",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-D-50P-2022-WP&F2-",
+      "name": "Winnie the Pooh and Friends",
+      "year": "2022",
+      "denom": "50p",
+      "collection": "Winnie the Pooh"
+    },
+    {
+      "code": "UK-PD-HALF-1797-",
+      "name": "Half Penny 1797",
+      "year": "1797",
+      "denom": "Half Penny",
+      "collection": "Pre Decimal"
+    },
+    {
+      "code": "UK-M-CORO-1911-",
+      "name": "Coronation medal 22nd June 1911",
+      "year": "1911",
+      "denom": "Medal",
+      "collection": "Commemorative"
+    },
+    {
+      "code": "UK-M-50P-2011-COMP-",
+      "name": "Completer Medallion",
+      "year": "2011",
+      "denom": "Medal",
+      "collection": "London 2012 Olympics"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 # CoinHub — gitignore
 
 # ─── Sensitive credentials (NEVER commit these) ───────────────────────────────
+.env
 .coinhub_auth
 .coinhub_config
 

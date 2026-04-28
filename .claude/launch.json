@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "coinhub-static",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8091"],
+      "port": 8091
+    },
+    {
+      "name": "coinhub-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vercel", "dev", "--yes", "--listen", "3210"],
+      "port": 3210
+    }
+  ]
+}
