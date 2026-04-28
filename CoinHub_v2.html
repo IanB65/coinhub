@@ -2116,6 +2116,13 @@ async function updateValues() {
             if (el) el.textContent = r.estimatedValue !== null ? '£' + r.estimatedValue.toFixed(2) : '—';
           }
         }
+      } else {
+        // Surface the actual error so we know what went wrong
+        const errMsg = await res.text().catch(() => res.status);
+        progText.textContent = `Error (HTTP ${res.status}): ${errMsg}`;
+        progBar.style.background = 'var(--need)';
+        setTimeout(() => { overlay.style.display = 'none'; }, 6000);
+        return;
       }
 
       done += batch.length;
@@ -2135,9 +2142,11 @@ async function updateValues() {
       }
     } catch(e) {}
 
-    progText.textContent = `Done! ${priced} of ${found} matched coins have price data.`;
+    progText.textContent = found === 0
+      ? `Done — no coins matched on Numista (${total} checked). Check coin names match Numista's catalogue.`
+      : `Done! ${priced} of ${found} Numista matches have price data.`;
     progBar.style.width = '100%';
-    setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+    setTimeout(() => { overlay.style.display = 'none'; }, 5000);
   } catch(e) {
     progText.textContent = 'Error: ' + e.message;
     setTimeout(() => { overlay.style.display = 'none'; }, 3000);
