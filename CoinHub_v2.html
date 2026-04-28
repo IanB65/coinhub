@@ -1791,9 +1791,12 @@ function buildInstItemHTML(inst, i, vc) {
     <div class="inst-edit-form" id="iedit-${esc(inst.id)}" style="display:none">
       <div class="form-grid">
         <label>Condition<select id="iec-${esc(inst.id)}">${condOpts}</select></label>
+        <label>Price Paid (£)<input id="iep-${esc(inst.id)}" type="number" step="0.01" value="${esc(price)}" placeholder="0.00"></label>
+        <label>Preservation Type<select id="iept-${esc(inst.id)}">${(()=>{const pts=[...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.ptype).filter(Boolean)))].sort();return`<option value="">— None —</option>`+pts.map(p=>`<option value="${esc(p)}"${p===inst.ptype?' selected':''}>${esc(p)}</option>`).join('');})()}</select></label>
         <label>Storage 1<input id="ies1-${esc(inst.id)}" type="text" value="${esc(inst.s1||'')}"></label>
         <label>Storage 2<input id="ies2-${esc(inst.id)}" type="text" value="${esc(inst.s2||'')}"></label>
-        <label>Notes<input id="ien-${esc(inst.id)}" type="text" value="${esc(notes)}"></label>
+        <label>Storage 3<input id="ies3-${esc(inst.id)}" type="text" value="${esc(inst.s3||'')}"></label>
+        <label style="grid-column:1/-1">Notes<input id="ien-${esc(inst.id)}" type="text" value="${esc(notes)}"></label>
       </div>
       <button class="btn-primary" onclick="saveEditInstance('${esc(vc)}','${esc(inst.id)}')">Save</button>
     </div>
@@ -1809,11 +1812,14 @@ function buildAddInstFormHTML(vc) {
   const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option>${c}</option>`).join('');
   const containers = [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i.s1).filter(Boolean)))].sort();
   const s1Opts = `<option value="">— None —</option>` + containers.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  const ptypes = [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i.ptype).filter(Boolean)))].sort();
+  const ptypeOpts = `<option value="">— None —</option>` + ptypes.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
   return `<div class="lb-add-form">
     <h3 class="lb-section-title">Add a Copy</h3>
     <div class="form-grid">
       <label>Condition<select id="newInstCond">${condOpts}</select></label>
       <label>Price Paid (£)<input id="newInstPrice" type="number" step="0.01" placeholder="0.00"></label>
+      <label>Preservation Type<select id="newInstPtype">${ptypeOpts}</select></label>
       <label>Storage 1<select id="newInstS1">${s1Opts}</select></label>
       <label>Storage 2<input id="newInstS2" type="text" placeholder="e.g. Page 1, Slot 3…"></label>
       <label>Storage 3<input id="newInstS3" type="text" placeholder="e.g. 02"></label>
@@ -1836,6 +1842,7 @@ function closeImgZoom() { document.getElementById('imgZoom').classList.remove('o
 async function saveInstance(vc) {
   const cond  = document.getElementById('newInstCond').value;
   const price = document.getElementById('newInstPrice').value;
+  const ptype = document.getElementById('newInstPtype').value;
   const s1    = document.getElementById('newInstS1').value;
   const s2    = document.getElementById('newInstS2').value;
   const s3    = document.getElementById('newInstS3').value;
@@ -1843,7 +1850,7 @@ async function saveInstance(vc) {
   const notes = document.getElementById('newInstNotes').value;
   const id = 'INS-' + (NEXT_INST_ID++);
   const notesVal = [src ? `Source: ${src}` : '', notes].filter(Boolean).join(' · ');
-  const inst = { id, variantCode:vc, cond, desc:price||'', s1:s1||'', s2:s2||'', s3:s3||'', notes:notesVal, ptype:'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
+  const inst = { id, variantCode:vc, cond, desc:price||'', s1:s1||'', s2:s2||'', s3:s3||'', notes:notesVal, ptype:ptype||'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
   if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
   INSTANCE_DATA[vc].push(inst);
   STORAGE_MAP[id] = inst;
@@ -1866,8 +1873,11 @@ async function saveEditInstance(vc, id) {
   const inst = arr.find(i=>i.id===id) || STORAGE_MAP[id];
   if (!inst) return;
   inst.cond  = document.getElementById('iec-'+id).value;
+  inst.desc  = document.getElementById('iep-'+id)?.value || inst.desc || '';
+  inst.ptype = document.getElementById('iept-'+id)?.value || '';
   inst.s1    = document.getElementById('ies1-'+id)?.value || inst.s1 || '';
   inst.s2    = document.getElementById('ies2-'+id)?.value || inst.s2 || '';
+  inst.s3    = document.getElementById('ies3-'+id)?.value || inst.s3 || '';
   inst.notes = document.getElementById('ien-'+id).value || '';
   inst.lastEdited = new Date().toISOString().slice(0,10);
   try {
