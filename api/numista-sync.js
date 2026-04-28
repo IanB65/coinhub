@@ -33,15 +33,45 @@ async function getGoogleToken() {
   return (await resp.json()).access_token;
 }
 
-async function numistaSearch(name, year, apiKey) {
-  const q = encodeURIComponent(name.replace(/['"]/g, '').trim());
-  const url = `https://api.numista.com/api/v3/coins?q=${q}&issuer=united-kingdom&year=${year}&count=5&lang=en`;
-  try {
+function buildSearchQuery(name, denom) {
+  // CoinHub names are often "Collection - Design name". Use the design part.
+  const designPart = name.includes(' - ') ? name.split(' - ').slice(1).join(' ') : name;
+  const clean = designPart.replace(/['"]/g, '').trim();
+  // Prepend denomination for better matching (e.g. "50p Peter Rabbit")
+  return denom ? `${denom} ${clean}` : clean;
+}
+
+async function numistaSearch(name, year, denom, apiKey) {
+  const q = encodeURIComponent(buildSearchQuery(name, denom));
+
+  async function trySearch(extraParams) {
+    const url = `https://api.numista.com/api/v3/coins?q=${q}&count=10&lang=en${extraParams}`;
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
-    if (!r.ok) return null;
+    if (!r.ok) return [];
     const data = await r.json();
-    const items = data.items || data.types || [];
-    return items[0]?.id ?? null;
+    return data.items || data.types || [];
+  }
+
+  try {
+    // Attempt 1: issuer filter, no year (year is a range on Numista types)
+    let items = await trySearch('&issuer=united-kingdom');
+
+    // Attempt 2: no issuer filter if nothing found
+    if (!items.length) items = await trySearch('');
+
+    if (!items.length) return null;
+
+    // Prefer items whose year range includes the coin's year
+    if (year) {
+      const rangeMatch = items.find(c => {
+        const lo = parseInt(c.min_year) || 0;
+        const hi = parseInt(c.max_year) || 9999;
+        return year >= lo && year <= hi;
+      });
+      if (rangeMatch) return rangeMatch.id;
+    }
+
+    return items[0].id;
   } catch { return null; }
 }
 
@@ -72,16 +102,16 @@ module.exports = async function handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { return res.status(400).json({ error: 'Invalid JSON' }); }
 
-  // coins: [{variantCode, name, year, numistaId?}]
+  // coins: [{variantCode, name, year, denom, numistaId?}]
   const { coins = [] } = body;
   if (!coins.length) return res.status(200).json({ results: [] });
 
   const results = await Promise.all(coins.map(async coin => {
-    const { variantCode, name, year, numistaId: knownId } = coin;
+    const { variantCode, name, year, denom, numistaId: knownId } = coin;
     try {
       let numistaId = knownId || null;
-      if (!numistaId && name && year) {
-        numistaId = await numistaSearch(name, year, apiKey);
+      if (!numistaId && name) {
+        numistaId = await numistaSearch(name, year, denom, apiKey);
       }
       if (!numistaId) return { variantCode, numistaId: null, estimatedValue: null, found: false };
       const estimatedValue = await numistaPrice(numistaId, apiKey);
