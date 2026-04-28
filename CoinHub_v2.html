@@ -381,7 +381,8 @@ body.guest-mode #bottomNav{bottom:0}
 .log-reinstate-btn{margin-top:.3rem;padding:.2rem .6rem;border:1px solid var(--got);border-radius:var(--r);background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);transition:all .12s}
 .log-reinstate-btn:hover{background:var(--got);color:#fff}
 .log-empty{font-size:.65rem;color:var(--muted);font-style:italic;text-align:center;padding:2rem 0;font-family:'Cormorant Garamond',serif}
-.sc-controls{display:flex;align-items:center;gap:.4rem;padding:.5rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.sc-controls{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.sc-controls .log-reinstate-btn{font-size:.72rem;padding:.4rem .8rem;min-height:36px}
 .sc-list{overflow-y:auto;flex:1;padding:.4rem .8rem .8rem;display:flex;flex-direction:column;gap:0}
 .sc-list::-webkit-scrollbar{width:3px}.sc-list::-webkit-scrollbar-thumb{background:var(--border)}
 .sc-group-label{font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.65rem 0 .2rem;border-bottom:1px solid var(--border);margin-top:.35rem;font-weight:600}
@@ -710,8 +711,8 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
       <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
       <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
       <button id="scUncheckedBtn" class="log-reinstate-btn" onclick="scToggleUnchecked()" style="margin-top:0">◌ Unchecked</button>
-      <button class="log-reinstate-btn" onclick="window.print()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ All</button>
-      <button class="log-reinstate-btn" onclick="scPrintUnchecked()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">⎙ Unchecked</button>
+      <button class="log-reinstate-btn" onclick="window.print()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">🖨 Print All</button>
+      <button class="log-reinstate-btn" onclick="scPrintUnchecked()" style="margin-top:0;border-color:var(--muted);color:var(--muted)">🖨 Print Unchecked</button>
       <span class="sc-progress" id="scProgress"></span>
     </div>
     <div class="sc-progress-wrap" id="scProgressWrap">
