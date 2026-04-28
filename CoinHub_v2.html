@@ -823,6 +823,13 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 const GS_CACHE_KEY = 'coinhub_gs_cache';
 const GS_CACHE_TTL = 10 * 60 * 1000;
 const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
+// Maps actual data denom values → sort position (using DENOM_ORDER short codes as anchors)
+const DENOM_SORT_KEY = {
+  '1p':0,'2p':1,'5p':2,'10p':3,'20p':4,'50p':5,'£1':6,'£2':7,'£5':8,'Medal':9,
+  'Penny':10,'Half Penny':11,'Farthing':12,'Threepence':13,'Sixpence':14,
+  'Shilling':15,'Florin':16,'Half Crown':17,'Crown':18,
+  '1d':10,'½d':11,'3d':13,'6d':14,'1s':15,'2s':16,'2s 6d':17
+};
 const COTUK_MAP = {};
 const INSTANCE_DATA = {};
 const STORAGE_MAP = {};
@@ -1515,8 +1522,9 @@ function renderArchive() {
 }
 
 function buildArchiveShell() {
-  const denoms = ['All',...DENOM_ORDER];
-  const denomOpts = denoms.map(d=>`<option value="${d==='All'?'':d}">${d}</option>`).join('');
+  const uniqueDenoms = [...new Set(ALL_COINS.map(c=>c.denom).filter(Boolean))]
+    .sort((a,b)=>(DENOM_SORT_KEY[a]??99)-(DENOM_SORT_KEY[b]??99));
+  const denomOpts = `<option value="">All</option>`+uniqueDenoms.map(d=>`<option value="${d}">${d}</option>`).join('');
   const monarchs = ['All',...new Set(ALL_COINS.map(c=>c.monarch).filter(Boolean))].map(m=>`<option value="${m==='All'?'':m}">${m}</option>`).join('');
   return `<div class="arc-toolbar">
     <div class="arc-filters">
