@@ -1003,7 +1003,12 @@ function resolveImage(coin) {
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function coinPlaceholderSVG(denom) {
-  return `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="38" fill="#E4DFD2" stroke="#C8BFA8" stroke-width="1"/><circle cx="40" cy="40" r="30" fill="none" stroke="#C8BFA8" stroke-width=".6" stroke-dasharray="3 2"/><text x="40" y="45" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="14" font-weight="600" fill="#8B6914">${esc(denom||'')}</text></svg>`;
+  return `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="display:block"><circle cx="40" cy="40" r="39" fill="#7A5A10"/><circle cx="40" cy="40" r="36" fill="#C49A2A"/><circle cx="40" cy="40" r="34" fill="#D4AE3A"/><circle cx="40" cy="40" r="32" fill="none" stroke="#8B6914" stroke-width="1.4"/><circle cx="40" cy="40" r="27" fill="none" stroke="#8B6914" stroke-width="0.6" stroke-dasharray="2.5 2"/><rect x="28" y="48" width="24" height="5" rx="1" fill="#8B6914" opacity="0.5"/><path d="M28 48 L28 38 L33.5 43 L40 28 L46.5 43 L52 38 L52 48 Z" fill="#8B6914" opacity="0.45"/><circle cx="40" cy="34" r="2" fill="#8B6914" opacity="0.4"/><text x="40" y="66" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" font-weight="600" fill="#5A3E08">${esc(denom||'?')}</text></svg>`;
+}
+function showCoinPlaceholder(el, denom) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = coinPlaceholderSVG(denom);
+  el.parentNode.replaceChild(tmp.firstElementChild, el);
 }
 
 function monarchSVG(cypher) {
@@ -1499,7 +1504,7 @@ function coinGridHTML(coins) {
 function coinCardHTML(coin, ctxId, idx) {
   const img = resolveImage(coin);
   const imgEl = img
-    ? `<img src="${img}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    ? `<img src="${img}" alt="" loading="lazy" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')">`
     : coinPlaceholderSVG(coin.denom);
   return `<div class="coin-card" onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${idx})">
     <div class="coin-card-img">${imgEl}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
@@ -1630,7 +1635,9 @@ function arcRenderTable() {
   tbody.innerHTML = slice.map((coin, i) => {
     const globalIdx = ARC.page*ARC_PAGE_SIZE + i;
     const img = resolveImage(coin);
-    const thumb = img ? `<img src="${img}" alt="" loading="lazy" onerror="this.style.display='none'" style="width:36px;height:36px;object-fit:contain">` : '';
+    const thumb = img
+      ? `<img src="${img}" alt="" loading="lazy" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" style="width:36px;height:36px;object-fit:contain">`
+      : `<span style="display:inline-block;width:36px;height:36px">${coinPlaceholderSVG(coin.denom).replace('width="80" height="80"','width="36" height="36"')}</span>`;
     return `<tr onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${globalIdx})" style="cursor:pointer" id="arc-row-${esc(coin.variantCode)}">
       <td style="width:40px;text-align:center">${thumb}</td>
       <td>${esc(coin.name)}</td>
@@ -1724,7 +1731,7 @@ function renderLightboxContent(vc) {
   const deleteVariantBtn = GUEST_MODE ? '' : `<button class="btn-sm btn-danger" onclick="confirmDeleteVariant('${esc(vc)}')">Delete Variant</button>`;
   document.getElementById('modalInner').innerHTML = `
     <div class="lb-img-panel">
-      ${img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="this.style.display='none'" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom)}
+      ${img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom)}
       <div class="lb-img-actions">${editVariantBtn}${deleteVariantBtn}</div>
     </div>
     <div class="lb-meta-panel">
