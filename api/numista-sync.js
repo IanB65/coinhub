@@ -43,36 +43,29 @@ function buildSearchQuery(name, denom) {
 
 async function numistaSearch(name, year, denom, apiKey) {
   const q = encodeURIComponent(buildSearchQuery(name, denom));
-
-  async function trySearch(extraParams) {
-    const url = `https://api.numista.com/api/v3/coins?q=${q}&count=10&lang=en${extraParams}`;
-    const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
-    if (!r.ok) return [];
-    const data = await r.json();
-    return data.items || data.types || [];
-  }
-
+  // Single search only — no fallback, to stay within the 2000/month free quota
+  const url = `https://api.numista.com/api/v3/coins?q=${q}&issuer=united-kingdom&count=10&lang=en`;
   try {
-    // Attempt 1: issuer filter, no year (year is a range on Numista types)
-    let items = await trySearch('&issuer=united-kingdom');
-
-    // Attempt 2: no issuer filter if nothing found
-    if (!items.length) items = await trySearch('');
-
+    const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
+    if (r.status === 429) throw new Error('Quota exceeded');
+    if (!r.ok) return null;
+    const data = await r.json();
+    const items = data.items || data.types || [];
     if (!items.length) return null;
-
-    // Prefer items whose year range includes the coin's year
+    // Prefer results whose year range covers this coin's year
     if (year) {
-      const rangeMatch = items.find(c => {
+      const match = items.find(c => {
         const lo = parseInt(c.min_year) || 0;
         const hi = parseInt(c.max_year) || 9999;
         return year >= lo && year <= hi;
       });
-      if (rangeMatch) return rangeMatch.id;
+      if (match) return match.id;
     }
-
     return items[0].id;
-  } catch { return null; }
+  } catch(e) {
+    if (e.message === 'Quota exceeded') throw e; // propagate to stop processing
+    return null;
+  }
 }
 
 async function numistaPrice(numistaId, apiKey) {
@@ -116,7 +109,8 @@ module.exports = async function handler(req, res) {
       if (!numistaId) return { variantCode, numistaId: null, estimatedValue: null, found: false };
       const estimatedValue = await numistaPrice(numistaId, apiKey);
       return { variantCode, numistaId, estimatedValue, found: true };
-    } catch {
+    } catch(e) {
+      if (e.message === 'Quota exceeded') return { variantCode, numistaId: null, estimatedValue: null, found: false, quotaExceeded: true };
       return { variantCode, numistaId: null, estimatedValue: null, found: false };
     }
   }));

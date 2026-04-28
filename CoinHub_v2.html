@@ -2101,6 +2101,12 @@ async function updateValues() {
 
       if (res.ok) {
         const { results } = await res.json();
+        if (results.some(r => r.quotaExceeded)) {
+          progText.textContent = 'Numista monthly quota exceeded — try again next month.';
+          progBar.style.background = 'var(--need)';
+          setTimeout(() => { overlay.style.display = 'none'; }, 6000);
+          return;
+        }
         for (const r of results) {
           if (r.found) {
             found++;
