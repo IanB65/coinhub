@@ -86,6 +86,46 @@ module.exports = async function handler(req, res) {
     );
     if (!appendResp.ok) throw new Error('Append failed: ' + await appendResp.text());
 
+    // Add checkbox validation to column J of the newly appended rows
+    try {
+      const appendData = await appendResp.json();
+      const updatedRange = appendData.updates?.updatedRange || '';
+      // updatedRange looks like "NewCoinsInbox!A12:K14" — extract row numbers
+      const match = updatedRange.match(/:?[A-Z]+(\d+):[A-Z]+(\d+)/);
+      if (match) {
+        const startRow = parseInt(match[1], 10);
+        const endRow = parseInt(match[2], 10);
+        // Get the numeric sheetId for NewCoinsInbox
+        const metaResp = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          const inboxSheet = meta.sheets.find(s => s.properties.title === 'NewCoinsInbox');
+          if (inboxSheet) {
+            const inboxSheetId = inboxSheet.properties.sheetId;
+            // Column J = index 9 (0-based)
+            await fetch(
+              `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`,
+              {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  requests: [{
+                    setDataValidation: {
+                      range: { sheetId: inboxSheetId, startRowIndex: startRow - 1, endRowIndex: endRow, startColumnIndex: 9, endColumnIndex: 10 },
+                      rule: { condition: { type: 'BOOLEAN' }, showCustomUi: true },
+                    },
+                  }],
+                }),
+              }
+            );
+          }
+        }
+      }
+    } catch (_) { /* checkbox step is best-effort */ }
+
     return res.status(200).json({ staged: newRows.length, skipped: coins.length - newRows.length });
   } catch (e) {
     console.error('inbox-stage error:', e.message);
