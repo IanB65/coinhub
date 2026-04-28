@@ -1816,6 +1816,7 @@ function buildAddInstFormHTML(vc) {
       <label>Price Paid (£)<input id="newInstPrice" type="number" step="0.01" placeholder="0.00"></label>
       <label>Storage 1<select id="newInstS1">${s1Opts}</select></label>
       <label>Storage 2<input id="newInstS2" type="text" placeholder="e.g. Page 1, Slot 3…"></label>
+      <label>Storage 3<input id="newInstS3" type="text" placeholder="e.g. 02"></label>
       <label>Source<input id="newInstSource" type="text" placeholder="e.g. eBay, Royal Mint…"></label>
       <label style="grid-column:1/-1">Notes<input id="newInstNotes" type="text"></label>
     </div>
@@ -1837,11 +1838,12 @@ async function saveInstance(vc) {
   const price = document.getElementById('newInstPrice').value;
   const s1    = document.getElementById('newInstS1').value;
   const s2    = document.getElementById('newInstS2').value;
+  const s3    = document.getElementById('newInstS3').value;
   const src   = document.getElementById('newInstSource').value;
   const notes = document.getElementById('newInstNotes').value;
   const id = 'INS-' + (NEXT_INST_ID++);
   const notesVal = [src ? `Source: ${src}` : '', notes].filter(Boolean).join(' · ');
-  const inst = { id, variantCode:vc, cond, desc:price||'', s1:s1||'', s2:s2||'', s3:'', notes:notesVal, ptype:'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
+  const inst = { id, variantCode:vc, cond, desc:price||'', s1:s1||'', s2:s2||'', s3:s3||'', notes:notesVal, ptype:'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
   if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
   INSTANCE_DATA[vc].push(inst);
   STORAGE_MAP[id] = inst;
