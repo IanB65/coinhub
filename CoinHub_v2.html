@@ -802,8 +802,8 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 </div>
 
 <!-- ── EDIT VARIANT MODAL ── -->
-<div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onmousedown="if(event.target===this)this._md=true" onclick="if(this._md&&event.target===this)closeEditVariant();this._md=false">
-  <div style="background:var(--paper);border-radius:var(--r);padding:1.5rem;width:min(520px,92vw);max-height:90vh;overflow-y:auto;position:relative">
+<div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onmousedown="if(event.target===this)this._md=true" onclick="if(this._md&&event.target===this)closeEditVariant();this._md=false" ontouchstart="if(event.target===this)event.stopPropagation()" ontouchmove="event.stopPropagation();event.preventDefault()" ontouchend="if(event.target===this){event.stopPropagation();closeEditVariant()}">
+  <div style="background:var(--paper);border-radius:var(--r);padding:1.5rem;width:min(520px,92vw);max-height:90vh;overflow-y:auto;position:relative" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()" ontouchend="event.stopPropagation()">
     <button class="modal-close" onclick="closeEditVariant()">✕</button>
     <h2 style="margin:0 0 1rem;font-family:'Bodoni Moda',serif;font-size:1.2rem">Edit Variant</h2>
     <div class="form-grid">
