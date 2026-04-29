@@ -2062,15 +2062,19 @@ function exportChangeLogCSV() {
 const SC_KEY = 'coinhub_sc';
 
 function doStockCheck(vc, instId) {
-  // Key by instId to match _seedScCheckedFromInstances format
+  const today = new Date().toISOString().slice(0,10);
   _scChecked[instId] = Date.now();
   _scSave();
-  // Also update lastStocktake on the instance object
   const inst = (INSTANCE_DATA[vc]||[]).find(i=>i.id===instId);
-  if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+  if (inst) inst.lastStocktake = today;
   addAuditLog('stock-check', { vc, instId });
   renderLightboxContent(vc);
   showToast('Stock check recorded');
+  authFetch('/api/sheets-write', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ updates: [{ insId: instId, date: today }] }),
+  }).catch(() => {}); // fire-and-forget; localStorage is the fallback
 }
 
 function showStockCheck() {
@@ -2513,17 +2517,27 @@ function scToggleItem(vc, instId, checked) {
 
 function scCheckAll() {
   const container = document.getElementById('scLocationSelect')?.value;
+  const today = new Date().toISOString().slice(0,10);
+  const updates = [];
   ALL_COINS.forEach(coin=>{
     (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
       if (!container || inst.s1===container || inst.s2===container || inst.s3===container) {
         _scChecked[inst.id] = Date.now();
-        if (inst) inst.lastStocktake = new Date().toISOString().slice(0,10);
+        inst.lastStocktake = today;
+        updates.push({ insId: inst.id, date: today });
       }
     });
   });
   _scSave();
   loadStockCheck();
   showToast(container ? `All in "${container}" checked` : 'All instances marked as checked');
+  if (updates.length) {
+    authFetch('/api/sheets-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates }),
+    }).catch(() => {});
+  }
 }
 
 function scClearAll() {

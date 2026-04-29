@@ -56,7 +56,8 @@ module.exports = async function handler(req, res) {
       if (!instance || !instance.id || !instance.variantCode) {
         return res.status(400).json({ error: 'instance.id and instance.variantCode required' });
       }
-      // Columns: A=id, B=variantCode, C=s1, D=s2, E=s3, F=cond, G=ptype, H=desc, I=notes, J='', K=lastStocktake, L='', M=lastEdited
+      // Columns: A=id, B=variantCode, C=s1, D=s2, E=s3, F=cond, G=ptype, H=desc, I=notes, J=dateAdded, K=lastStocktake, L='', M=lastEdited
+      const today = new Date().toISOString().slice(0, 10);
       const row = [
         instance.id,
         instance.variantCode,
@@ -67,10 +68,10 @@ module.exports = async function handler(req, res) {
         instance.ptype || '',
         instance.desc || '',
         instance.notes || '',
-        '',
+        instance.dateAdded || today,
         instance.lastStocktake || '',
         '',
-        instance.lastEdited || new Date().toISOString().slice(0, 10),
+        instance.lastEdited || today,
       ];
       const appendResp = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
