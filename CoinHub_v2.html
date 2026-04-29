@@ -1852,7 +1852,6 @@ async function saveInstance(vc) {
   const inst = { id, variantCode:vc, cond, desc:price||'', s1:s1||'', s2:s2||'', s3:s3||'', notes:notesVal, ptype:ptype||'', lastStocktake:'', lastEdited:new Date().toISOString().slice(0,10) };
   if (!INSTANCE_DATA[vc]) INSTANCE_DATA[vc] = [];
   INSTANCE_DATA[vc].push(inst);
-  STORAGE_MAP[id] = inst;
   const coin = ALL_COINS.find(c=>c.variantCode===vc);
   if (coin) { coin.instCount = (coin.instCount||0)+1; coin.status='Got'; }
   addAuditLog('add-instance', { id, vc, cond, price, notes });
