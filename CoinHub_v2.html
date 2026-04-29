@@ -2093,7 +2093,7 @@ function exportChangeLogCSV() {
 // ── STOCK CHECK ───────────────────────────────────────────────────────────────
 const SC_KEY = 'coinhub_sc';
 
-function doStockCheck(vc, instId) {
+async function doStockCheck(vc, instId) {
   const today = new Date().toISOString().slice(0,10);
   _scChecked[instId] = Date.now();
   _scSave();
@@ -2101,12 +2101,18 @@ function doStockCheck(vc, instId) {
   if (inst) inst.lastStocktake = today;
   addAuditLog('stock-check', { vc, instId });
   renderLightboxContent(vc);
-  showToast('Stock check recorded');
-  authFetch('/api/sheets-write', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ updates: [{ insId: instId, date: today }] }),
-  }).catch(() => {}); // fire-and-forget; localStorage is the fallback
+  showToast('Saving stock check…');
+  try {
+    const r = await authFetch('/api/sheets-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates: [{ insId: instId, date: today }] }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    showToast('Stock check saved');
+  } catch(e) {
+    showToast('Sheet update failed: ' + e.message);
+  }
 }
 
 function showStockCheck() {
@@ -2483,9 +2489,11 @@ function loadStockCheck() {
     const row = document.createElement('div');
     row.className = 'sc-item' + (isChecked ? ' checked' : '');
     row.id = `sc-row-${iid}`;
+    const dateDisplay = checkedDate ? new Date(checkedDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
     row.innerHTML = `<input type="checkbox" ${isChecked?'checked':''} onchange="scToggleItem('${esc(inst.vc||coin?.variantCode||'')}','${iid}',this.checked)" style="cursor:pointer">
       <span class="sc-item-name">${esc(coinName)}</span>
       <span class="sc-item-meta">${metaParts.join(' · ')}</span>
+      <span class="sc-item-date">${dateDisplay}</span>
       <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
     listEl.appendChild(row);
 
@@ -2547,7 +2555,7 @@ function scToggleItem(vc, instId, checked) {
   if (barFill) barFill.style.width = pct + '%';
 }
 
-function scCheckAll() {
+async function scCheckAll() {
   const container = document.getElementById('scLocationSelect')?.value;
   const today = new Date().toISOString().slice(0,10);
   const updates = [];
@@ -2562,13 +2570,18 @@ function scCheckAll() {
   });
   _scSave();
   loadStockCheck();
-  showToast(container ? `All in "${container}" checked` : 'All instances marked as checked');
-  if (updates.length) {
-    authFetch('/api/sheets-write', {
+  if (!updates.length) { showToast('Nothing to update'); return; }
+  showToast(`Saving ${updates.length} check(s)…`);
+  try {
+    const r = await authFetch('/api/sheets-write', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ updates }),
-    }).catch(() => {});
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    showToast(container ? `"${container}" saved to sheet` : 'All saved to sheet');
+  } catch(e) {
+    showToast('Sheet update failed: ' + e.message);
   }
 }
 
