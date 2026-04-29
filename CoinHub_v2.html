@@ -1708,7 +1708,11 @@ function onSearchPanelKey(e) {
 // ── COIN LIGHTBOX ─────────────────────────────────────────────────────────────
 let LB_VC = null, LB_IDX = -1;
 
+function _isAnyModalOpen() {
+  return document.getElementById('editVariantModal').style.display !== 'none';
+}
 function openCoinModal(vc, ctxId, idx) {
+  if (_isAnyModalOpen()) return;
   LB_VC = vc; LB_CTX_ID = ctxId; LB_IDX = idx;
   const modal = document.getElementById('coinModal');
   modal.classList.add('open');
@@ -1725,6 +1729,7 @@ function closeCoinModal() {
   LB_VC = null;
 }
 function lightboxNav(dir) {
+  if (_isAnyModalOpen()) return;
   const ctx = _CTX[LB_CTX_ID];
   if (!ctx) return;
   const newIdx = LB_IDX + dir;
