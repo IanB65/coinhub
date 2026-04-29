@@ -1708,8 +1708,11 @@ function onSearchPanelKey(e) {
 // ── COIN LIGHTBOX ─────────────────────────────────────────────────────────────
 let LB_VC = null, LB_IDX = -1;
 
+let _editModalClosedAt = 0;
 function _isAnyModalOpen() {
-  return document.getElementById('editVariantModal').style.display !== 'none';
+  if (document.getElementById('editVariantModal').style.display !== 'none') return true;
+  if (Date.now() - _editModalClosedAt < 400) return true;
+  return false;
 }
 function openCoinModal(vc, ctxId, idx) {
   if (_isAnyModalOpen()) return;
@@ -1971,7 +1974,7 @@ function openEditVariant(vc) {
   document.getElementById('evNotes').value    = coin.notes||'';
   m.style.display='flex';
 }
-function closeEditVariant() { document.getElementById('editVariantModal').style.display='none'; }
+function closeEditVariant() { document.getElementById('editVariantModal').style.display='none'; _editModalClosedAt = Date.now(); }
 
 async function saveEditVariant() {
   const vc   = document.getElementById('evCode').value;
@@ -1987,8 +1990,8 @@ async function saveEditVariant() {
   coin.notes      = document.getElementById('evNotes').value;
   addAuditLog('edit-variant', { vc });
   _refreshCoinUI(coin);
-  renderLightboxContent(vc);
   closeEditVariant();
+  renderLightboxContent(vc);
   showToast('Saving…');
   try {
     const r = await authFetch('/api/variants-write', {
