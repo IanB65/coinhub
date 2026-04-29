@@ -75,7 +75,23 @@ Vercel auto-deploys within ~30 seconds. No manual deploy step needed.
 | J | dateAdded | YYYY-MM-DD |
 | K | lastModified | YYYY-MM-DD |
 
-**Instances** — one row per physical coin owned  
+**Instances** — one row per physical coin owned
+| Col | Name | Notes |
+|-----|------|-------|
+| A | id | e.g. `INS-1234` |
+| B | variantCode | links to Variants tab |
+| C | s1 | storage container (e.g. `Folder 8`) |
+| D | s2 | storage sub-location (e.g. `Page 1`) |
+| E | s3 | storage slot (e.g. `02`) |
+| F | cond | condition: `Uncirculated` / `EF` / `VF` / `F` / `VG` / `G` / `Poor` |
+| G | ptype | preservation type (e.g. `Sleeve`, `Capsule`) |
+| H | desc | price paid (£) |
+| I | notes | free text |
+| J | dateAdded | YYYY-MM-DD — set on creation |
+| K | lastStocktake | YYYY-MM-DD — written by `/api/sheets-write` |
+| L | *(unused)* | |
+| M | lastEdited | YYYY-MM-DD |
+
 **Images** — supplementary image records  
 **Storage** — storage container/location data  
 **NewCoinsInbox** — staging area for newly found coins pending approval (see workflow below)  
@@ -101,7 +117,8 @@ All endpoints are available at `https://coins.ghghome.co.uk/api/...`
 | File | Route | Auth | Purpose |
 |------|-------|------|---------|
 | `sheets-all.js` | `/api/sheets-all` | JWT | Read all sheet tabs (Variants, Instances, Images, Storage) |
-| `sheets-write.js` | `/api/sheets-write` | JWT | Update instance lastStocktake dates in Instances tab |
+| `sheets-write.js` | `/api/sheets-write` | JWT | Update instance lastStocktake dates in Instances tab (col K) |
+| `instances-write.js` | `/api/instances-write` | JWT | Add (append row) or remove (delete row) instances in Instances tab |
 | `sheets.js` | `/api/sheets` | JWT | General sheet read |
 | `images-update.js` | `/api/images-update` | JWT | Update image URLs |
 | `numista-sync.js` | `/api/numista-sync` | JWT | Sync coin values from Numista |
