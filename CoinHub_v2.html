@@ -284,6 +284,10 @@ body.guest-mode #bottomNav{bottom:0}
 .modal-box{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);max-width:860px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg);position:relative}
 .modal-close{position:absolute;top:.75rem;right:.75rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);width:32px;height:32px;cursor:pointer;font-size:1rem;color:var(--muted);z-index:1;display:flex;align-items:center;justify-content:center;transition:all .12s}
 .modal-close:hover{border-color:var(--need);color:var(--need)}
+.modal-mobile-bar{display:none;align-items:center;justify-content:space-between;padding:.6rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--paper)}
+.modal-mobile-bar-title{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:.5rem}
+.modal-mobile-close{background:transparent;border:1px solid var(--border);border-radius:var(--r);width:30px;height:30px;cursor:pointer;font-size:.9rem;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+@media(max-width:600px){.modal-mobile-bar{display:flex}.modal-close{display:none}}
 .modal-nav{position:absolute;top:50%;transform:translateY(-50%);background:var(--paper);border:1px solid var(--border);border-radius:var(--r);width:36px;height:36px;cursor:pointer;font-size:1.2rem;color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:1;transition:all .12s}
 .modal-nav:hover{border-color:var(--gold2);color:var(--ink)}
 .modal-nav:disabled{opacity:.25;cursor:default}
@@ -662,6 +666,10 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 <!-- ── COIN DETAIL MODAL ── -->
 <div id="coinModal" onclick="if(event.target===this)closeCoinModal()">
   <div class="modal-box">
+    <div class="modal-mobile-bar">
+      <span class="modal-mobile-bar-title" id="modalMobileTitle"></span>
+      <button class="modal-mobile-close" onclick="closeCoinModal()">✕</button>
+    </div>
     <button class="modal-close" onclick="closeCoinModal()">✕</button>
     <button class="modal-nav" id="modalPrev" onclick="lightboxNav(-1)">‹</button>
     <button class="modal-nav" id="modalNext" onclick="lightboxNav(1)">›</button>
@@ -794,7 +802,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 </div>
 
 <!-- ── EDIT VARIANT MODAL ── -->
-<div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onclick="if(event.target===this)closeEditVariant()">
+<div id="editVariantModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(12,12,10,.6);align-items:center;justify-content:center" onmousedown="if(event.target===this)this._md=true" onclick="if(this._md&&event.target===this)closeEditVariant();this._md=false">
   <div style="background:var(--paper);border-radius:var(--r);padding:1.5rem;width:min(520px,92vw);max-height:90vh;overflow-y:auto;position:relative">
     <button class="modal-close" onclick="closeEditVariant()">✕</button>
     <h2 style="margin:0 0 1rem;font-family:'Bodoni Moda',serif;font-size:1.2rem">Edit Variant</h2>
@@ -811,6 +819,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
         </select>
       </label>
       <label style="grid-column:1/-1">Image URL<input id="evImgUrl" type="text"></label>
+      <label style="grid-column:1/-1">Notes<input id="evNotes" type="text"></label>
     </div>
     <button class="btn-primary" style="margin-top:1rem" onclick="saveEditVariant()">Save Changes</button>
   </div>
@@ -1706,6 +1715,9 @@ function openCoinModal(vc, ctxId, idx) {
   document.body.style.overflow = 'hidden';
   renderLightboxContent(vc);
   updateLightboxNav();
+  const coin = ALL_COINS.find(c=>c.variantCode===vc);
+  const titleEl = document.getElementById('modalMobileTitle');
+  if (titleEl && coin) titleEl.textContent = coin.name;
 }
 function closeCoinModal() {
   document.getElementById('coinModal').classList.remove('open');
@@ -1951,6 +1963,7 @@ function openEditVariant(vc) {
   document.getElementById('evCollect').value  = coin.collection||'';
   document.getElementById('evStatus').value   = coin.status||'Unknown';
   document.getElementById('evImgUrl').value   = coin.imgUrl||'';
+  document.getElementById('evNotes').value    = coin.notes||'';
   m.style.display='flex';
 }
 function closeEditVariant() { document.getElementById('editVariantModal').style.display='none'; }
@@ -1966,12 +1979,23 @@ async function saveEditVariant() {
   coin.collection = document.getElementById('evCollect').value;
   coin.status     = document.getElementById('evStatus').value;
   coin.imgUrl     = document.getElementById('evImgUrl').value;
-  _queueSync({ type:'editVariant', data:{ variantCode:vc, ...coin } });
+  coin.notes      = document.getElementById('evNotes').value;
   addAuditLog('edit-variant', { vc });
   _refreshCoinUI(coin);
   renderLightboxContent(vc);
   closeEditVariant();
-  showToast('Variant updated');
+  showToast('Saving…');
+  try {
+    const r = await authFetch('/api/variants-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variantCode: vc, name: coin.name, denom: coin.denom, year: coin.year, monarch: coin.monarch, collection: coin.collection, status: coin.status, imgUrl: coin.imgUrl, notes: coin.notes }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    showToast('Variant saved');
+  } catch (e) {
+    showToast('Save failed: ' + e.message);
+  }
 }
 
 function confirmDeleteVariant(vc) {
