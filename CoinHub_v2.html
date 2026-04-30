@@ -1926,7 +1926,18 @@ async function saveEditInstance(vc, id) {
   } catch(e){}
   addAuditLog('edit-instance', { id, vc });
   renderLightboxContent(vc);
-  showToast('Instance updated');
+  showToast('Saving…');
+  try {
+    const r = await authFetch('/api/instances-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'edit', instance: inst }),
+    });
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || r.status);
+    showToast('Instance updated');
+  } catch(e) {
+    showToast('Sheet update failed: ' + e.message);
+  }
 }
 
 async function removeInstance(vc, id) {

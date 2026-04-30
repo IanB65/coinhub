@@ -127,6 +127,44 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, action: 'remove', id });
     }
 
+    if (action === 'edit') {
+      if (!instance || !instance.id) return res.status(400).json({ error: 'instance.id required for edit' });
+
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Read failed: ' + readResp.status);
+      const { values } = await readResp.json();
+      const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === instance.id);
+      if (rowIndex === -1) return res.status(404).json({ error: `Instance ${instance.id} not found in sheet` });
+
+      const sheetRow = rowIndex + 1;
+      const today = new Date().toISOString().slice(0, 10);
+      // Columns: A=id B=variantCode C=s1 D=s2 E=s3 F=cond G=ptype H=desc I=notes J=dateAdded K=lastStocktake L='' M=lastEdited
+      const data = [
+        { range: `Instances!C${sheetRow}`, values: [[instance.s1 || '']] },
+        { range: `Instances!D${sheetRow}`, values: [[instance.s2 || '']] },
+        { range: `Instances!E${sheetRow}`, values: [[instance.s3 || '']] },
+        { range: `Instances!F${sheetRow}`, values: [[instance.cond || '']] },
+        { range: `Instances!G${sheetRow}`, values: [[instance.ptype || '']] },
+        { range: `Instances!H${sheetRow}`, values: [[instance.desc || '']] },
+        { range: `Instances!I${sheetRow}`, values: [[instance.notes || '']] },
+        { range: `Instances!M${sheetRow}`, values: [[instance.lastEdited || today]] },
+      ];
+
+      const batchResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ valueInputOption: 'RAW', data }),
+        }
+      );
+      if (!batchResp.ok) throw new Error('Batch update failed: ' + await batchResp.text());
+      return res.status(200).json({ ok: true, action: 'edit', id: instance.id });
+    }
+
     return res.status(400).json({ error: `Unknown action: ${action}` });
   } catch (e) {
     console.error('instances-write error:', e.message);
