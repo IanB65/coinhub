@@ -47,9 +47,13 @@ module.exports = async function handler(req, res) {
     let values = [];
     try { values = await fetchTab('Values'); } catch { /* not yet created */ }
 
+    // Conditions tab: col A=code, col B=description
+    let conditions = [];
+    try { conditions = await fetchTab('Conditions'); } catch { /* optional */ }
+
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ variants, instances, images, storage, values });
+    return res.status(200).json({ variants, instances, images, storage, values, conditions });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }

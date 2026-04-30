@@ -974,6 +974,7 @@ async function doLogin(e) {
 let ALL_COINS = [];
 let FILTERED  = [];
 let GUEST_MODE = false;
+let CONDITION_LIST = [];
 let NEXT_INST_ID = 1520;
 
 // Archive state
@@ -1074,7 +1075,8 @@ async function loadFromSheets() {
     setMsg('Fetching coin data…');
     const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
-    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, values:valRows } = await res.json();
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, values:valRows, conditions:condRows } = await res.json();
+    CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
@@ -1829,10 +1831,9 @@ function toggleInstEdit(id) {
 }
 
 function _getCondList() {
-  const BASE = ['Proof','FDC','BUNC','BU','Uncirculated','EF','VF','F','VG','G','Poor'];
-  const used = [...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.cond).filter(Boolean)))];
-  const all  = [...new Set([...BASE, ...used])];
-  return all.sort((a,b)=>{ const ai=BASE.indexOf(a),bi=BASE.indexOf(b); if(ai>=0&&bi>=0)return ai-bi; if(ai>=0)return-1; if(bi>=0)return 1; return a.localeCompare(b); });
+  if (CONDITION_LIST.length) return CONDITION_LIST;
+  // Fallback if sheet not yet loaded: derive from existing instance data
+  return [...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.cond).filter(Boolean)))].sort();
 }
 function buildAddInstFormHTML(vc) {
   const condOpts = _getCondList().map(c=>`<option>${esc(c)}</option>`).join('');
