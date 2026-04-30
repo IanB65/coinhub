@@ -1795,7 +1795,7 @@ function buildInstItemHTML(inst, i, vc) {
   // Stock check: keyed by inst.id (GS format) or vc::id (new format)
   const scRaw = _scChecked[inst.id] || _scChecked[`${vc}::${inst.id}`];
   const lastChecked = scRaw ? new Date(scRaw).toLocaleDateString('en-GB') : '—';
-  const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option${c===cond?' selected':''}>${c}</option>`).join('');
+  const condOpts = _getCondList().map(c=>`<option value="${esc(c)}"${c===cond?' selected':''}>${esc(c)}</option>`).join('');
   return `<div class="inst-item" id="inst-${esc(inst.id)}">
     <div class="inst-header">
       <span class="inst-id">${esc(inst.id)}</span>
@@ -1828,8 +1828,14 @@ function toggleInstEdit(id) {
   if (el) el.style.display = el.style.display==='none'?'block':'none';
 }
 
+function _getCondList() {
+  const BASE = ['Proof','FDC','BUNC','BU','Uncirculated','EF','VF','F','VG','G','Poor'];
+  const used = [...new Set(Object.values(INSTANCE_DATA).flatMap(a=>a.map(i=>i.cond).filter(Boolean)))];
+  const all  = [...new Set([...BASE, ...used])];
+  return all.sort((a,b)=>{ const ai=BASE.indexOf(a),bi=BASE.indexOf(b); if(ai>=0&&bi>=0)return ai-bi; if(ai>=0)return-1; if(bi>=0)return 1; return a.localeCompare(b); });
+}
 function buildAddInstFormHTML(vc) {
-  const condOpts = ['Uncirculated','EF','VF','F','VG','G','Poor'].map(c=>`<option>${c}</option>`).join('');
+  const condOpts = _getCondList().map(c=>`<option>${esc(c)}</option>`).join('');
   const mkOpts = (vals, cur='') => `<option value="">— None —</option>` + vals.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
   const uniq = key => [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i[key]).filter(Boolean)))].sort();
   const s1Opts = mkOpts(uniq('s1')), s2Opts = mkOpts(uniq('s2')), s3Opts = mkOpts(uniq('s3')), ptypeOpts = mkOpts(uniq('ptype'));
