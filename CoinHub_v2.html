@@ -842,6 +842,9 @@ const DENOM_SORT_KEY = {
 const COTUK_MAP = {};
 const INSTANCE_DATA = {};
 const STORAGE_MAP = {};
+const STORAGE1_LIST = [];
+const STORAGE2_LIST = [];
+const STORAGE3_LIST = [];
 const VALUES_MAP = {}; // { variantCode: { numistaId, estimatedValue, lastUpdated } }
 
 const MONARCH_META = {
@@ -1058,12 +1061,15 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances, storageMap, valuesMap } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, valuesMap } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         setMsg('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
         Object.assign(INSTANCE_DATA, instances);
         Object.assign(STORAGE_MAP, storageMap || {});
+        STORAGE1_LIST.push(...(storage1||[]));
+        STORAGE2_LIST.push(...(storage2||[]));
+        STORAGE3_LIST.push(...(storage3||[]));
         Object.assign(VALUES_MAP, valuesMap || {});
         _seedScCheckedFromInstances(instances);
         return coins;
@@ -1075,12 +1081,16 @@ async function loadFromSheets() {
     setMsg('Fetching coin data…');
     const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
-    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, values:valRows, conditions:condRows } = await res.json();
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
+    const _parseStorList = (rows, arr) => { arr.length=0; (rows||[]).slice(1).forEach(r=>{ const v=r[0]?.trim(); if(v) arr.push(v); }); };
+    _parseStorList(stor1Rows, STORAGE1_LIST);
+    _parseStorList(stor2Rows, STORAGE2_LIST);
+    _parseStorList(stor3Rows, STORAGE3_LIST);
     for (let i=1; i<(valRows||[]).length; i++) {
       const r=valRows[i]; if (!r[0]?.trim()) continue;
       const ev = parseFloat(r[2]); VALUES_MAP[r[0].trim()] = { numistaId:r[1]?.trim()||'', estimatedValue:isNaN(ev)?null:ev, lastUpdated:r[3]?.trim()||'' };
@@ -1102,7 +1112,7 @@ async function loadFromSheets() {
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
 
-    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, valuesMap:{...VALUES_MAP} })); } catch(e) {}
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], valuesMap:{...VALUES_MAP} })); } catch(e) {}
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
@@ -1838,12 +1848,13 @@ function _getCondList() {
 function buildAddInstFormHTML(vc) {
   const condOpts = _getCondList().map(c=>`<option>${esc(c)}</option>`).join('');
   const uniq = key => [...new Set(Object.values(INSTANCE_DATA).flatMap(arr => arr.map(i=>i[key]).filter(Boolean)))].sort();
+  const mergedList = (instKey, masterList) => [...new Set([...masterList, ...uniq(instKey)])].sort();
   const mkDl = (id, vals) => `<datalist id="${id}">${vals.map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
   const mkOpts = (vals, cur='') => `<option value="">— None —</option>` + vals.map(v=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(v)}</option>`).join('');
   const ptypeOpts = mkOpts(uniq('ptype'));
   return `<div class="lb-add-form">
     <h3 class="lb-section-title">Add a Copy</h3>
-    ${mkDl('dl-s1',uniq('s1'))}${mkDl('dl-s2',uniq('s2'))}${mkDl('dl-s3',uniq('s3'))}
+    ${mkDl('dl-s1',mergedList('s1',STORAGE1_LIST))}${mkDl('dl-s2',mergedList('s2',STORAGE2_LIST))}${mkDl('dl-s3',mergedList('s3',STORAGE3_LIST))}
     <div class="form-grid">
       <label>Condition<select id="newInstCond">${condOpts}</select></label>
       <label>Price Paid (£)<input id="newInstPrice" type="number" step="0.01" placeholder="0.00"></label>
