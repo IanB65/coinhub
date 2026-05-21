@@ -1779,7 +1779,7 @@ function renderLightboxContent(vc) {
   document.getElementById('modalInner').innerHTML = `
     <div class="lb-img-panel">
       ${img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom)}
-      <div class="lb-img-actions">${editVariantBtn}${deleteVariantBtn}</div>
+      <div class="lb-img-actions">${editVariantBtn}</div>
     </div>
     <div class="lb-meta-panel">
       <div class="lb-header">
@@ -1799,6 +1799,9 @@ function renderLightboxContent(vc) {
         ${instHTML || `<p class="lb-empty">No copies recorded.</p>`}
       </div>
       ${addForm}
+      ${GUEST_MODE?'':`<div style="text-align:right;margin-top:8px">
+        <button class="btn-sm btn-danger" onclick="confirmDeleteVariant('${esc(vc)}')">Delete Variant</button>
+      </div>`}
     </div>`;
 }
 
