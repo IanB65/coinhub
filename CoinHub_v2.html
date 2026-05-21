@@ -154,20 +154,25 @@ body.guest-mode #bottomNav{bottom:0}
 .monarch-name{font-family:'Bodoni Moda',serif;font-size:.85rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;line-height:1.2}
 .monarch-reign{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.08em;color:var(--muted)}
 .monarch-count{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--got);margin-top:.2rem}
-/* monarch detail hero */
-.mon-hero{display:flex;gap:2rem;align-items:flex-start;padding:2rem var(--page-pad) 1.5rem;background:linear-gradient(to bottom,var(--paper2),var(--paper));border-bottom:1px solid var(--border)}
-.mon-hero-frame{flex-shrink:0;width:110px;position:relative}
-.mon-hero-frame::before{content:'';position:absolute;inset:-4px;border:1px solid rgba(139,105,20,.3);pointer-events:none;z-index:1}
-.mon-hero-img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top center;display:block;filter:sepia(.1) contrast(.97);box-shadow:3px 5px 16px rgba(0,0,0,.2)}
-.mon-hero-body{flex:1;min-width:0}
-.mon-hero-name{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:900;letter-spacing:.03em;color:var(--ink);line-height:1;margin-bottom:.25rem}
-.mon-hero-title{font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);margin-bottom:.8rem;font-family:'DM Mono',monospace;line-height:1.5}
-.mon-hero-facts{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin-bottom:.8rem}
-.mon-hero-fact{font-family:'DM Mono',monospace;font-size:.62rem;display:flex;gap:.35rem}
-.mon-hero-fact-label{color:var(--muted);font-size:.5rem;text-transform:uppercase;letter-spacing:.09em}
-.mon-hero-div{height:1px;background:var(--border);margin-bottom:.7rem;opacity:.5}
-.mon-hero-bio{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);line-height:1.65;opacity:.88}
-.mon-hero-stats{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.6rem}
+/* monarch parallax hero */
+.mon-parallax-section{position:relative;min-height:80vh;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.mon-parallax-section.mon-plx-no-img{background:var(--dark)}
+.mon-parallax-img-wrap{position:absolute;inset:-18% 0;z-index:0;pointer-events:none}
+.mon-parallax-img{width:100%;height:100%;object-fit:cover;object-position:top center;filter:sepia(.18) contrast(.95) brightness(.88);will-change:transform;display:block}
+.mon-parallax-overlay{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(to bottom,rgba(12,12,10,.08) 0%,rgba(12,12,10,.02) 20%,rgba(245,242,235,0) 42%,rgba(245,242,235,.55) 65%,rgba(245,242,235,.93) 85%,rgba(245,242,235,1) 100%)}
+.mon-back-link{position:absolute;top:.9rem;left:var(--page-pad);z-index:3;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink);text-decoration:none;opacity:.65;transition:opacity .12s}
+.mon-back-link:hover,.mon-back-link:active{opacity:1}
+.mon-parallax-body{position:relative;z-index:2;padding:2rem var(--page-pad) 2.5rem;max-width:var(--max-w);margin:0 auto;width:100%;box-sizing:border-box}
+.mon-plx-name{font-family:'Bodoni Moda',serif;font-size:clamp(1.9rem,5vw,3rem);font-weight:900;letter-spacing:.03em;color:var(--ink);line-height:1;margin-bottom:.25rem}
+.mon-plx-title{font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);margin-bottom:.8rem;line-height:1.5}
+.mon-plx-facts{display:flex;flex-wrap:wrap;gap:.3rem 1.5rem;margin-bottom:.8rem}
+.mon-plx-fact{font-family:'DM Mono',monospace;font-size:.62rem;display:flex;gap:.35rem;align-items:baseline}
+.mon-plx-fact-label{font-size:.5rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.mon-plx-div{height:1px;background:var(--border);margin-bottom:.7rem;opacity:.5}
+.mon-plx-bio{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);line-height:1.65;opacity:.88;max-width:65ch}
+.mon-plx-stats{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.65rem}
+.mon-plx-cypher{display:flex;align-items:center;justify-content:center;min-height:40vh}
+@media(max-width:767px){.mon-parallax-section{min-height:70vh}.mon-parallax-body{padding:1.5rem var(--page-pad) 2rem}.mon-plx-bio{font-size:.95rem}}
 
 /* ── YEAR CHIPS ── */
 .decade-section{margin-bottom:1.2rem}
@@ -1034,6 +1039,13 @@ function monarchSVG(cypher) {
   return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="120" height="120"><circle cx="60" cy="60" r="58" fill="#1a1208" stroke="#8B6914" stroke-width="1.5"/><circle cx="60" cy="60" r="48" fill="none" stroke="#8B6914" stroke-width=".6" stroke-dasharray="4 3" opacity=".5"/><text x="60" y="66" text-anchor="middle" font-family="Bodoni Moda,serif" font-size="18" font-weight="700" fill="#C49A2A" letter-spacing="2">${esc(cypher||'')}</text></svg>`;
 }
 
+let _monParallaxActive = false;
+function updateMonarchParallax() {
+  const img = document.getElementById('monParallaxImg');
+  if (!img) return;
+  img.style.transform = `translateY(${window.scrollY * 0.35}px)`;
+}
+
 function updateHeaderStats() {
   const got  = ALL_COINS.filter(c=>c.status==='Got').length;
   const need = ALL_COINS.filter(c=>c.status==='Need').length;
@@ -1154,6 +1166,7 @@ function restorePendingData() {
 
 // ── ROUTER ───────────────────────────────────────────────────────────────────
 function router() {
+  _monParallaxActive = false;
   const hash = location.hash.replace('#','') || 'home';
   const [page, ...params] = hash.split('/');
 
@@ -1470,37 +1483,35 @@ function renderMonarchs() {
 
 // ── MONARCH DETAIL ───────────────────────────────────────────────────────────
 function renderMonarchDetail(name) {
+  _monParallaxActive = false;
   const el = document.getElementById('page-monarch-detail');
   const coins = ALL_COINS.filter(c=>c.monarch===name).sort((a,b)=>a.year-b.year||a.name.localeCompare(b.name));
   if (!coins.length) { el.innerHTML=`<div style="padding:3rem;text-align:center;color:var(--muted)">No coins found for this monarch</div>`; return; }
-  const meta = MONARCH_META[name] || { cypher:'', reign:'', portrait:null, title:'', born:'', died:null, accession:'', coronation:'', bio:'' };
+  const meta = MONARCH_META[name] || {cypher:'',reign:'',portrait:null,title:'',born:'',died:null,accession:'',coronation:'',bio:''};
   const got = coins.filter(c=>c.status==='Got').length;
-  const facts = [
-    ['Born', meta.born],
-    ['Died', meta.died || 'Present'],
-    ['Accession', meta.accession],
-    ['Coronation', meta.coronation],
-  ].filter(([,v])=>v).map(([label,val])=>
-    `<div class="mon-hero-fact"><span class="mon-hero-fact-label">${label}</span><span>${esc(val)}</span></div>`
-  ).join('');
-  const portraitHtml = meta.portrait
-    ? `<img class="mon-hero-img" src="${meta.portrait}" alt="${esc(name)}" onerror="this.style.display='none'">`
-    : `<div style="width:100%;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;background:var(--dark2)">${monarchSVG(meta.cypher)}</div>`;
+  const facts = [['Born',meta.born],['Died',meta.died||'Present'],['Accession',meta.accession],['Coronation',meta.coronation]]
+    .filter(([,v])=>v)
+    .map(([label,val])=>`<div class="mon-plx-fact"><span class="mon-plx-fact-label">${label}</span><span>${esc(val)}</span></div>`)
+    .join('');
+  const imgHtml = meta.portrait
+    ? `<div class="mon-parallax-img-wrap"><img class="mon-parallax-img" id="monParallaxImg" src="${meta.portrait}" alt="${esc(name)}" onerror="this.closest('.mon-parallax-section').classList.add('mon-plx-no-img');this.style.display='none'"></div>`
+    : `<div class="mon-plx-cypher">${monarchSVG(meta.cypher)}</div>`;
   el.innerHTML = `
-    <div style="padding:.8rem var(--page-pad);border-bottom:1px solid var(--border)">
-      <a class="page-hero-back" href="#monarchs" style="font-size:.7rem;color:var(--muted);text-decoration:none;font-family:'DM Mono',monospace">← Monarchs</a>
-    </div>
-    <div class="mon-hero">
-      <div class="mon-hero-frame">${portraitHtml}</div>
-      <div class="mon-hero-body">
-        <div class="mon-hero-name">${esc(name)}</div>
-        <div class="mon-hero-title">${esc(meta.title||meta.reign)}</div>
-        <div class="mon-hero-facts">${facts}</div>
-        ${meta.bio?`<div class="mon-hero-div"></div><div class="mon-hero-bio">${esc(meta.bio)}</div>`:''}
-        <div class="mon-hero-stats">${got} owned · ${coins.length} variants · ${meta.reign}</div>
+    <div class="mon-parallax-section${meta.portrait?'':' mon-plx-no-img'}" id="monParallaxSection">
+      ${imgHtml}
+      <div class="mon-parallax-overlay"></div>
+      <a class="mon-back-link" href="#monarchs">← Monarchs</a>
+      <div class="mon-parallax-body">
+        <div class="mon-plx-name">${esc(name)}</div>
+        <div class="mon-plx-title">${esc(meta.title||meta.reign)}</div>
+        <div class="mon-plx-facts">${facts}</div>
+        ${meta.bio?`<div class="mon-plx-div"></div><div class="mon-plx-bio">${esc(meta.bio)}</div>`:''}
+        <div class="mon-plx-stats">${got} owned · ${coins.length} variants · ${meta.reign}</div>
       </div>
     </div>
-  <div class="section-wrap"><div class="section-block">${coinGridHTML(coins)}</div></div>`;
+    <div class="section-wrap"><div class="section-block">${coinGridHTML(coins)}</div></div>`;
+  _monParallaxActive = true;
+  updateMonarchParallax();
 }
 
 // ── YEARS PAGE ───────────────────────────────────────────────────────────────
@@ -2377,6 +2388,7 @@ async function init() {
   setTimeout(()=>{ loadScreen.style.display='none'; }, 400);
   updateHeroStats();
   window.addEventListener('hashchange', router);
+  window.addEventListener('scroll', () => { if (_monParallaxActive) updateMonarchParallax(); }, { passive: true });
   router();
 }
 
