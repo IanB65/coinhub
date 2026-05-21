@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>CoinHub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,300&display=swap" rel="stylesheet">
 <style>
@@ -63,6 +64,7 @@ body.guest-mode #topNav{top:30px}
 .admin-dropdown-item{padding:.5rem .9rem;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--ink);cursor:pointer;text-decoration:none;display:block;border:none;background:transparent;text-align:left;width:100%;transition:background .1s;letter-spacing:.05em}
 .admin-dropdown-item:hover{background:var(--paper2)}
 .admin-dropdown-sep{height:1px;background:var(--border);margin:.2rem 0}
+.admin-dropdown-noindex{padding:.4rem .9rem;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.05em;text-align:center}
 .nav-stats{display:flex;gap:1.5rem;font-size:.6rem;letter-spacing:.08em;margin-left:1rem}
 .hstat{display:flex;align-items:center;gap:.3rem;color:var(--muted)}
 .hstat b{font-weight:500;color:var(--ink)}
@@ -637,6 +639,8 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
         <div class="admin-dropdown-sep"></div>
         <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
         <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
+        <div class="admin-dropdown-sep"></div>
+        <div class="admin-dropdown-noindex">Not indexed by Google</div>
       </div>
     </div>
   </div>
