@@ -1818,8 +1818,7 @@ function buildInstItemHTML(inst, i, vc) {
       <span class="inst-grade">${esc(cond||'—')}</span>
       ${price?`<span class="inst-price">${esc(price)}</span>`:''}
       ${GUEST_MODE?'':
-        `<button class="btn-sm" onclick="toggleInstEdit('${esc(inst.id)}')">Edit</button>
-         <button class="btn-sm btn-danger" onclick="removeInstance('${esc(vc)}','${esc(inst.id)}')">×</button>`}
+        `<button class="btn-sm" onclick="toggleInstEdit('${esc(inst.id)}')">Edit</button>`}
     </div>
     ${stor?`<div class="inst-notes" style="color:var(--muted)">📦 ${esc(stor)}</div>`:''}
     ${notes?`<div class="inst-notes">${esc(notes)}</div>`:''}
@@ -1836,6 +1835,7 @@ function buildInstItemHTML(inst, i, vc) {
       </div>
       <button class="btn-primary" onclick="saveEditInstance('${esc(vc)}','${esc(inst.id)}')">Save</button>
     </div>
+    ${GUEST_MODE?'':`<div style="text-align:right;margin-top:4px"><button class="btn-sm btn-danger" onclick="removeInstance('${esc(vc)}','${esc(inst.id)}')">Delete</button></div>`}
   </div>`;
 }
 
