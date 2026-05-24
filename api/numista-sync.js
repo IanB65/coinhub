@@ -178,13 +178,13 @@ module.exports = async function handler(req, res) {
         await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ valueInputOption: 'RAW', data: batchData }),
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: batchData }),
         });
       }
 
       if (appendRows.length) {
         await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Values:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Values:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
           {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
