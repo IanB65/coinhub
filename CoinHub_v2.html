@@ -2526,10 +2526,15 @@ function loadStockCheck() {
     });
   });
 
-  // Sort by s2 then s3
+  // Sort by s1, s2, s3, then instance ID
   items.sort((a,b) => {
+    const s1 = (a.inst.s1||'').localeCompare(b.inst.s1||'');
+    if (s1 !== 0) return s1;
     const s2 = (a.inst.s2||'').localeCompare(b.inst.s2||'');
-    return s2 !== 0 ? s2 : (a.inst.s3||'').localeCompare(b.inst.s3||'');
+    if (s2 !== 0) return s2;
+    const s3 = (a.inst.s3||'').localeCompare(b.inst.s3||'');
+    if (s3 !== 0) return s3;
+    return (a.inst.id||'').localeCompare(b.inst.id||'');
   });
 
   const total   = items.length;
