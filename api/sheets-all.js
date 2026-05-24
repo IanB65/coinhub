@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const TABS = ['Variants', 'Instances', 'Images', 'Storage', 'Storage1', 'Storage2', 'Storage3', 'PreservationTypes'];
+const TABS = ['Variants', 'Instances', 'Images', 'Storage', 'Storage1', 'Storage2', 'Storage3'];
 
 // Accepts both owner and guest tokens (read-only endpoint)
 function verifyToken(req) {
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const [variants, instances, images, storage, storage1, storage2, storage3, ptypes] = await Promise.all(TABS.map(fetchTab));
+    const [variants, instances, images, storage, storage1, storage2, storage3] = await Promise.all(TABS.map(fetchTab));
 
     // Values tab is optional — created on first numista-sync run
     let values = [];
@@ -50,6 +50,10 @@ module.exports = async function handler(req, res) {
     // Conditions tab: col A=code, col B=description
     let conditions = [];
     try { conditions = await fetchTab('Conditions'); } catch { /* optional */ }
+
+    // PreservationTypes tab: col A=type name
+    let ptypes = [];
+    try { ptypes = await fetchTab('PreservationTypes'); } catch { /* optional */ }
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
