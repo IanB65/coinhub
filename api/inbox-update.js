@@ -88,7 +88,7 @@ module.exports = async function handler(req, res) {
       {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ valueInputOption: 'RAW', data }),
+        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data }),
       }
     );
     if (!batchResp.ok) throw new Error('Batch update failed: ' + await batchResp.text());
