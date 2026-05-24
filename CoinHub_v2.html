@@ -409,6 +409,7 @@ body.guest-mode #bottomNav{bottom:0}
 .sc-item-date{font-family:'DM Mono',monospace;font-size:.6rem;white-space:nowrap;flex-shrink:0;min-width:7rem;text-align:right;color:var(--got)}
 .sc-item:not(.checked) .sc-item-date{color:var(--need);opacity:.5}
 .sc-item.checked .sc-item-name{color:var(--got)}
+.sc-item-id{display:none;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
 .sc-info-btn{flex-shrink:0;width:18px;height:18px;border:1px solid var(--border);border-radius:50%;background:transparent;cursor:pointer;font-size:.55rem;color:var(--muted);display:flex;align-items:center;justify-content:center;line-height:1;transition:all .12s;font-family:'DM Mono',monospace}
 .sc-info-btn:hover,.sc-info-btn.open{border-color:var(--gold2);color:var(--gold2);background:rgba(196,154,42,.08)}
 .sc-detail{display:none;background:var(--paper2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:.45rem .7rem;font-size:.6rem;font-family:'DM Mono',monospace;color:var(--muted);line-height:1.9}
@@ -501,7 +502,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 #imgZoom.open{display:flex}
 #imgZoom img{max-width:90vw;max-height:90vh;object-fit:contain}
 
-@media print{body>*:not(#scModalBg){display:none!important}#scModalBg{display:block!important;position:static!important;background:none!important;padding:0!important}.sc-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important}.sc-list{overflow:visible!important;max-height:none!important}.sc-item{page-break-inside:avoid;border-bottom:1px solid #ddd!important}.sc-print-header{display:block;margin-bottom:.8rem}.sc-print-title{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700}.sc-print-date{font-size:.6rem;color:#666;font-family:monospace;margin-top:.2rem}.sc-group-label{page-break-after:avoid}.sc-modal.sc-print-unchecked .sc-item.checked{display:none!important}.sc-modal.sc-print-needed .sc-list{display:none!important}.sc-modal.sc-print-needed #scNeededSection{display:flex!important;flex-direction:column}}
+@media print{body>*:not(#scModalBg){display:none!important}#scModalBg{display:block!important;position:static!important;background:none!important;padding:0!important}.sc-modal{width:100%!important;max-height:none!important;box-shadow:none!important;border:none!important;overflow:visible!important}.sc-modal-head,.sc-controls,.sc-progress-wrap{display:none!important}.sc-list{overflow:visible!important;max-height:none!important}.sc-item{page-break-inside:avoid;border-bottom:1px solid #ddd!important}.sc-info-btn{display:none!important}.sc-item-id{display:inline!important;margin-left:.3rem;opacity:.7}.sc-print-header{display:block;margin-bottom:.8rem}.sc-print-title{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700}.sc-print-date{font-size:.6rem;color:#666;font-family:monospace;margin-top:.2rem}.sc-group-label{page-break-after:avoid}.sc-modal.sc-print-unchecked .sc-item.checked{display:none!important}.sc-modal.sc-print-needed .sc-list{display:none!important}.sc-modal.sc-print-needed #scNeededSection{display:flex!important;flex-direction:column}}
 
 #version-badge{position:fixed;bottom:8px;right:8px;background:#8B7355;color:#fff;font-size:10px;padding:3px 7px;border-radius:3px;z-index:9999;opacity:.65;font-family:monospace;pointer-events:none}
 @media(max-width:1023px){#version-badge{bottom:calc(var(--mob-nav-h) + 8px)}}
@@ -727,7 +728,8 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
       <button class="log-modal-close" onclick="closeStockCheck()">✕</button>
     </div>
     <div class="sc-controls">
-      <select id="scLocationSelect" onchange="loadStockCheck()" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer;outline:none"><option value="">— Select container —</option></select>
+      <select id="scLocationSelect" onchange="_scUpdateS2Options();loadStockCheck()" style="font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer;outline:none"><option value="">— Select container —</option></select>
+      <select id="scS2Select" onchange="loadStockCheck()" style="display:none;font-family:'DM Mono',monospace;font-size:.65rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);cursor:pointer;outline:none"><option value="">— All sections —</option></select>
       <button class="log-reinstate-btn" onclick="scCheckAll()" style="margin-top:0">✓ All</button>
       <button class="log-reinstate-btn" onclick="scClearAll()" style="margin-top:0;border-color:var(--need);color:var(--need)">✕ Clear</button>
       <button id="scUncheckedBtn" class="log-reinstate-btn" onclick="scToggleUnchecked()" style="margin-top:0">◌ Unchecked</button>
@@ -2181,11 +2183,25 @@ function showStockCheck() {
     if (current && containers.has(current)) sel.value = current;
   }
   document.getElementById('scModalBg').style.display = 'flex';
+  _scUpdateS2Options();
   const loc = sel ? sel.value : '';
   if (!loc && !document.querySelector('#scList .sc-loc-sum')) _scBuildSummary();
   else loadStockCheck();
 }
 function closeStockCheck() { document.getElementById('scModalBg').style.display='none'; }
+
+function _scUpdateS2Options() {
+  const s1 = document.getElementById('scLocationSelect')?.value || '';
+  const s2sel = document.getElementById('scS2Select');
+  if (!s2sel) return;
+  const s2vals = new Set();
+  Object.values(INSTANCE_DATA).forEach(arr => arr.forEach(inst => {
+    if (inst.s1 === s1 && inst.s2) s2vals.add(inst.s2);
+  }));
+  s2sel.innerHTML = '<option value="">— All sections —</option>' +
+    [...s2vals].sort().map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  s2sel.style.display = s1 ? '' : 'none';
+}
 
 // ── STATS MODAL ───────────────────────────────────────────────────────────────
 function showStats() {
@@ -2472,6 +2488,7 @@ function _scBuildSummary() {
 
 function loadStockCheck() {
   const loc    = document.getElementById('scLocationSelect')?.value || '';
+  const s2loc  = document.getElementById('scS2Select')?.value || '';
   const emptyMsg = document.getElementById('scEmptyMsg');
   const listEl   = document.getElementById('scList');
   const progress = document.getElementById('scProgress');
@@ -2490,11 +2507,19 @@ function loadStockCheck() {
   }
   if (emptyMsg) emptyMsg.style.display='none';
 
-  // Gather instances where s1 === loc
+  // Populate print header
+  const printHeader = document.getElementById('scPrintHeader');
+  if (printHeader) {
+    const title = loc + (s2loc ? ' › ' + s2loc : '');
+    const now = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    printHeader.innerHTML = `<div class="sc-print-title">${esc(title)}</div><div class="sc-print-date">Printed ${now}</div>`;
+  }
+
+  // Gather instances where s1 === loc (and s2 === s2loc if set)
   const items = [];
   Object.entries(INSTANCE_DATA).forEach(([vc, records]) => {
     records.forEach(inst => {
-      if (inst.s1 === loc) {
+      if (inst.s1 === loc && (!s2loc || inst.s2 === s2loc)) {
         const coin = ALL_COINS.find(c=>c.variantCode===vc);
         items.push({ inst, vc, coin, coinName: coin ? coin.name : vc });
       }
@@ -2545,6 +2570,7 @@ function loadStockCheck() {
     const dateDisplay = checkedDate ? new Date(checkedDate).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
     row.innerHTML = `<input type="checkbox" ${isChecked?'checked':''} onchange="scToggleItem('${esc(inst.vc||coin?.variantCode||'')}','${iid}',this.checked)" style="cursor:pointer">
       <span class="sc-item-name">${esc(coinName)}</span>
+      <span class="sc-item-id">${esc(iid)}</span>
       <span class="sc-item-meta">${metaParts.join(' · ')}</span>
       <span class="sc-item-date">${dateDisplay}</span>
       <button class="sc-info-btn" onclick="scToggleDetail('${iid}')" title="View details">ⓘ</button>`;
@@ -2596,9 +2622,10 @@ function scToggleItem(vc, instId, checked) {
     if (nameEl) nameEl.style.color = checked ? 'var(--got)' : '';
   }
   // Update progress counter
-  const loc = document.getElementById('scLocationSelect')?.value || '';
+  const loc  = document.getElementById('scLocationSelect')?.value || '';
+  const s2loc = document.getElementById('scS2Select')?.value || '';
   const all = [];
-  Object.entries(INSTANCE_DATA).forEach(([v, records]) => records.forEach(inst => { if (inst.s1===loc) all.push(inst.id); }));
+  Object.entries(INSTANCE_DATA).forEach(([v, records]) => records.forEach(inst => { if (inst.s1===loc && (!s2loc || inst.s2===s2loc)) all.push(inst.id); }));
   const done = all.filter(iid => _scChecked[iid]).length;
   const total = all.length;
   const pct = total ? Math.round(done/total*100) : 0;
@@ -2610,11 +2637,14 @@ function scToggleItem(vc, instId, checked) {
 
 async function scCheckAll() {
   const container = document.getElementById('scLocationSelect')?.value;
+  const s2filt    = document.getElementById('scS2Select')?.value || '';
   const today = new Date().toISOString().slice(0,10);
   const updates = [];
   ALL_COINS.forEach(coin=>{
     (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
-      if (!container || inst.s1===container || inst.s2===container || inst.s3===container) {
+      const matchS1 = !container || inst.s1===container;
+      const matchS2 = !s2filt || inst.s2===s2filt;
+      if (matchS1 && matchS2) {
         _scChecked[inst.id] = Date.now();
         inst.lastStocktake = today;
         updates.push({ insId: inst.id, date: today });
@@ -2640,11 +2670,13 @@ async function scCheckAll() {
 
 function scClearAll() {
   const container = document.getElementById('scLocationSelect')?.value;
-  if (!confirm(container ? `Clear check dates for "${container}"?` : 'Clear ALL stock check dates?')) return;
+  const s2filt    = document.getElementById('scS2Select')?.value || '';
+  const label = container ? (s2filt ? `"${container} › ${s2filt}"` : `"${container}"`) : null;
+  if (!confirm(label ? `Clear check dates for ${label}?` : 'Clear ALL stock check dates?')) return;
   if (container) {
     ALL_COINS.forEach(coin=>{
       (INSTANCE_DATA[coin.variantCode]||[]).forEach(inst=>{
-        if (inst.s1===container||inst.s2===container||inst.s3===container) delete _scChecked[inst.id];
+        if (inst.s1===container && (!s2filt || inst.s2===s2filt)) delete _scChecked[inst.id];
       });
     });
   } else {
