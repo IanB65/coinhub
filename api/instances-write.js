@@ -74,7 +74,7 @@ module.exports = async function handler(req, res) {
         instance.lastEdited || today,
       ];
       const appendResp = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -158,7 +158,7 @@ module.exports = async function handler(req, res) {
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ valueInputOption: 'RAW', data }),
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data }),
         }
       );
       if (!batchResp.ok) throw new Error('Batch update failed: ' + await batchResp.text());
