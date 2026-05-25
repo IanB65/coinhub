@@ -1464,7 +1464,7 @@ function _applyDetailFilter(coins, q, status, denom) {
   return coins.filter(c => {
     if (status && (c.status||'') !== status) return false;
     if (denom && c.denom !== denom) return false;
-    if (v && !(c.name.toLowerCase().includes(v) || String(c.year).includes(v))) return false;
+    if (v && !(c.name.toLowerCase().includes(v) || String(c.year).includes(v) || (INSTANCE_DATA[c.variantCode]||[]).some(i=>i.id.toLowerCase().includes(v)))) return false;
     return true;
   });
 }
