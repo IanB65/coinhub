@@ -2491,6 +2491,8 @@ document.addEventListener('keydown', e=>{
     if (search.classList.contains('open')) { closeSearchOverlay(); return; }
   }
   if (document.getElementById('coinModal').classList.contains('open')) {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if (e.key==='ArrowLeft')  lightboxNav(-1);
     if (e.key==='ArrowRight') lightboxNav(1);
   }
