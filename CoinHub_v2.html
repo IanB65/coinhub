@@ -2087,6 +2087,10 @@ async function saveEditInstance(vc, id) {
       body: JSON.stringify({ action: 'edit', instance: inst }),
     });
     if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || r.status);
+    try {
+      const edits = JSON.parse(localStorage.getItem('coinhub_pending_inst_edits')||'[]');
+      localStorage.setItem('coinhub_pending_inst_edits', JSON.stringify(edits.filter(e=>e.id!==id)));
+    } catch(e){}
     showToast('Instance updated');
   } catch(e) {
     showToast('Sheet update failed: ' + e.message);
