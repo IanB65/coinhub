@@ -1,0 +1,32 @@
+name: Weekly New Coins Scan
+
+on:
+  schedule:
+    - cron: '8 9 * * 1'   # Every Monday at 09:08 UTC
+  workflow_dispatch:        # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan for new coins and stage to inbox
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            https://coins.ghghome.co.uk/api/weekly-new-coins \
+            -H "x-service-key: ${{ secrets.COINHUB_SERVICE_KEY }}" \
+            -H "Content-Type: application/json")
+
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          STATUS=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "HTTP status: $STATUS"
+          echo "Response: $BODY"
+
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Scan failed with status $STATUS"
+            exit 1
+          fi
+
+          STAGED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('staged',0))")
+          FOUND=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('found',0))")
+          echo "Found $FOUND candidate coins, staged $STAGED new ones to inbox"
