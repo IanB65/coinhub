@@ -2542,9 +2542,11 @@ function _updateInboxBadge(n) {
 }
 
 function _buildInboxUI(el) {
+  const scanBtn = `<button class="btn-sm" onclick="_inboxScan(this)" style="margin-left:auto">↻ Scan for New Coins</button>`;
+
   if (!_inboxItems.length) {
     el.innerHTML = `<div style="max-width:var(--max-w);margin:0 auto;padding:var(--page-pad)">
-      <div class="inbox-toolbar"><h1>New Coins Inbox</h1><span class="inbox-count">0 pending</span></div>
+      <div class="inbox-toolbar"><h1>New Coins Inbox</h1><span class="inbox-count">0 pending</span>${scanBtn}</div>
       <div class="inbox-empty">Inbox is empty — nothing awaiting review.</div>
     </div>`;
     return;
@@ -2570,6 +2572,7 @@ function _buildInboxUI(el) {
         <button class="btn-sm" onclick="_inboxToggleAll(false)">Deselect all</button>
         <button class="btn-primary" onclick="_inboxApprove()">Add to Collection</button>
         <button class="btn-sm btn-danger" onclick="_inboxDiscard()">Discard selected</button>
+        ${scanBtn}
       </div>
     </div>
     <div class="arc-table-wrap">
@@ -2606,6 +2609,27 @@ async function _inboxDiscard() {
   if (!codes.length) { alert('Select at least one coin to discard.'); return; }
   if (!confirm(`Discard ${codes.length} coin${codes.length > 1 ? 's' : ''} from inbox?`)) return;
   await _inboxAction(codes, true, 'Discarding…');
+}
+
+async function _inboxScan(btn) {
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  try {
+    const r = await authFetch('/api/weekly-new-coins', { method: 'POST' });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Scan failed');
+    const msg = data.staged > 0
+      ? `Found ${data.found} candidate coin${data.found !== 1 ? 's' : ''}, staged ${data.staged} new to inbox.`
+      : `Scanned ${data.found || 0} candidates — nothing new to add.`;
+    alert(msg);
+    if (data.staged > 0) renderInbox();
+    else { btn.disabled = false; btn.textContent = orig; }
+  } catch (e) {
+    alert('Scan error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
 }
 
 async function _inboxAction(codes, discard, loadingMsg) {
