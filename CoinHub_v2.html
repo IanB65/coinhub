@@ -2619,9 +2619,22 @@ async function _inboxScan(btn) {
     const r = await authFetch('/api/weekly-new-coins', { method: 'POST' });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || 'Scan failed');
-    const msg = data.staged > 0
-      ? `Found ${data.found} candidate coin${data.found !== 1 ? 's' : ''}, staged ${data.staged} new to inbox.`
-      : `Scanned ${data.found || 0} candidates — nothing new to add.`;
+
+    let msg = '';
+    if (data.sources && data.sources.length) {
+      const srcLines = data.sources.map(s => {
+        const errNote = s.errors && s.errors.length ? ` (${s.errors.length} error${s.errors.length > 1 ? 's' : ''})` : '';
+        return `  ${s.source}: ${s.found} found${errNote}`;
+      }).join('\n');
+      msg += `Sources:\n${srcLines}\n\n`;
+    }
+    if (data.staged > 0) {
+      msg += `Staged ${data.staged} new coin${data.staged !== 1 ? 's' : ''} to inbox from ${data.found} candidates.`;
+    } else if (data.found > 0) {
+      msg += `Found ${data.found} candidates but all are already in your collection or inbox.`;
+    } else {
+      msg += `No coin candidates found — sources may be unavailable.`;
+    }
     alert(msg);
     if (data.staged > 0) renderInbox();
     else { btn.disabled = false; btn.textContent = orig; }
