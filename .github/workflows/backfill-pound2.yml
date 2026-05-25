@@ -1,0 +1,30 @@
+name: Backfill Missing £2 Variants
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage missing £2 variants to inbox
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            https://coins.ghghome.co.uk/api/backfill-pound2 \
+            -H "x-service-key: ${{ secrets.COINHUB_SERVICE_KEY }}" \
+            -H "Content-Type: application/json")
+
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          STATUS=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "HTTP status: $STATUS"
+          echo "Response: $BODY"
+
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Backfill failed with status $STATUS"
+            exit 1
+          fi
+
+          STAGED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('staged',0))")
+          SKIPPED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('skipped',0))")
+          echo "Staged $STAGED new variants, skipped $SKIPPED already present"
