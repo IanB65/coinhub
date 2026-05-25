@@ -577,6 +577,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 .lb-dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem .75rem;font-size:.85rem;margin-bottom:1.25rem}
 .lb-dl dt{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;align-self:center}
 .lb-dl dd{margin:0;color:var(--ink)}
+.lb-variant-notes{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);border-left:2px solid var(--border);padding:.35rem .75rem;margin-bottom:1.25rem;line-height:1.5}
 .lb-instances{margin-bottom:1.25rem}
 .lb-section-title{font-family:'DM Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 .75rem}
 .lb-empty{color:var(--muted);font-size:.85rem;font-style:italic}
@@ -1121,7 +1122,7 @@ async function loadFromSheets() {
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
     const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
-    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg] = [0,1,2,3,4,5,6,7];
+    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes] = [0,1,2,3,4,5,6,7,8];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
@@ -1148,7 +1149,7 @@ async function loadFromSheets() {
       const instCount = (INSTANCE_DATA[vc]||[]).length;
       const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
       const vm = VALUES_MAP[vc];
-      coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
+      coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
 
     try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], valuesMap:{...VALUES_MAP} })); } catch(e) {}
@@ -1924,6 +1925,7 @@ function renderLightboxContent(vc) {
         <dt>Status</dt><dd><span class="badge-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></dd>
         <dt>Est. Value</dt><dd id="ev-${esc(vc)}">${coin.estimatedValue !== null ? '£'+coin.estimatedValue.toFixed(2) : '—'}</dd>
       </dl>
+      ${coin.notes?`<div class="lb-variant-notes">${esc(coin.notes)}</div>`:''}
       <div class="lb-instances">
         <h3 class="lb-section-title">Your Copies (${instances.length})</h3>
         ${instHTML || `<p class="lb-empty">No copies recorded.</p>`}
