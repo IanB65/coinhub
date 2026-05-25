@@ -217,6 +217,18 @@ body.guest-mode #bottomNav{bottom:0}
 .page-hero-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.5)}
 .page-hero-back{display:inline-flex;align-items:center;gap:.4rem;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--gold2);text-decoration:none;margin-bottom:.75rem;transition:color .12s}
 .page-hero-back:hover{color:var(--gold3)}
+/* ── PAGE FILTER BAR ── */
+.page-filter-bar{background:var(--paper2);border-bottom:1px solid var(--border);padding:.75rem 2rem}
+@media(max-width:767px){.page-filter-bar{padding:.65rem 1rem}}
+.page-filter-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:.6rem}
+.page-filter-icon{color:var(--muted);font-size:.85rem;flex-shrink:0;line-height:1}
+.page-filter-input{flex:1;padding:.4rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;transition:border-color .12s;min-width:0}
+.page-filter-input:focus{border-color:var(--gold2)}
+.page-filter-input::placeholder{color:var(--muted);opacity:.7}
+.page-filter-clear{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.8rem;padding:.15rem .35rem;border-radius:var(--r);display:none;transition:color .12s;flex-shrink:0}
+.page-filter-clear:hover{color:var(--ink)}
+.page-filter-count{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.page-filter-none{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);padding:2.5rem 0;text-align:center;grid-column:1/-1}
 
 /* ── COIN GRID ── */
 .coin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
@@ -1413,18 +1425,13 @@ document.addEventListener('click', e => {
 });
 
 // ── COLLECTIONS PAGE ─────────────────────────────────────────────────────────
-function renderCollections() {
-  const el = document.getElementById('page-collections');
-  const collStats = {};
-  ALL_COINS.forEach(c => {
-    if (!collStats[c.collection]) collStats[c.collection] = { got:0, total:0, img:null };
-    collStats[c.collection].total++;
-    if (c.status==='Got') collStats[c.collection].got++;
-    if (!collStats[c.collection].img) collStats[c.collection].img = resolveImage(c);
-  });
-  const sorted = Object.keys(collStats).sort();
-  const cards = sorted.map(name => {
-    const { got, total, img } = collStats[name];
+let _collStats = {};
+let _collSorted = [];
+
+function _buildCollCards(names) {
+  if (!names.length) return `<p class="page-filter-none">No collections match your search</p>`;
+  return names.map(name => {
+    const { got, total, img } = _collStats[name];
     const pct = total ? Math.round(got/total*100) : 0;
     const bgStyle = img ? `background-image:url('${img}')` : `background:linear-gradient(135deg,var(--dark2),var(--dark))`;
     return `<a class="coll-card-v2" href="#collection/${encodeURIComponent(name)}" title="${esc(name)}">
@@ -1437,8 +1444,42 @@ function renderCollections() {
       </div>
     </a>`;
   }).join('');
-  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Collections</h1><p class="page-hero-sub">${sorted.length} collections · ${ALL_COINS.length} variants</p></div></div>
-  <div class="section-wrap"><div class="section-block"><div class="card-scroll" style="grid-template-columns:repeat(4,1fr)">${cards}</div></div></div>`;
+}
+
+function filterCollections(q) {
+  const filtered = q.trim() ? _collSorted.filter(n => n.toLowerCase().includes(q.trim().toLowerCase())) : _collSorted;
+  const grid = document.getElementById('collGrid');
+  const count = document.getElementById('collFilterCount');
+  const clear = document.getElementById('collFilterClear');
+  if (grid) grid.innerHTML = _buildCollCards(filtered);
+  if (count) count.textContent = q.trim() ? `${filtered.length} of ${_collSorted.length}` : `${_collSorted.length} collections`;
+  if (clear) clear.style.display = q ? 'block' : 'none';
+}
+
+function clearCollFilter() {
+  const input = document.getElementById('collFilterInput');
+  if (input) { input.value = ''; filterCollections(''); input.focus(); }
+}
+
+function renderCollections() {
+  const el = document.getElementById('page-collections');
+  _collStats = {};
+  ALL_COINS.forEach(c => {
+    if (!_collStats[c.collection]) _collStats[c.collection] = { got:0, total:0, img:null };
+    _collStats[c.collection].total++;
+    if (c.status==='Got') _collStats[c.collection].got++;
+    if (!_collStats[c.collection].img) _collStats[c.collection].img = resolveImage(c);
+  });
+  _collSorted = Object.keys(_collStats).sort();
+  el.innerHTML = `
+    <div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Collections</h1><p class="page-hero-sub">${_collSorted.length} collections · ${ALL_COINS.length} variants</p></div></div>
+    <div class="page-filter-bar"><div class="page-filter-inner">
+      <span class="page-filter-icon">⌕</span>
+      <input class="page-filter-input" id="collFilterInput" type="text" placeholder="Filter collections…" oninput="filterCollections(this.value)" autocomplete="off">
+      <button class="page-filter-clear" id="collFilterClear" onclick="clearCollFilter()" title="Clear filter">✕</button>
+      <span class="page-filter-count" id="collFilterCount">${_collSorted.length} collections</span>
+    </div></div>
+    <div class="section-wrap"><div class="section-block"><div class="card-scroll" id="collGrid" style="grid-template-columns:repeat(4,1fr)">${_buildCollCards(_collSorted)}</div></div></div>`;
 }
 
 // ── COLLECTION DETAIL ────────────────────────────────────────────────────────
@@ -1457,22 +1498,14 @@ function renderCollectionDetail(name) {
 }
 
 // ── MONARCHS PAGE ────────────────────────────────────────────────────────────
-function renderMonarchs() {
-  const el = document.getElementById('page-monarchs');
-  const monStats = {};
-  ALL_COINS.forEach(c => {
-    if (!c.monarch) return;
-    if (!monStats[c.monarch]) monStats[c.monarch] = { got:0, total:0, img:null };
-    monStats[c.monarch].total++;
-    if (c.status==='Got') monStats[c.monarch].got++;
-    if (!monStats[c.monarch].img) monStats[c.monarch].img = resolveImage(c);
-  });
-  const order = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII','King George III'];
-  const rest  = Object.keys(monStats).filter(m=>!order.includes(m)).sort();
-  const all   = [...order.filter(m=>monStats[m]), ...rest];
-  const cards = all.map(name => {
+let _monStats = {};
+let _monAll = [];
+
+function _buildMonarchCards(names) {
+  if (!names.length) return `<p class="page-filter-none" style="grid-column:1/-1">No monarchs match your search</p>`;
+  return names.map(name => {
     const meta = MONARCH_META[name] || { cypher:name.slice(0,6), reign:'', portrait:null };
-    const { got, total } = monStats[name];
+    const { got, total } = _monStats[name];
     const portraitSrc = meta.portrait;
     const imgEl = portraitSrc
       ? `<img src="${portraitSrc}" alt="${esc(name)}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
@@ -1485,8 +1518,45 @@ function renderMonarchs() {
       <div class="monarch-count">${got} owned · ${total} variants</div>
     </a>`;
   }).join('');
-  el.innerHTML = `<div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Monarchs</h1><p class="page-hero-sub">Browse the collection by reign</p></div></div>
-  <div class="section-wrap"><div class="section-block"><div class="monarch-grid" style="grid-template-columns:repeat(4,1fr)">${cards}</div></div></div>`;
+}
+
+function filterMonarchs(q) {
+  const filtered = q.trim() ? _monAll.filter(n => n.toLowerCase().includes(q.trim().toLowerCase())) : _monAll;
+  const grid = document.getElementById('monGrid');
+  const count = document.getElementById('monFilterCount');
+  const clear = document.getElementById('monFilterClear');
+  if (grid) grid.innerHTML = _buildMonarchCards(filtered);
+  if (count) count.textContent = q.trim() ? `${filtered.length} of ${_monAll.length}` : `${_monAll.length} monarchs`;
+  if (clear) clear.style.display = q ? 'block' : 'none';
+}
+
+function clearMonFilter() {
+  const input = document.getElementById('monFilterInput');
+  if (input) { input.value = ''; filterMonarchs(''); input.focus(); }
+}
+
+function renderMonarchs() {
+  const el = document.getElementById('page-monarchs');
+  _monStats = {};
+  ALL_COINS.forEach(c => {
+    if (!c.monarch) return;
+    if (!_monStats[c.monarch]) _monStats[c.monarch] = { got:0, total:0, img:null };
+    _monStats[c.monarch].total++;
+    if (c.status==='Got') _monStats[c.monarch].got++;
+    if (!_monStats[c.monarch].img) _monStats[c.monarch].img = resolveImage(c);
+  });
+  const order = ['King Charles III','Queen Elizabeth II','King George Vi','King George V','King Edward VII','Queen Victoria','King Edward VIII','King George III'];
+  const rest  = Object.keys(_monStats).filter(m=>!order.includes(m)).sort();
+  _monAll = [...order.filter(m=>_monStats[m]), ...rest];
+  el.innerHTML = `
+    <div class="page-hero"><div class="page-hero-inner"><h1 class="page-hero-title">Monarchs</h1><p class="page-hero-sub">Browse the collection by reign</p></div></div>
+    <div class="page-filter-bar"><div class="page-filter-inner">
+      <span class="page-filter-icon">⌕</span>
+      <input class="page-filter-input" id="monFilterInput" type="text" placeholder="Filter monarchs…" oninput="filterMonarchs(this.value)" autocomplete="off">
+      <button class="page-filter-clear" id="monFilterClear" onclick="clearMonFilter()" title="Clear filter">✕</button>
+      <span class="page-filter-count" id="monFilterCount">${_monAll.length} monarchs</span>
+    </div></div>
+    <div class="section-wrap"><div class="section-block"><div class="monarch-grid" id="monGrid" style="grid-template-columns:repeat(4,1fr)">${_buildMonarchCards(_monAll)}</div></div></div>`;
 }
 
 // ── MONARCH DETAIL ───────────────────────────────────────────────────────────
