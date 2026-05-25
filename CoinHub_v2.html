@@ -663,7 +663,7 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
     <div style="position:relative" id="adminMenuWrap">
       <button class="nav-admin-btn" id="adminMenuBtn" onclick="toggleAdminMenu()">Admin ▾<span class="nav-badge" id="syncBadge" style="display:none">0</span></button>
       <div class="admin-dropdown" id="adminDropdown">
-        <a class="admin-dropdown-item" id="inboxMenuItem" onclick="navigateTo('inbox');closeAdminMenu()">◫ New Coins Inbox<span id="inboxBadge" style="display:none;margin-left:.4em;background:var(--need);color:#fff;border-radius:2px;padding:0 .3em;font-size:.6rem"></span></a>
+        <a class="admin-dropdown-item" id="inboxMenuItem" onclick="location.hash='inbox';closeAdminMenu()">◫ New Coins Inbox<span id="inboxBadge" style="display:none;margin-left:.4em;background:var(--need);color:#fff;border-radius:2px;padding:0 .3em;font-size:.6rem"></span></a>
         <a class="admin-dropdown-item" onclick="showStats();closeAdminMenu()">📊 Statistics</a>
         <a class="admin-dropdown-item" onclick="showChangeLog();closeAdminMenu()">📋 Change Log</a>
         <a class="admin-dropdown-item" onclick="showStockCheck();closeAdminMenu()">✓ Stock Check</a>
