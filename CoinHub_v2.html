@@ -228,6 +228,9 @@ body.guest-mode #bottomNav{bottom:0}
 .page-filter-clear{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.8rem;padding:.15rem .35rem;border-radius:var(--r);display:none;transition:color .12s;flex-shrink:0}
 .page-filter-clear:hover{color:var(--ink)}
 .page-filter-count{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.page-filter-select{padding:.38rem .55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;font-size:.68rem;outline:none;cursor:pointer;transition:border-color .12s;flex-shrink:0;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A7060' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .45rem center;padding-right:1.5rem}
+.page-filter-select:focus{border-color:var(--gold2)}
+@media(max-width:767px){.page-filter-select{font-size:.65rem}}
 .page-filter-none{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);padding:2.5rem 0;text-align:center;grid-column:1/-1}
 
 /* ── COIN GRID ── */
@@ -1456,25 +1459,42 @@ function renderCollections() {
 // ── COLLECTION DETAIL ────────────────────────────────────────────────────────
 let _collDetailCoins = [];
 
-function filterCollDetail(q) {
+function _applyDetailFilter(coins, q, status, denom) {
   const v = q.trim().toLowerCase();
-  const filtered = v ? _collDetailCoins.filter(c =>
-    c.name.toLowerCase().includes(v) ||
-    String(c.year).includes(v) ||
-    c.denom.toLowerCase().includes(v) ||
-    (c.status||'').toLowerCase().includes(v)
-  ) : _collDetailCoins;
-  const wrap = document.getElementById('collDetailGrid');
+  return coins.filter(c => {
+    if (status && (c.status||'') !== status) return false;
+    if (denom && c.denom !== denom) return false;
+    if (v && !(c.name.toLowerCase().includes(v) || String(c.year).includes(v))) return false;
+    return true;
+  });
+}
+
+function _detailFilterState(prefix) {
+  return {
+    q:      (document.getElementById(prefix+'Input')?.value  || ''),
+    status: (document.getElementById(prefix+'Status')?.value || ''),
+    denom:  (document.getElementById(prefix+'Denom')?.value  || ''),
+  };
+}
+
+function filterCollDetail() {
+  const { q, status, denom } = _detailFilterState('collDetail');
+  const filtered = _applyDetailFilter(_collDetailCoins, q, status, denom);
+  const wrap  = document.getElementById('collDetailGrid');
   const count = document.getElementById('collDetailCount');
   const clear = document.getElementById('collDetailClear');
-  if (wrap) wrap.innerHTML = filtered.length ? coinGridHTML(filtered) : `<p class="page-filter-none">No coins match "${esc(q)}"</p>`;
-  if (count) count.textContent = v ? `${filtered.length} of ${_collDetailCoins.length}` : `${_collDetailCoins.length} variants`;
-  if (clear) clear.style.display = q ? 'block' : 'none';
+  if (wrap)  wrap.innerHTML = filtered.length ? coinGridHTML(filtered) : `<p class="page-filter-none">No coins match your filter</p>`;
+  if (count) count.textContent = (q||status||denom) ? `${filtered.length} of ${_collDetailCoins.length}` : `${_collDetailCoins.length} variants`;
+  if (clear) clear.style.display = (q||status||denom) ? 'block' : 'none';
 }
 
 function clearCollDetail() {
-  const input = document.getElementById('collDetailInput');
-  if (input) { input.value = ''; filterCollDetail(''); input.focus(); }
+  ['collDetailInput','collDetailStatus','collDetailDenom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  filterCollDetail();
+  document.getElementById('collDetailInput')?.focus();
 }
 
 function renderCollectionDetail(name) {
@@ -1483,6 +1503,8 @@ function renderCollectionDetail(name) {
   if (!_collDetailCoins.length) { el.innerHTML = `<div style="padding:3rem;text-align:center;color:var(--muted)">Collection not found</div>`; return; }
   const got = _collDetailCoins.filter(c=>c.status==='Got').length;
   const pct = Math.round(got/_collDetailCoins.length*100);
+  const denoms = [...new Set(_collDetailCoins.map(c=>c.denom).filter(Boolean))].sort((a,b)=>(DENOM_SORT_KEY[a]??99)-(DENOM_SORT_KEY[b]??99));
+  const denomOpts = denoms.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
   el.innerHTML = `<div class="page-hero"><div class="page-hero-inner">
     <a class="page-hero-back" href="#collections">← Collections</a>
     <h1 class="page-hero-title">${esc(name)}</h1>
@@ -1490,7 +1512,16 @@ function renderCollectionDetail(name) {
   </div></div>
   <div class="page-filter-bar"><div class="page-filter-inner">
     <span class="page-filter-icon">⌕</span>
-    <input class="page-filter-input" id="collDetailInput" type="text" placeholder="Filter by name, year, denomination, status…" oninput="filterCollDetail(this.value)" autocomplete="off">
+    <input class="page-filter-input" id="collDetailInput" type="text" placeholder="Search coins…" oninput="filterCollDetail()" autocomplete="off">
+    <select class="page-filter-select" id="collDetailStatus" onchange="filterCollDetail()">
+      <option value="">All statuses</option>
+      <option value="Got">Got</option>
+      <option value="Need">Need</option>
+      <option value="List">List</option>
+    </select>
+    <select class="page-filter-select" id="collDetailDenom" onchange="filterCollDetail()">
+      <option value="">All denoms</option>${denomOpts}
+    </select>
     <button class="page-filter-clear" id="collDetailClear" onclick="clearCollDetail()" title="Clear filter">✕</button>
     <span class="page-filter-count" id="collDetailCount">${_collDetailCoins.length} variants</span>
   </div></div>
@@ -1531,28 +1562,26 @@ function renderMonarchs() {
 }
 
 // ── MONARCH DETAIL ───────────────────────────────────────────────────────────
-// ── MONARCH DETAIL ───────────────────────────────────────────────────────────
 let _monDetailCoins = [];
 
-function filterMonDetail(q) {
-  const v = q.trim().toLowerCase();
-  const filtered = v ? _monDetailCoins.filter(c =>
-    c.name.toLowerCase().includes(v) ||
-    String(c.year).includes(v) ||
-    c.denom.toLowerCase().includes(v) ||
-    (c.status||'').toLowerCase().includes(v)
-  ) : _monDetailCoins;
-  const wrap = document.getElementById('monDetailGrid');
+function filterMonDetail() {
+  const { q, status, denom } = _detailFilterState('monDetail');
+  const filtered = _applyDetailFilter(_monDetailCoins, q, status, denom);
+  const wrap  = document.getElementById('monDetailGrid');
   const count = document.getElementById('monDetailCount');
   const clear = document.getElementById('monDetailClear');
-  if (wrap) wrap.innerHTML = filtered.length ? coinGridHTML(filtered) : `<p class="page-filter-none">No coins match "${esc(q)}"</p>`;
-  if (count) count.textContent = v ? `${filtered.length} of ${_monDetailCoins.length}` : `${_monDetailCoins.length} variants`;
-  if (clear) clear.style.display = q ? 'block' : 'none';
+  if (wrap)  wrap.innerHTML = filtered.length ? coinGridHTML(filtered) : `<p class="page-filter-none">No coins match your filter</p>`;
+  if (count) count.textContent = (q||status||denom) ? `${filtered.length} of ${_monDetailCoins.length}` : `${_monDetailCoins.length} variants`;
+  if (clear) clear.style.display = (q||status||denom) ? 'block' : 'none';
 }
 
 function clearMonDetail() {
-  const input = document.getElementById('monDetailInput');
-  if (input) { input.value = ''; filterMonDetail(''); input.focus(); }
+  ['monDetailInput','monDetailStatus','monDetailDenom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  filterMonDetail();
+  document.getElementById('monDetailInput')?.focus();
 }
 
 function renderMonarchDetail(name) {
@@ -1569,6 +1598,8 @@ function renderMonarchDetail(name) {
   const imgHtml = meta.portrait
     ? `<div class="mon-parallax-img-wrap"><img class="mon-parallax-img" id="monParallaxImg" src="${meta.portrait}" alt="${esc(name)}" onerror="this.closest('.mon-parallax-section').classList.add('mon-plx-no-img');this.style.display='none'"></div>`
     : `<div class="mon-plx-cypher">${monarchSVG(meta.cypher)}</div>`;
+  const denoms = [...new Set(_monDetailCoins.map(c=>c.denom).filter(Boolean))].sort((a,b)=>(DENOM_SORT_KEY[a]??99)-(DENOM_SORT_KEY[b]??99));
+  const denomOpts = denoms.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
   el.innerHTML = `
     <div class="mon-parallax-section${meta.portrait?'':' mon-plx-no-img'}" id="monParallaxSection">
       ${imgHtml}
@@ -1584,7 +1615,16 @@ function renderMonarchDetail(name) {
     ${meta.bio?`<div class="mon-bio-section"><div class="mon-bio-inner">${esc(meta.bio)}</div></div>`:''}
     <div class="page-filter-bar"><div class="page-filter-inner">
       <span class="page-filter-icon">⌕</span>
-      <input class="page-filter-input" id="monDetailInput" type="text" placeholder="Filter by name, year, denomination, status…" oninput="filterMonDetail(this.value)" autocomplete="off">
+      <input class="page-filter-input" id="monDetailInput" type="text" placeholder="Search coins…" oninput="filterMonDetail()" autocomplete="off">
+      <select class="page-filter-select" id="monDetailStatus" onchange="filterMonDetail()">
+        <option value="">All statuses</option>
+        <option value="Got">Got</option>
+        <option value="Need">Need</option>
+        <option value="List">List</option>
+      </select>
+      <select class="page-filter-select" id="monDetailDenom" onchange="filterMonDetail()">
+        <option value="">All denoms</option>${denomOpts}
+      </select>
       <button class="page-filter-clear" id="monDetailClear" onclick="clearMonDetail()" title="Clear filter">✕</button>
       <span class="page-filter-count" id="monDetailCount">${_monDetailCoins.length} variants</span>
     </div></div>
