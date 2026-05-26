@@ -1,0 +1,29 @@
+name: Approve Inbox Coins
+
+on:
+  workflow_dispatch:
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move approved inbox coins to Variants
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            https://coins.ghghome.co.uk/api/inbox-approve \
+            -H "x-service-key: ${{ secrets.COINHUB_SERVICE_KEY }}" \
+            -H "Content-Type: application/json")
+
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          STATUS=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "HTTP status: $STATUS"
+          echo "Response: $BODY"
+
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Approval failed with status $STATUS"
+            exit 1
+          fi
+
+          APPROVED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('approved',0))")
+          echo "Moved $APPROVED coin(s) from inbox to Variants"

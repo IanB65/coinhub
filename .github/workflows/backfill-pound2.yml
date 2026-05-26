@@ -1,0 +1,33 @@
+name: Backfill Missing Coins (£2, 50p, £1)
+
+on:
+  workflow_dispatch:
+    inputs:
+      denomination:
+        description: 'Denomination to backfill (leave blank for all)'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - '£2'
+          - '50p'
+          - '£1'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Stage missing coin variants to inbox
+        env:
+          COINHUB_SERVICE_KEY: ${{ secrets.COINHUB_SERVICE_KEY }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.denomination }}" ]; then
+            ARGS="--denom ${{ github.event.inputs.denomination }}"
+          fi
+          node scripts/stage-missing-coins.js $ARGS
