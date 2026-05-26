@@ -63,6 +63,57 @@ function extractText(html) {
     .replace(/\s+/g, ' ').trim();
 }
 
+// Phrases that indicate an article/editorial, not an actual coin name
+const ARTICLE_SKIP = [
+  'what we know', 'trading card', 'scarcity index', 'coin values', 'most valuable',
+  'most wanted', 'how to', 'everything you need', 'find out', 'poll result',
+  'new design', 'new release', 'coming soon', 'collector alert', 'collectors guide',
+  'infographic', 'video', 'podcast', 'competition', 'win a', 'giveaway',
+  'change checker', 'update:', 'updates:', 'preview:', 'round-up', 'round up',
+  'designs released', 'new designs', 'have you got', 'do you have',
+  'top 10', 'top ten', 'complete guide', 'full list',
+];
+
+/**
+ * Attempt to derive a clean coin name from a raw title (which may be an article headline).
+ * Returns null if the title looks like an editorial rather than a coin product name.
+ */
+function cleanCoinName(raw) {
+  const lower = raw.toLowerCase();
+
+  // Skip obvious non-coin articles
+  if (ARTICLE_SKIP.some(p => lower.includes(p))) return null;
+
+  // Skip if it looks like a sentence / article (verb phrases, question marks, etc.)
+  if (/[?!]/.test(raw)) return null;
+  if (/\b(is|are|was|were|has|have|will|could|should|might|reveals?|launches?|introduces?|celebrates?|honours?|honoured|features?|featured)\b/i.test(raw)) {
+    // Looks like an article headline — try to salvage by checking for a clean before-colon part
+    if (raw.includes(':')) {
+      const before = raw.split(':')[0].trim();
+      // If before-colon is short and clean enough, use it
+      if (before.length >= 5 && before.length <= 70 && !/\b(is|are|was|were|has|will|could)\b/i.test(before)) {
+        return before;
+      }
+    }
+    return null;
+  }
+
+  // If there's a colon, the part before it is usually the coin/series name
+  if (raw.includes(':')) {
+    const before = raw.split(':')[0].trim();
+    // Use before-colon if it's a reasonable length and contains the denomination clue
+    // OR if the full title is a long article-style headline
+    if (before.length >= 5 && before.length <= 80) {
+      return before;
+    }
+  }
+
+  // Skip if excessively long (likely a sentence)
+  if (raw.length > 100) return null;
+
+  return raw;
+}
+
 function guessDenomination(text) {
   const t = text.toLowerCase();
   if (t.includes('£5') || t.includes('five pound') || t.includes('5 pound')) return '£5';
@@ -123,7 +174,7 @@ async function scrapeRoyalMint() {
     const { ok, status, text, error } = await safeFetch(url, HEADERS_BROWSER);
     if (!ok) { errors.push(`Royal Mint ${url}: HTTP ${status}${error ? ' ' + error : ''}`); continue; }
 
-    // Try JSON-LD structured data first (most reliable when present)
+    // JSON-LD structured data — product names from Royal Mint are usually clean here
     const jsonLdPattern = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
     let m;
     while ((m = jsonLdPattern.exec(text)) !== null) {
@@ -131,49 +182,38 @@ async function scrapeRoyalMint() {
         const data = JSON.parse(m[1]);
         const items = Array.isArray(data) ? data.flat() : [data];
         for (const item of items) {
-          const raw = item['@graph'] ? item['@graph'] : [item];
-          for (const node of raw) {
-            const name = node.name || '';
-            if (!name || name.length < 5 || name.length > 150) continue;
-            const combined = name + ' ' + (node.description || '');
+          const nodes = item['@graph'] ? item['@graph'] : [item];
+          for (const node of nodes) {
+            const rawName = extractText(node.name || '');
+            if (!rawName) continue;
+            const combined = rawName + ' ' + (node.description || '');
             const denom = guessDenomination(combined);
             if (!denom) continue;
+            const cleanName = cleanCoinName(rawName);
+            if (!cleanName) continue;
             const year = guessYear(combined);
-            const key = `${name.toLowerCase()}|${year}`;
+            const key = `${cleanName.toLowerCase()}|${year}`;
             if (seen.has(key)) continue;
             seen.add(key);
-            coins.push({ name: extractText(name).slice(0, 120), denomination: denom, year, imageUrl: node.image || '', sourceUrl: url, price: node.offers?.price ? String(node.offers.price) : '' });
+            coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, imageUrl: node.image || '', sourceUrl: url, price: node.offers?.price ? String(node.offers.price) : '' });
           }
         }
       } catch { /* skip malformed */ }
     }
 
-    // Parse product/article link text (title attributes, heading text, anchor text)
-    const linkPattern = /<a[^>]+href="([^"]*(?:coin|collect|royal-mint)[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-    while ((m = linkPattern.exec(text)) !== null) {
-      const name = extractText(m[2]);
-      if (name.length < 8 || name.length > 150) continue;
-      const denom = guessDenomination(name);
-      if (!denom) continue;
-      const year = guessYear(name);
-      const key = `${name.toLowerCase()}|${year}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: url });
-    }
-
     // Headings
     const headingPattern = /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/gi;
     while ((m = headingPattern.exec(text)) !== null) {
-      const name = extractText(m[1]);
-      if (name.length < 8 || name.length > 150) continue;
-      const denom = guessDenomination(name);
+      const rawName = extractText(m[1]);
+      const denom = guessDenomination(rawName);
       if (!denom) continue;
-      const year = guessYear(name);
-      const key = `${name.toLowerCase()}|${year}`;
+      const cleanName = cleanCoinName(rawName);
+      if (!cleanName) continue;
+      const year = guessYear(rawName);
+      const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: url });
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: url });
     }
   }
 
@@ -191,15 +231,16 @@ async function scrapeChangechecker() {
     const titlePattern = /<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/gi;
     let m;
     while ((m = titlePattern.exec(rssResult.text)) !== null) {
-      const name = extractText(m[1] || m[2] || '');
-      if (name.length < 8 || name.length > 200) continue;
-      const denom = guessDenomination(name);
+      const rawName = extractText(m[1] || m[2] || '');
+      const denom = guessDenomination(rawName);
       if (!denom) continue;
-      const year = guessYear(name);
-      const key = `${name.toLowerCase()}|${year}`;
+      const cleanName = cleanCoinName(rawName);
+      if (!cleanName) continue;
+      const year = guessYear(rawName);
+      const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.changechecker.org/' });
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.changechecker.org/' });
     }
   } else {
     errors.push(`Change Checker RSS: HTTP ${rssResult.status}${rssResult.error ? ' ' + rssResult.error : ''}`);
@@ -208,25 +249,19 @@ async function scrapeChangechecker() {
   // Also try their new coins category page
   const pageResult = await safeFetch('https://www.changechecker.org/category/blog-home/new-coins/', HEADERS_BROWSER);
   if (pageResult.ok && pageResult.text) {
-    const patterns = [
-      /<h[123][^>]*class="[^"]*(?:entry|post|article)[^"]*"[^>]*>([\s\S]*?)<\/h[123]>/gi,
-      /<(?:h[123]|a)[^>]*class="[^"]*(?:title|heading)[^"]*"[^>]*>([\s\S]*?)<\/(?:h[123]|a)>/gi,
-      /<h[123][^>]*>([\s\S]*?)<\/h[123]>/gi,
-    ];
     let m;
-    for (const pat of patterns) {
-      pat.lastIndex = 0;
-      while ((m = pat.exec(pageResult.text)) !== null) {
-        const name = extractText(m[1]);
-        if (name.length < 8 || name.length > 200) continue;
-        const denom = guessDenomination(name);
-        if (!denom) continue;
-        const year = guessYear(name);
-        const key = `${name.toLowerCase()}|${year}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.changechecker.org/category/blog-home/new-coins/' });
-      }
+    const headingPattern = /<h[123][^>]*>([\s\S]*?)<\/h[123]>/gi;
+    while ((m = headingPattern.exec(pageResult.text)) !== null) {
+      const rawName = extractText(m[1]);
+      const denom = guessDenomination(rawName);
+      if (!denom) continue;
+      const cleanName = cleanCoinName(rawName);
+      if (!cleanName) continue;
+      const year = guessYear(rawName);
+      const key = `${cleanName.toLowerCase()}|${year}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.changechecker.org/category/blog-home/new-coins/' });
     }
   } else {
     errors.push(`Change Checker page: HTTP ${pageResult.status}${pageResult.error ? ' ' + pageResult.error : ''}`);
@@ -240,7 +275,6 @@ async function scrapeWestminster() {
   const errors = [];
   const seen = new Set();
 
-  // Try Westminster Collection blog
   const urls = [
     'https://www.westminstercollection.com/change-checker/certified-bu-coins/',
     'https://www.westminstercollection.com/blog/',
@@ -252,15 +286,16 @@ async function scrapeWestminster() {
     let m;
     const headingPattern = /<h[123][^>]*>([\s\S]*?)<\/h[123]>/gi;
     while ((m = headingPattern.exec(text)) !== null) {
-      const name = extractText(m[1]);
-      if (name.length < 8 || name.length > 200) continue;
-      const denom = guessDenomination(name);
+      const rawName = extractText(m[1]);
+      const denom = guessDenomination(rawName);
       if (!denom) continue;
-      const year = guessYear(name);
-      const key = `${name.toLowerCase()}|${year}`;
+      const cleanName = cleanCoinName(rawName);
+      if (!cleanName) continue;
+      const year = guessYear(rawName);
+      const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: url });
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: url });
     }
   }
 
@@ -281,16 +316,18 @@ async function scrapeCoinNewsUK() {
     const titlePattern = /<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/gi;
     let m;
     while ((m = titlePattern.exec(rss.text)) !== null) {
-      const name = extractText(m[1] || m[2] || '');
-      if (name.length < 8 || name.length > 200) continue;
-      if (!name.toLowerCase().includes('uk') && !name.toLowerCase().includes('british') && !name.toLowerCase().includes('royal mint')) continue;
-      const denom = guessDenomination(name);
+      const rawName = extractText(m[1] || m[2] || '');
+      const lower = rawName.toLowerCase();
+      if (!lower.includes('uk') && !lower.includes('british') && !lower.includes('royal mint')) continue;
+      const denom = guessDenomination(rawName);
       if (!denom) continue;
-      const year = guessYear(name);
-      const key = `${name.toLowerCase()}|${year}`;
+      const cleanName = cleanCoinName(rawName);
+      if (!cleanName) continue;
+      const year = guessYear(rawName);
+      const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.coinnews.net/' });
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.coinnews.net/' });
     }
     return { coins, errors, source: 'Coin News' };
   }
@@ -298,15 +335,16 @@ async function scrapeCoinNewsUK() {
   let m;
   const headingPattern = /<h[123][^>]*>([\s\S]*?)<\/h[123]>/gi;
   while ((m = headingPattern.exec(text)) !== null) {
-    const name = extractText(m[1]);
-    if (name.length < 8 || name.length > 200) continue;
-    const denom = guessDenomination(name);
+    const rawName = extractText(m[1]);
+    const denom = guessDenomination(rawName);
     if (!denom) continue;
-    const year = guessYear(name);
-    const key = `${name.toLowerCase()}|${year}`;
+    const cleanName = cleanCoinName(rawName);
+    if (!cleanName) continue;
+    const year = guessYear(rawName);
+    const key = `${cleanName.toLowerCase()}|${year}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    coins.push({ name: name.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.coinnews.net/category/british-coins/' });
+    coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.coinnews.net/category/british-coins/' });
   }
 
   return { coins, errors, source: 'Coin News' };
