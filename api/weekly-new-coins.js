@@ -86,27 +86,35 @@ function cleanCoinName(raw) {
 
   // Skip if it looks like a sentence / article (verb phrases, question marks, etc.)
   if (/[?!]/.test(raw)) return null;
-  if (/\b(is|are|was|were|has|have|will|could|should|might|reveals?|launches?|introduces?|celebrates?|honours?|honoured|features?|featured)\b/i.test(raw)) {
-    // Looks like an article headline — try to salvage by checking for a clean before-colon part
-    if (raw.includes(':')) {
-      const before = raw.split(':')[0].trim();
-      // If before-colon is short and clean enough, use it
-      if (before.length >= 5 && before.length <= 70 && !/\b(is|are|was|were|has|will|could)\b/i.test(before)) {
-        return before;
-      }
+
+  // Suffixes in the after-colon part that indicate article language — strip them to get coin name
+  const ARTICLE_SUFFIX = /\s+(honoured|celebrated|celebrates?|features?|featured|launched|unveiled|released|revealed|announced|coming|arrives?|to be minted|on new|on the new)\b.*/i;
+
+  if (raw.includes(':')) {
+    const [before, ...rest] = raw.split(':');
+    const afterRaw = rest.join(':').trim();
+
+    // Try stripping article suffixes from the after-colon part to get a clean coin name
+    const afterClean = afterRaw.replace(ARTICLE_SUFFIX, '').replace(/\s+(on\s+new|new\s+uk|uk\s+coin)\b.*/i, '').trim();
+    if (afterClean.length >= 3 && afterClean.length <= 60
+        && !ARTICLE_SKIP.some(p => afterClean.toLowerCase().includes(p))
+        && !/\b(is|are|was|were|has|will|could)\b/i.test(afterClean)) {
+      return afterClean;
     }
+
+    // Fall back to before-colon if it's short and clean
+    const beforeClean = before.trim();
+    if (beforeClean.length >= 5 && beforeClean.length <= 70
+        && !ARTICLE_SKIP.some(p => beforeClean.toLowerCase().includes(p))
+        && !/\b(is|are|was|were|has|will|could|should|might|reveals?|launches?|celebrates?|honours?|honoured|features?|featured)\b/i.test(beforeClean)) {
+      return beforeClean;
+    }
+
     return null;
   }
 
-  // If there's a colon, the part before it is usually the coin/series name
-  if (raw.includes(':')) {
-    const before = raw.split(':')[0].trim();
-    // Use before-colon if it's a reasonable length and contains the denomination clue
-    // OR if the full title is a long article-style headline
-    if (before.length >= 5 && before.length <= 80) {
-      return before;
-    }
-  }
+  // No colon — skip if it looks like a sentence
+  if (/\b(is|are|was|were|has|have|will|could|should|might|reveals?|launches?|introduces?|celebrates?|honours?|honoured|features?|featured)\b/i.test(raw)) return null;
 
   // Skip if excessively long (likely a sentence)
   if (raw.length > 100) return null;
