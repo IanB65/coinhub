@@ -47,11 +47,35 @@ module.exports = async function handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { return res.status(400).json({ error: 'Invalid JSON' }); }
 
-  const { variantCode, name, denom, collection, monarch, year, status, imgUrl, notes } = body || {};
+  const { action, variantCode, name, denom, collection, monarch, year, status, imgUrl, notes } = body || {};
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
     const token = await getAccessToken();
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (action === 'create') {
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Sheet fetch failed: ' + readResp.status);
+      const { values } = await readResp.json();
+      const exists = (values || []).slice(1).some(r => r[0]?.trim() === variantCode);
+      if (exists) return res.status(409).json({ error: `Variant ${variantCode} already exists` });
+
+      const newRow = [variantCode, name || '', denom || '', collection || '', monarch || '', year || '', status || 'Need', imgUrl || '', notes || '', today, today];
+      const appendResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values: [newRow] }),
+        }
+      );
+      if (!appendResp.ok) throw new Error('Append failed: ' + await appendResp.text());
+      return res.status(201).json({ ok: true, variantCode, created: true });
+    }
 
     const readResp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants?majorDimension=ROWS`,
@@ -64,7 +88,6 @@ module.exports = async function handler(req, res) {
     if (rowIndex === -1) return res.status(404).json({ error: `Variant ${variantCode} not found` });
 
     const sheetRow = rowIndex + 1; // 1-based
-    const today = new Date().toISOString().slice(0, 10);
     const existing = values[rowIndex];
 
     const data = [
