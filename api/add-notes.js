@@ -1,5 +1,4 @@
 // One-time endpoint: populates empty notes (col I) in the Variants sheet.
-// Call with: curl -X POST -H "x-service-key: YOUR_KEY" https://coins.ghghome.co.uk/api/add-notes
 // Delete this file after running.
 
 const crypto = require('crypto');
@@ -10,6 +9,25 @@ function verifyServiceKey(req) {
   if (!key || !expected || key.length !== expected.length) return false;
   try { return crypto.timingSafeEqual(Buffer.from(key), Buffer.from(expected)); }
   catch { return false; }
+}
+
+function verifyOwnerToken(req) {
+  const auth = req.headers['authorization'] || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!token) return false;
+  const secret = process.env.COINHUB_JWT_SECRET;
+  if (!secret) return false;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const [h, p, sig] = parts;
+    const expected = crypto.createHmac('sha256', secret).update(`${h}.${p}`).digest('base64url');
+    if (sig.length !== expected.length) return false;
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
+    const payload = JSON.parse(Buffer.from(p, 'base64url').toString());
+    if (payload.role === 'guest') return false;
+    return payload.exp > Math.floor(Date.now() / 1000);
+  } catch { return false; }
 }
 
 async function getAccessToken() {
@@ -290,7 +308,7 @@ const NOTES = {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  if (!verifyServiceKey(req)) return res.status(401).json({ error: 'Unauthorised' });
+  if (!verifyServiceKey(req) && !verifyOwnerToken(req)) return res.status(401).json({ error: 'Unauthorised' });
 
   const sheetId = process.env.GOOGLE_SHEET_ID;
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN || !sheetId) {
