@@ -54,6 +54,47 @@ module.exports = async function handler(req, res) {
     const token = await getAccessToken();
     const today = new Date().toISOString().slice(0, 10);
 
+    if (action === 'delete') {
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Sheet fetch failed: ' + readResp.status);
+      const { values } = await readResp.json();
+      const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === variantCode);
+      if (rowIndex === -1) return res.status(404).json({ error: `Variant ${variantCode} not found` });
+
+      const sheetRow = rowIndex + 1; // 1-based
+
+      // Get sheet ID (gid) for the Variants tab
+      const metaResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!metaResp.ok) throw new Error('Metadata fetch failed: ' + metaResp.status);
+      const meta = await metaResp.json();
+      const variantsSheet = (meta.sheets || []).find(s => s.properties?.title === 'Variants');
+      if (!variantsSheet) throw new Error('Variants sheet not found');
+      const sheetGid = variantsSheet.properties.sheetId;
+
+      const deleteResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requests: [{
+              deleteDimension: {
+                range: { sheetId: sheetGid, dimension: 'ROWS', startIndex: sheetRow - 1, endIndex: sheetRow }
+              }
+            }]
+          }),
+        }
+      );
+      if (!deleteResp.ok) throw new Error('Delete failed: ' + await deleteResp.text());
+      return res.status(200).json({ ok: true, variantCode, deleted: true });
+    }
+
     if (action === 'create') {
       const readResp = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,

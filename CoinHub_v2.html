@@ -2241,11 +2241,21 @@ function confirmDeleteVariant(vc) {
 async function deleteVariant(vc) {
   ALL_COINS = ALL_COINS.filter(c=>c.variantCode!==vc);
   delete INSTANCE_DATA[vc];
-  _queueSync({ type:'deleteVariant', data:{ variantCode:vc } });
   addAuditLog('delete-variant', { vc });
   closeCoinModal();
   router();
-  showToast('Variant deleted');
+  showToast('Deleting…');
+  try {
+    const r = await authFetch('/api/variants-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', variantCode: vc }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    showToast('Variant deleted');
+  } catch (e) {
+    showToast('Delete failed: ' + e.message);
+  }
 }
 
 function _refreshCoinUI(coin) {
