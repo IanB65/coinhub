@@ -55,9 +55,13 @@ module.exports = async function handler(req, res) {
     let ptypes = [];
     try { ptypes = await fetchTab('PreservationTypes'); } catch { /* optional */ }
 
+    // Denominations tab: col A=name, col B=group (Decimal / Pre-decimal / Other)
+    let denominations = [];
+    try { denominations = await fetchTab('Denominations'); } catch { /* optional */ }
+
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ variants, instances, images, storage, storage1, storage2, storage3, values, conditions, ptypes });
+    return res.status(200).json({ variants, instances, images, storage, storage1, storage2, storage3, values, conditions, ptypes, denominations });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
