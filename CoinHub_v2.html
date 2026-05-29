@@ -1395,9 +1395,9 @@ function buildDenomGroups() {
     const known = new Set(Object.keys(DENOM_GROUP_MAP));
     const unknown = [...new Set(ALL_COINS.map(c=>c.denom).filter(d=>d&&!known.has(d)))].sort(sortFn);
     if (unknown.length) { if (!groups['Other']) groups['Other'] = []; groups['Other'].push(...unknown); }
-    // Consistent group order
+    // Consistent group order — include all groups from Groups tab, even if empty
     const ordered = {};
-    DENOM_GROUP_ORDER.forEach(g => { if (groups[g]) ordered[g] = groups[g]; });
+    DENOM_GROUP_ORDER.forEach(g => { ordered[g] = groups[g] || []; });
     Object.keys(groups).forEach(g => { if (!ordered[g]) ordered[g] = groups[g]; });
     _DENOM_GROUPS = ordered;
   } else {
