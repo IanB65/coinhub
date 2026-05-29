@@ -548,7 +548,8 @@ body.guest-mode #adminMenuWrap,body.guest-mode .edit-variant-btn{display:none!im
 @media(min-width:1024px){.toast{bottom:1.5rem}}
 
 /* ── ARCHIVE PAGE ── */
-.arc-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding:1rem var(--page-pad);background:var(--paper2);border-bottom:1px solid var(--border)}
+.arc-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;padding:1rem var(--page-pad);background:var(--paper2);border-bottom:1px solid var(--border);position:sticky;top:var(--nav-h);z-index:99;box-shadow:0 2px 6px rgba(12,12,10,.06)}
+body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
 .arc-filters{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .arc-filters select,.arc-filters input{padding:.35rem .6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);color:var(--ink);font-size:.8rem;font-family:'DM Mono',monospace;outline:none}
 .arc-status-chips{display:flex;gap:.5rem;flex-wrap:wrap}
