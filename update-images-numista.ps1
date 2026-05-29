@@ -84,11 +84,34 @@ $coinMap = [ordered]@{
     'UK-D-£2-2025-MDRW-'  = 'https://en.numista.com/catalogue/pieces449107.html'
 }
 
-# Skipped — not yet on Numista:
-#   UK-D-£2-2018-ARMI-  (WWI Armistice)
-#   UK-D-£2-2020-VEDA-  (VE Day 75th BU)
-#   UK-D-£2-2024-NTLG-  (National Gallery)
-#   UK-D-£2-2025-ROBS-  (Royal Observatory Greenwich)
+# ── Coins not on Numista — sourced from coinhunter.co.uk ────────────────────
+Write-Host ""
+Write-Host "--- coinhunter.co.uk sources ---" -ForegroundColor Magenta
+
+foreach ($vc in $coinhunterMap.Keys) {
+    Write-Host "[$vc]" -NoNewline
+    $imgUrl = Get-CoinhunterImage $coinhunterMap[$vc]
+    if (-not $imgUrl) { $failed++; continue }
+    Write-Host " -> $imgUrl" -ForegroundColor Cyan
+    $body = @{ variantCode = $vc; imgUrl = $imgUrl } | ConvertTo-Json -Compress
+    try {
+        $resp = Invoke-WebRequest -Uri $apiBase -Method POST -UseBasicParsing `
+            -Headers @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" } `
+            -Body $body
+        if ($resp.StatusCode -in 200,201) { Write-Host "  OK" -ForegroundColor Green; $updated++ }
+        else { Write-Host "  HTTP $($resp.StatusCode)" -ForegroundColor Yellow; $failed++ }
+    } catch {
+        Write-Host "  API error: $_" -ForegroundColor Red; $failed++
+    }
+    Start-Sleep -Milliseconds 400
+}
+
+$coinhunterMap = [ordered]@{
+    'UK-D-£2-2018-ARMI-'  = 'https://coinhunter.co.uk/2-pound/2018/fww-armistice/'
+    'UK-D-£2-2020-VEDA-'  = 'https://coinhunter.co.uk/2-pound/2020/ve-day/'
+    'UK-D-£2-2024-NTLG-'  = 'https://coinhunter.co.uk/2-pound/2024/national-gallery/'
+    'UK-D-£2-2025-ROBS-'  = 'https://coinhunter.co.uk/2-pound/2025/royal-observatory/'
+}
 
 $pageCache = @{}
 
@@ -97,6 +120,24 @@ function Get-NumistaImage($pageUrl) {
     try {
         $r = Invoke-WebRequest -Uri $pageUrl -UseBasicParsing -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         $matches = [regex]::Matches($r.Content, 'https://en\.numista\.com/catalogue/photos/[^/]+/[^"''<>\s]+-original\.jpg')
+        $img = if ($matches.Count -ge 2) { $matches[1].Value } elseif ($matches.Count -eq 1) { $matches[0].Value } else { $null }
+        if ($img) {
+            $pageCache[$pageUrl] = $img
+            return $img
+        }
+        Write-Host "  WARNING: no image on $pageUrl" -ForegroundColor Yellow
+        return $null
+    } catch {
+        Write-Host "  ERROR fetching ${pageUrl}: $_" -ForegroundColor Red
+        return $null
+    }
+}
+
+function Get-CoinhunterImage($pageUrl) {
+    if ($pageCache.ContainsKey($pageUrl)) { return $pageCache[$pageUrl] }
+    try {
+        $r = Invoke-WebRequest -Uri $pageUrl -UseBasicParsing -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        $matches = [regex]::Matches($r.Content, 'https://coinhunter\.co\.uk/_images/[^"''<>\s]+\.jpg')
         $img = if ($matches.Count -ge 2) { $matches[1].Value } elseif ($matches.Count -eq 1) { $matches[0].Value } else { $null }
         if ($img) {
             $pageCache[$pageUrl] = $img
