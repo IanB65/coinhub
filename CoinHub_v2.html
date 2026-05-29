@@ -1139,7 +1139,11 @@ async function loadFromSheets() {
     const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows, groups:groupRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
     (denomRows||[]).slice(1).forEach(r=>{ const n=r[0]?.trim(),g=r[1]?.trim(),s=parseFloat(r[2]); if(n&&g) DENOM_GROUP_MAP[n]=g; if(n&&!isNaN(s)) DENOM_SORT_KEY[n]=s; });
-    const _groupOrder = (groupRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
+    const _groupOrder = (groupRows||[]).slice(1)
+      .map(r=>({ name:r[0]?.trim(), sort:parseFloat(r[1]) }))
+      .filter(g=>g.name)
+      .sort((a,b)=> (isNaN(a.sort)?Infinity:a.sort) - (isNaN(b.sort)?Infinity:b.sort))
+      .map(g=>g.name);
     if (_groupOrder.length) DENOM_GROUP_ORDER = _groupOrder;
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes] = [0,1,2,3,4,5,6,7,8];
 
