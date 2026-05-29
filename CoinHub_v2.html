@@ -1389,7 +1389,7 @@ function buildDenomGroups() {
     if (unknown.length) { if (!groups['Other']) groups['Other'] = []; groups['Other'].push(...unknown); }
     // Consistent group order
     const ordered = {};
-    ['Decimal','Pre-decimal','Other'].forEach(g => { if (groups[g]) ordered[g] = groups[g]; });
+    ['Decimal','Pre-decimal','Banknotes','Other'].forEach(g => { if (groups[g]) ordered[g] = groups[g]; });
     Object.keys(groups).forEach(g => { if (!ordered[g]) ordered[g] = groups[g]; });
     _DENOM_GROUPS = ordered;
   } else {
