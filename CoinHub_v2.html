@@ -882,6 +882,7 @@ const DENOM_SORT_KEY = {
 };
 const COTUK_MAP = {};
 const DENOM_GROUP_MAP = {};
+let DENOM_GROUP_ORDER = ['Decimal','Pre-decimal','Banknotes','Other'];
 const INSTANCE_DATA = {};
 const STORAGE_MAP = {};
 const STORAGE1_LIST = [];
@@ -1111,11 +1112,13 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, valuesMap, denomGroupMap } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, valuesMap, denomGroupMap, denomSortMap, denomGroupOrder } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         setMsg('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
         Object.assign(DENOM_GROUP_MAP, denomGroupMap || {});
+        Object.assign(DENOM_SORT_KEY, denomSortMap || {});
+        if (denomGroupOrder?.length) DENOM_GROUP_ORDER = denomGroupOrder;
         Object.assign(INSTANCE_DATA, instances);
         Object.assign(STORAGE_MAP, storageMap || {});
         STORAGE1_LIST.push(...(storage1||[]));
@@ -1133,9 +1136,15 @@ async function loadFromSheets() {
     setMsg('Fetching coin data…');
     const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
-    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows } = await res.json();
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows, groups:groupRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
-    (denomRows||[]).slice(1).forEach(r=>{ const n=r[0]?.trim(),g=r[1]?.trim(); if(n&&g) DENOM_GROUP_MAP[n]=g; });
+    (denomRows||[]).slice(1).forEach(r=>{ const n=r[0]?.trim(),g=r[1]?.trim(),s=parseFloat(r[2]); if(n&&g) DENOM_GROUP_MAP[n]=g; if(n&&!isNaN(s)) DENOM_SORT_KEY[n]=s; });
+    const _groupOrder = (groupRows||[]).slice(1)
+      .map(r=>({ name:r[0]?.trim(), sort:parseFloat(r[1]) }))
+      .filter(g=>g.name)
+      .sort((a,b)=> (isNaN(a.sort)?Infinity:a.sort) - (isNaN(b.sort)?Infinity:b.sort))
+      .map(g=>g.name);
+    if (_groupOrder.length) DENOM_GROUP_ORDER = _groupOrder;
     const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes] = [0,1,2,3,4,5,6,7,8];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
@@ -1166,7 +1175,7 @@ async function loadFromSheets() {
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
 
-    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP} })); } catch(e) {}
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
@@ -1388,7 +1397,7 @@ function buildDenomGroups() {
     if (unknown.length) { if (!groups['Other']) groups['Other'] = []; groups['Other'].push(...unknown); }
     // Consistent group order
     const ordered = {};
-    ['Decimal','Pre-decimal','Other'].forEach(g => { if (groups[g]) ordered[g] = groups[g]; });
+    DENOM_GROUP_ORDER.forEach(g => { if (groups[g]) ordered[g] = groups[g]; });
     Object.keys(groups).forEach(g => { if (!ordered[g]) ordered[g] = groups[g]; });
     _DENOM_GROUPS = ordered;
   } else {
@@ -1411,7 +1420,7 @@ function renderHomeDenomBrowser() {
 <span class="denom-card-val">${esc(d)}</span>\
 <span class="denom-card-cnt">${ds[d]} variants</span></a>`
   ).join('');
-  const empty = cards ? '' : `<p style="color:var(--muted);font-size:.8rem;font-family:'DM Mono',monospace">No coins in this group yet</p>`;
+  const empty = cards ? '' : `<p style="color:var(--muted);font-size:.8rem;font-family:'DM Mono',monospace">No items in this group yet</p>`;
   el.innerHTML = `<div class="by-row" style="margin-bottom:.75rem">${groupBtns}</div><div class="denom-cards">${cards}${empty}</div>`;
 }
 
