@@ -872,10 +872,10 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
 const GS_CACHE_KEY = 'coinhub_gs_cache';
 const GS_CACHE_TTL = 10 * 60 * 1000;
-const DENOM_ORDER = ['1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Half Farthing','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
+const DENOM_ORDER = ['½p','1p','2p','5p','10p','20p','50p','£1','£2','£5','Medal','1d','½d','Half Farthing','Farthing','3d','6d','1s','2s','2s 6d','Crown'];
 // Maps actual data denom values → sort position (using DENOM_ORDER short codes as anchors)
 const DENOM_SORT_KEY = {
-  '1p':0,'2p':1,'5p':2,'10p':3,'20p':4,'50p':5,'£1':6,'£2':7,'£5':8,'Medal':9,
+  '½p':-1,'1p':0,'2p':1,'5p':2,'10p':3,'20p':4,'50p':5,'£1':6,'£2':7,'£5':8,'Medal':9,
   'Penny':10,'Half Penny':11,'Half Farthing':11.5,'Farthing':12,'Threepence':13,'Sixpence':14,
   'Shilling':15,'Florin':16,'Half Crown':17,'Crown':18,
   '1d':10,'½d':11,'3d':13,'6d':14,'1s':15,'2s':16,'2s 6d':17
@@ -1362,7 +1362,7 @@ function renderHome() {
 
 // ── HOME DENOM BROWSER ───────────────────────────────────────────────────────
 const _DENOM_GROUPS = {
-  'Decimal':    ['1p','2p','5p','10p','20p','50p','£1','£2','£5'],
+  'Decimal':    ['½p','1p','2p','5p','10p','20p','50p','£1','£2','£5'],
   'Pre-decimal':['Half Farthing','Farthing','Half Penny','Penny','Threepence','Sixpence','Shilling','Florin','Half Crown','Crown'],
   'Other':      ['Medal','Other']
 };
