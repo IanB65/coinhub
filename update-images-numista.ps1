@@ -137,7 +137,7 @@ function Get-CoinhunterImage($pageUrl) {
     if ($pageCache.ContainsKey($pageUrl)) { return $pageCache[$pageUrl] }
     try {
         $r = Invoke-WebRequest -Uri $pageUrl -UseBasicParsing -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        $matches = [regex]::Matches($r.Content, 'https://coinhunter\.co\.uk/_images/[^"''<>\s]+\.jpg')
+        $matches = [regex]::Matches($r.Content, 'https://coinhunter\.co\.uk/app/_images/[^"''<>\s]+\.(jpg|png)')
         $img = if ($matches.Count -ge 2) { $matches[1].Value } elseif ($matches.Count -eq 1) { $matches[0].Value } else { $null }
         if ($img) {
             $pageCache[$pageUrl] = $img
