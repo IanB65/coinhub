@@ -1411,7 +1411,7 @@ function renderHomeDenomBrowser() {
 <span class="denom-card-val">${esc(d)}</span>\
 <span class="denom-card-cnt">${ds[d]} variants</span></a>`
   ).join('');
-  const empty = cards ? '' : `<p style="color:var(--muted);font-size:.8rem;font-family:'DM Mono',monospace">No coins in this group yet</p>`;
+  const empty = cards ? '' : `<p style="color:var(--muted);font-size:.8rem;font-family:'DM Mono',monospace">No items in this group yet</p>`;
   el.innerHTML = `<div class="by-row" style="margin-bottom:.75rem">${groupBtns}</div><div class="denom-cards">${cards}${empty}</div>`;
 }
 
