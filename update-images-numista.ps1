@@ -61,10 +61,12 @@ function Get-NumistaImage($pageUrl) {
     if ($pageCache.ContainsKey($pageUrl)) { return $pageCache[$pageUrl] }
     try {
         $r = Invoke-WebRequest -Uri $pageUrl -UseBasicParsing -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        $m = [regex]::Match($r.Content, 'https://en\.numista\.com/catalogue/photos/[^/]+/[^"''<>\s]+-original\.jpg')
-        if ($m.Success) {
-            $pageCache[$pageUrl] = $m.Value
-            return $m.Value
+        $matches = [regex]::Matches($r.Content, 'https://en\.numista\.com/catalogue/photos/[^/]+/[^"''<>\s]+-original\.jpg')
+        # First match = obverse (portrait), second = reverse (design side) — prefer reverse
+        $img = if ($matches.Count -ge 2) { $matches[1].Value } elseif ($matches.Count -eq 1) { $matches[0].Value } else { $null }
+        if ($img) {
+            $pageCache[$pageUrl] = $img
+            return $img
         }
         Write-Host "  WARNING: no image found on $pageUrl" -ForegroundColor Yellow
         return $null
