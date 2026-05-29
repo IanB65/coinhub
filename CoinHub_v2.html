@@ -1361,12 +1361,21 @@ function renderHome() {
 }
 
 // ── HOME DENOM BROWSER ───────────────────────────────────────────────────────
-const _DENOM_GROUPS = {
+const _KNOWN_DENOM_GROUPS = {
   'Decimal':    ['½p','1p','2p','5p','10p','20p','50p','£1','£2','£5'],
   'Pre-decimal':['Half Farthing','Farthing','Half Penny','Penny','Threepence','Sixpence','Shilling','Florin','Half Crown','Crown'],
   'Other':      ['Medal','Other']
 };
+let _DENOM_GROUPS = Object.fromEntries(Object.entries(_KNOWN_DENOM_GROUPS).map(([k,v])=>[k,[...v]]));
 let _byDenomGroup = 'Decimal';
+
+function buildDenomGroups() {
+  const known = new Set(Object.values(_KNOWN_DENOM_GROUPS).flat());
+  const unknown = [...new Set(ALL_COINS.map(c=>c.denom).filter(d=>d&&!known.has(d)))]
+    .sort((a,b)=>(DENOM_SORT_KEY[a]??99)-(DENOM_SORT_KEY[b]??99));
+  _DENOM_GROUPS = Object.fromEntries(Object.entries(_KNOWN_DENOM_GROUPS).map(([k,v])=>[k,[...v]]));
+  if (unknown.length) _DENOM_GROUPS['Other'] = [..._DENOM_GROUPS['Other'], ...unknown];
+}
 function renderHomeDenomBrowser() {
   const el = document.getElementById('home-denom-browser');
   if (!el || !window._byDenomStats) return;
@@ -2685,6 +2694,7 @@ async function init() {
   try {
     const coins = await loadFromSheets();
     if (Array.isArray(coins)) ALL_COINS = coins;
+    buildDenomGroups();
     restorePendingData();
     NEXT_INST_ID = Math.max(NEXT_INST_ID, ...Object.values(INSTANCE_DATA).flat().map(i=>parseInt((i.id||'').replace('INS-',''))||0).filter(Boolean)) + 1;
   } catch(e) {
