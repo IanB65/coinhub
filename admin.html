@@ -361,7 +361,14 @@ function qaGuessYear(text) {
 function parseRoyalMintUrl(url) {
   const preview = document.getElementById('qaPreview');
   if (!url || !url.includes('royalmint.com/shop/')) { preview.style.display='none'; return; }
-  const slug = url.replace(/\/$/, '').split('/').pop();
+  // Strip query string and trailing slash before extracting slug
+  const cleanUrl = url.split('?')[0].replace(/\/$/, '');
+  // Reject collection/listing pages
+  if (cleanUrl.includes('/collection/') || cleanUrl.includes('/all-coins')) {
+    showMsg(document.getElementById('qaMsg'), 'err', 'That\'s a collection page — paste an individual product URL instead.');
+    preview.style.display='none'; return;
+  }
+  const slug = cleanUrl.split('/').pop();
   const denom = qaGuessDenom(slug);
   const year = qaGuessYear(slug);
   const name = qaSlugToName(slug, denom, year);
