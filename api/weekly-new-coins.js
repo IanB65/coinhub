@@ -72,6 +72,13 @@ const ARTICLE_SKIP = [
   'change checker', 'update:', 'updates:', 'preview:', 'round-up', 'round up',
   'designs released', 'new designs', 'have you got', 'do you have',
   'top 10', 'top ten', 'complete guide', 'full list',
+  // price / rarity / archive articles
+  'selling for', 'sold for', 'worth £', 'worth more', 'face value',
+  'check your change', 'check their change', 'urged to check',
+  'rarest', 'rare coin', 'error coin', 'print error', 'mistakenly',
+  'in circulation', 'entering circulation', 'enters circulation',
+  'no new', 'not be made', 'signs deal', 'expands into',
+  'how much is', 'how to spot', 'what to look for',
 ];
 
 /**
@@ -262,35 +269,75 @@ async function scrapeRoyalMintSitemap() {
 }
 
 async function scrapeGoogleNews() {
-  // Google News RSS — indexed within hours of a new Royal Mint release,
-  // served by Google (not blocked by coin-site CDNs).
+  // Google News RSS — indexed within hours of a new Royal Mint release.
+  // Parse <item> blocks individually so we can filter by pubDate and skip
+  // price/rarity/archive articles that aren't new-release announcements.
   const coins = [];
   const errors = [];
   const seen = new Set();
+  const cutoffMs = Date.now() - 60 * 24 * 60 * 60 * 1000; // 60 days
+
+  // Article phrases that signal a price/rarity/archive story, NOT a new release
+  const SKIP_PHRASES = [
+    'selling for', 'sold for', 'worth £', 'worth more', 'worth over', 'worth up to',
+    'check your change', 'check their change', 'urged to check', 'urges brits',
+    'rarest', 'rare coin', 'error coin', 'print error', 'mistakenly created',
+    'entering circulation', 'enters circulation', 'in circulation', 'entered circulation',
+    'no new', 'not be made', 'signs deal', 'expands into', 'us market',
+    'times face value', 'face value', 'most valuable', 'most wanted', 'scarcity',
+    'how much', 'how to spot', 'what to look for',
+  ];
+  // Title must contain at least one of these to be considered a new-release article
+  const ANNOUNCE_WORDS = [
+    'unveil', 'release', 'launch', 'new 50p', 'new £', 'new coin',
+    'commemorat', 'mark ', 'celebrat', 'honour', 'announced', 'first look',
+  ];
 
   const queries = [
-    'royal+mint+new+coin+UK+50p',
-    'royal+mint+new+coin+UK+%C2%A32',
-    'royal+mint+new+commemorative+coin+2026',
+    'royal+mint+new+50p+coin+UK+2026',
+    'royal+mint+new+%C2%A32+coin+UK+2026',
+    'royal+mint+commemorative+coin+2026',
   ];
 
   for (const q of queries) {
     const url = `https://news.google.com/rss/search?q=${q}&hl=en-GB&gl=GB&ceid=GB:en`;
     const { ok, status, text, error } = await safeFetch(url, HEADERS_FEED, 12000);
-    if (!ok) { errors.push(`Google News (${q}): HTTP ${status}${error ? ' ' + error : ''}`); continue; }
+    if (!ok) { errors.push(`Google News: HTTP ${status}${error ? ' ' + error : ''}`); continue; }
 
-    const titlePattern = /<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/gi;
-    let m;
-    while ((m = titlePattern.exec(text)) !== null) {
-      const rawName = extractText(m[1] || m[2] || '');
-      const denom = guessDenomination(rawName);
+    // Parse individual <item> blocks (skip the <channel> title which is the search query)
+    for (const [, itemXml] of text.matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+      const titleMatch = itemXml.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/i);
+      if (!titleMatch) continue;
+      const rawTitle = extractText(titleMatch[1] || titleMatch[2] || '');
+
+      const lower = rawTitle.toLowerCase();
+      if (SKIP_PHRASES.some(p => lower.includes(p))) continue;
+      if (!ANNOUNCE_WORDS.some(p => lower.includes(p))) continue;
+
+      // Filter by pubDate — skip articles older than 60 days
+      const pubDateMatch = itemXml.match(/<pubDate>([^<]+)<\/pubDate>/i);
+      let pubMs = Date.now();
+      if (pubDateMatch) {
+        const pd = new Date(pubDateMatch[1].trim()).getTime();
+        if (!isNaN(pd)) pubMs = pd;
+      }
+      if (pubMs < cutoffMs) continue;
+
+      const denom = guessDenomination(rawTitle);
       if (!denom) continue;
-      const cleanName = cleanCoinName(rawName);
+
+      const cleanName = cleanCoinName(rawTitle);
       if (!cleanName) continue;
-      const year = guessYear(rawName);
+
+      // Prefer explicit year in title; fall back to pubDate year (not current year)
+      const year = rawTitle.match(/\b(20\d{2})\b/)
+        ? guessYear(rawTitle)
+        : String(new Date(pubMs).getFullYear());
+
       const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
+
       coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.royalmint.com/' });
     }
   }
