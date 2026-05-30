@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CoinHub — Guest Access</title>
+<title>CoinHub — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;0,900;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -62,6 +62,24 @@ input:focus,select:focus{border-color:var(--gold2)}
 .msg.err{background:var(--need-bg);color:var(--need);border:1px solid var(--need);display:block}
 
 .note{font-size:.54rem;color:var(--muted);margin-top:.5rem;font-style:italic}
+
+/* ── New Coins ─────────────────────────────────────────────────────────────── */
+.section-divider{border:none;border-top:1px solid var(--border);margin:2.5rem 0}
+.scan-bar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.scan-result{font-size:.58rem;color:var(--muted);font-family:'DM Mono',monospace}
+.inbox-list{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
+.inbox-item{background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.7rem .9rem;display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:start}
+.inbox-item.approved-item{border-color:var(--got);background:var(--got-bg)}
+.inbox-item input[type=checkbox]{margin-top:3px;accent-color:var(--gold);width:14px;height:14px;flex-shrink:0}
+.inbox-body{min-width:0}
+.inbox-name{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox-meta{font-size:.5rem;color:var(--muted);letter-spacing:.06em;margin-top:2px}
+.inbox-meta a{color:var(--gold2);text-decoration:none}
+.inbox-meta a:hover{text-decoration:underline}
+.inbox-img{width:48px;height:48px;object-fit:contain;border-radius:2px;background:var(--paper3);flex-shrink:0}
+.inbox-img-placeholder{width:48px;height:48px;background:var(--paper3);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--muted)}
+.inbox-actions{display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap}
+.sel-count{font-size:.54rem;color:var(--muted);font-style:italic}
 </style>
 </head>
 <body>
@@ -69,13 +87,38 @@ input:focus,select:focus{border-color:var(--gold2)}
 <header>
   <div>
     <div class="logo">Coin <span>Hub</span></div>
-    <small class="logo" style="font-size:.48rem">Guest Access Manager</small>
+    <small class="logo" style="font-size:.48rem">Admin</small>
   </div>
   <div class="hbtns">
     <a href="/" class="btn">← Collection</a>
     <button class="btn" onclick="doLogout()">Sign Out</button>
   </div>
 </header>
+
+<h2>New Coins</h2>
+<div class="create-card">
+  <div class="scan-bar">
+    <button class="btn primary" id="scanBtn" onclick="scanCoins()">Scan for new coins</button>
+    <span class="scan-result" id="scanResult"></span>
+  </div>
+  <div class="msg" id="scanMsg"></div>
+</div>
+
+<div id="inboxSection" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem">
+    <h2 style="margin:0">Inbox <span id="inboxCount" style="font-size:.65rem;font-family:'DM Mono',monospace;color:var(--muted);font-weight:400"></span></h2>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <span class="sel-count" id="selCount"></span>
+      <button class="btn" id="selAllBtn" onclick="toggleSelectAll()">Select all</button>
+      <button class="btn primary" id="approveBtn" onclick="approveSelected()" disabled>Approve selected</button>
+      <button class="btn danger" id="discardBtn" onclick="discardSelected()" disabled>Discard selected</button>
+    </div>
+  </div>
+  <div class="inbox-list" id="inboxList"></div>
+  <div class="msg" id="inboxMsg" style="margin-top:.75rem"></div>
+</div>
+
+<hr class="section-divider">
 
 <h2>Create Guest Access</h2>
 <div class="create-card">
@@ -227,8 +270,148 @@ function copyLink(text, el) {
 function showMsg(el, type, text) { el.className = 'msg ' + type; el.textContent = text; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ── New Coins ─────────────────────────────────────────────────────────────────
+async function scanCoins() {
+  const btn = document.getElementById('scanBtn');
+  const msg = document.getElementById('scanMsg');
+  const result = document.getElementById('scanResult');
+  msg.className = 'msg';
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  result.textContent = '';
+  try {
+    const r = await fetch('/api/weekly-new-coins', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getOwnerToken() },
+    });
+    const d = await r.json();
+    if (!r.ok) { showMsg(msg, 'err', d.error || 'Scan failed.'); return; }
+    const summary = d.message ||
+      `Found ${d.found ?? '?'} coins — staged ${d.staged ?? 0} new, skipped ${d.skipped ?? 0} already known.`;
+    result.textContent = summary;
+    if (d.staged > 0 || d.found > 0) await loadInbox();
+    else showMsg(msg, 'ok', summary);
+  } catch { showMsg(msg, 'err', 'Network error.'); }
+  finally { btn.disabled = false; btn.textContent = 'Scan for new coins'; }
+}
+
+let inboxItems = [];
+
+async function loadInbox() {
+  try {
+    const r = await fetch('/api/inbox-approve', {
+      headers: { 'Authorization': 'Bearer ' + getOwnerToken() },
+    });
+    const d = await r.json();
+    if (!r.ok) return;
+    inboxItems = d.items || [];
+    renderInbox();
+  } catch {}
+}
+
+function renderInbox() {
+  const section = document.getElementById('inboxSection');
+  const list = document.getElementById('inboxList');
+  const countEl = document.getElementById('inboxCount');
+
+  if (!inboxItems.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  countEl.textContent = `(${inboxItems.length})`;
+
+  list.innerHTML = '';
+  inboxItems.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'inbox-item' + (item.approved ? ' approved-item' : '');
+    el.dataset.code = item.variantCode;
+
+    const img = item.imageUrl
+      ? `<img class="inbox-img" src="${esc(item.imageUrl)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        + `<div class="inbox-img-placeholder" style="display:none">no img</div>`
+      : `<div class="inbox-img-placeholder">no img</div>`;
+
+    const sourceLink = item.sourceUrl
+      ? ` · <a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener">view</a>` : '';
+    const price = item.price ? ` · £${esc(item.price)}` : '';
+    const dateFound = item.dateFound ? ` · found ${esc(item.dateFound)}` : '';
+
+    el.innerHTML = `
+      <input type="checkbox" onchange="onCheck()" ${item.approved ? 'checked' : ''}>
+      <div class="inbox-body">
+        <div class="inbox-name">${esc(item.name || item.variantCode)}</div>
+        <div class="inbox-meta">${esc(item.denomination)} · ${esc(item.year)} · ${esc(item.collection)}${price}${dateFound}${sourceLink}</div>
+      </div>
+      ${img}`;
+    list.appendChild(el);
+  });
+  onCheck();
+}
+
+function onCheck() {
+  const checked = document.querySelectorAll('.inbox-item input[type=checkbox]:checked');
+  const total = document.querySelectorAll('.inbox-item input[type=checkbox]');
+  document.getElementById('approveBtn').disabled = checked.length === 0;
+  document.getElementById('discardBtn').disabled = checked.length === 0;
+  document.getElementById('selCount').textContent = checked.length
+    ? `${checked.length} of ${total.length} selected` : '';
+  document.getElementById('selAllBtn').textContent =
+    checked.length === total.length ? 'Deselect all' : 'Select all';
+}
+
+let selectAllState = false;
+function toggleSelectAll() {
+  selectAllState = !selectAllState;
+  document.querySelectorAll('.inbox-item input[type=checkbox]').forEach(cb => cb.checked = selectAllState);
+  onCheck();
+}
+
+function selectedCodes() {
+  return [...document.querySelectorAll('.inbox-item input[type=checkbox]:checked')]
+    .map(cb => cb.closest('.inbox-item').dataset.code);
+}
+
+async function approveSelected() {
+  const codes = selectedCodes();
+  if (!codes.length) return;
+  const msg = document.getElementById('inboxMsg');
+  document.getElementById('approveBtn').disabled = true;
+  document.getElementById('discardBtn').disabled = true;
+  try {
+    const r = await fetch('/api/inbox-approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getOwnerToken() },
+      body: JSON.stringify({ variantCodes: codes }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showMsg(msg, 'err', d.error || 'Approve failed.'); return; }
+    showMsg(msg, 'ok', `Approved ${d.approved} coin${d.approved !== 1 ? 's' : ''} — added to Variants as "Need".`);
+    await loadInbox();
+  } catch { showMsg(msg, 'err', 'Network error.'); }
+  finally { onCheck(); }
+}
+
+async function discardSelected() {
+  const codes = selectedCodes();
+  if (!codes.length) return;
+  if (!confirm(`Discard ${codes.length} coin${codes.length !== 1 ? 's' : ''}? They will be removed from the inbox without being added to your collection.`)) return;
+  const msg = document.getElementById('inboxMsg');
+  document.getElementById('approveBtn').disabled = true;
+  document.getElementById('discardBtn').disabled = true;
+  try {
+    const r = await fetch('/api/inbox-approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getOwnerToken() },
+      body: JSON.stringify({ variantCodes: codes, discard: true }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showMsg(msg, 'err', d.error || 'Discard failed.'); return; }
+    showMsg(msg, 'ok', `Discarded ${d.discarded} coin${d.discarded !== 1 ? 's' : ''}.`);
+    await loadInbox();
+  } catch { showMsg(msg, 'err', 'Network error.'); }
+  finally { onCheck(); }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
-if (checkAuth()) loadGuests();
+if (checkAuth()) { loadGuests(); loadInbox(); }
 </script>
 </body>
 </html>
