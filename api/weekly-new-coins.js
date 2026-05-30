@@ -166,6 +166,101 @@ async function safeFetch(url, headers, timeoutMs = 12000) {
 
 // ─── Scrapers ─────────────────────────────────────────────────────────────────
 
+// Convert a Royal Mint product URL slug into a readable coin name.
+// Strips denomination, year, finish words and capitalises correctly.
+function slugToName(slug, denom, year) {
+  const SKIP = new Set([
+    'uk', 'coin', 'coins',
+    'brilliant', 'uncirculated', 'bu',
+    'silver', 'gold', 'platinum', 'proof', 'colour', 'coloured', 'piedfort',
+    'seven', 'six', 'five', 'four', 'three', 'two', 'collection', 'set',
+    '50', '2', '5', '1', '10', '20', 'pence', 'penny', 'pound', 'pounds',
+  ]);
+  const LOWERCASE = new Set(['of', 'the', 'a', 'an', 'in', 'on', 'at', 'by', 'for', 'with', 'from', 'and', 'or']);
+  const ROMAN = { 'Ii': 'II', 'Iii': 'III', 'Iv': 'IV', 'Vi': 'VI', 'Vii': 'VII', 'Viii': 'VIII' };
+
+  const words = slug
+    .split('-')
+    .filter(w => w && w !== year && !SKIP.has(w.toLowerCase()) && !/^\d+$/.test(w));
+
+  if (!words.length) return '';
+
+  return words.map((w, i) => {
+    const lower = w.toLowerCase();
+    if (i > 0 && LOWERCASE.has(lower)) return lower;
+    const titled = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    return ROMAN[titled] || titled;
+  }).join(' ').trim();
+}
+
+// Scrape the Royal Mint XML sitemap — always static, no JS rendering needed.
+// Product URL slugs encode name, denomination and year, e.g.
+//   /shop/limited-editions/the-lord-of-the-rings/the-one-ring/
+//     the-lord-of-the-rings-2026-50p-brilliant-uncirculated-coin/
+async function scrapeRoyalMintSitemap() {
+  const coins = [];
+  const errors = [];
+  const seen = new Set();
+  const cutoffMs = Date.now() - 45 * 24 * 60 * 60 * 1000; // 45 days
+  const currentYear = new Date().getFullYear();
+
+  const idxResult = await safeFetch('https://www.royalmint.com/sitemap_index.xml', HEADERS_FEED, 15000);
+  if (!idxResult.ok) {
+    errors.push(`Royal Mint sitemap index: HTTP ${idxResult.status}${idxResult.error ? ' ' + idxResult.error : ''}`);
+    return { coins, errors, source: 'Royal Mint (sitemap)' };
+  }
+
+  const allChildSitemaps = [...idxResult.text.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(m => m[1].trim());
+  const shopSitemaps = allChildSitemaps.filter(u => /shop|product|coin/i.test(u));
+  const toFetch = (shopSitemaps.length ? shopSitemaps : allChildSitemaps).slice(0, 10);
+
+  for (const smUrl of toFetch) {
+    const smResult = await safeFetch(smUrl, HEADERS_FEED, 20000);
+    if (!smResult.ok) {
+      errors.push(`Royal Mint sitemap ${smUrl}: HTTP ${smResult.status}`);
+      continue;
+    }
+
+    for (const [, entry] of smResult.text.matchAll(/<url>([\s\S]*?)<\/url>/gi)) {
+      const locMatch = entry.match(/<loc>(https?:\/\/www\.royalmint\.com(\/shop\/[^<]+))<\/loc>/i);
+      if (!locMatch) continue;
+      const fullUrl = locMatch[1];
+      const path = locMatch[2];
+
+      // Only individual product pages — skip category/collection/listing pages
+      if (!path.match(/\/shop\/(limited-editions|commemorative|coins|bullion|gifts)\//i)) continue;
+      if (path.includes('/collection/') || path.includes('/all-coins')) continue;
+      const depth = path.replace(/\/$/, '').split('/').length;
+      if (depth < 4) continue;
+
+      // Skip if lastmod is older than cutoff
+      const lastmodMatch = entry.match(/<lastmod>([^<]+)<\/lastmod>/i);
+      if (lastmodMatch) {
+        const lastmod = new Date(lastmodMatch[1].trim()).getTime();
+        if (!isNaN(lastmod) && lastmod < cutoffMs) continue;
+      }
+
+      const slug = path.replace(/\/$/, '').split('/').pop();
+      const denom = guessDenomination(slug.replace(/-/g, ' '));
+      if (!denom) continue;
+
+      const year = guessYear(slug.replace(/-/g, ' '));
+      if (parseInt(year) < currentYear - 1) continue;
+
+      const name = slugToName(slug, denom, year);
+      if (!name || name.length < 4) continue;
+
+      const key = `${name.toLowerCase()}|${year}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: fullUrl });
+    }
+  }
+
+  return { coins, errors, source: 'Royal Mint (sitemap)' };
+}
+
 async function scrapeRoyalMint() {
   const coins = [];
   const errors = [];
@@ -370,21 +465,22 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const [rmResult, ccResult, wmResult, cnResult] = await Promise.all([
+    const [rmResult, rmSitemapResult, ccResult, wmResult, cnResult] = await Promise.all([
       scrapeRoyalMint(),
+      scrapeRoyalMintSitemap(),
       scrapeChangechecker(),
       scrapeWestminster(),
       scrapeCoinNewsUK(),
     ]);
 
-    const sourceSummary = [rmResult, ccResult, wmResult, cnResult].map(r => ({
+    const sourceSummary = [rmResult, rmSitemapResult, ccResult, wmResult, cnResult].map(r => ({
       source: r.source,
       found: r.coins.length,
       errors: r.errors,
     }));
 
     // Deduplicate across sources
-    const allScraped = [...rmResult.coins, ...ccResult.coins, ...wmResult.coins, ...cnResult.coins];
+    const allScraped = [...rmResult.coins, ...rmSitemapResult.coins, ...ccResult.coins, ...wmResult.coins, ...cnResult.coins];
     const dedupedMap = new Map();
     for (const c of allScraped) {
       const key = `${c.denomination}|${c.year}|${c.name.toLowerCase()}`;
