@@ -80,6 +80,14 @@ input:focus,select:focus{border-color:var(--gold2)}
 .inbox-img-placeholder{width:48px;height:48px;background:var(--paper3);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--muted)}
 .inbox-actions{display:flex;gap:.5rem;margin-top:.85rem;flex-wrap:wrap}
 .sel-count{font-size:.54rem;color:var(--muted);font-style:italic}
+.quick-add{background:var(--paper2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1.5rem}
+.quick-add-row{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:.75rem}
+.quick-add-row .field{flex:3;min-width:200px}
+.quick-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.75rem}
+.quick-fields .field{min-width:0}
+.quick-preview{display:none;background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:.75rem}
+.quick-preview-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;margin-bottom:.3rem}
+.sources-detail{font-size:.52rem;color:var(--muted);margin-top:.4rem;line-height:1.8}
 </style>
 </head>
 <body>
@@ -96,11 +104,56 @@ input:focus,select:focus{border-color:var(--gold2)}
 </header>
 
 <h2>New Coins</h2>
+
+<div class="quick-add">
+  <div style="font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem">Quick-add from Royal Mint URL</div>
+  <div class="quick-add-row">
+    <div class="field">
+      <label>Royal Mint product URL</label>
+      <input type="url" id="qaUrl" placeholder="https://www.royalmint.com/shop/limited-editions/…" oninput="parseRoyalMintUrl(this.value)">
+    </div>
+  </div>
+  <div id="qaPreview" class="quick-preview">
+    <div class="quick-fields">
+      <div class="field"><label>Coin name</label><input type="text" id="qaName"></div>
+      <div class="field"><label>Denomination</label>
+        <select id="qaDenom">
+          <option value="">—</option>
+          <option value="50p">50p</option>
+          <option value="£1">£1</option>
+          <option value="£2">£2</option>
+          <option value="£5">£5</option>
+          <option value="£10">£10</option>
+          <option value="£20">£20</option>
+          <option value="£25">£25</option>
+          <option value="£50">£50</option>
+          <option value="£100">£100</option>
+          <option value="1p">1p</option>
+          <option value="2p">2p</option>
+          <option value="5p">5p</option>
+          <option value="10p">10p</option>
+          <option value="20p">20p</option>
+        </select>
+      </div>
+      <div class="field"><label>Year</label><input type="text" id="qaYear" maxlength="4" placeholder="2026"></div>
+    </div>
+    <div class="quick-fields">
+      <div class="field"><label>Image URL (optional)</label><input type="url" id="qaImage" placeholder="https://…"></div>
+      <div class="field"><label>Price (optional, £)</label><input type="text" id="qaPrice" placeholder="15.00"></div>
+      <div class="field" style="display:flex;align-items:flex-end">
+        <button class="btn primary" style="width:100%" onclick="quickAddCoin()">Add to inbox</button>
+      </div>
+    </div>
+    <div class="msg" id="qaMsg"></div>
+  </div>
+</div>
+
 <div class="create-card">
   <div class="scan-bar">
     <button class="btn primary" id="scanBtn" onclick="scanCoins()">Scan for new coins</button>
     <span class="scan-result" id="scanResult"></span>
   </div>
+  <div class="sources-detail" id="sourcesDetail"></div>
   <div class="msg" id="scanMsg"></div>
 </div>
 
@@ -270,12 +323,104 @@ function copyLink(text, el) {
 function showMsg(el, type, text) { el.className = 'msg ' + type; el.textContent = text; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── New Coins ─────────────────────────────────────────────────────────────────
+// ── Quick-add from Royal Mint URL ─────────────────────────────────────────────
+const QA_SKIP = new Set(['uk','coin','coins','brilliant','uncirculated','bu','silver','gold','platinum','proof','colour','coloured','piedfort','seven','six','five','four','three','two','collection','set','50','2','5','1','10','20','pence','penny','pound','pounds','the','a','an']);
+const QA_LOWER = new Set(['of','in','on','at','by','for','with','from','and','or']);
+const QA_ROMAN = {'Ii':'II','Iii':'III','Iv':'IV','Vi':'VI','Vii':'VII','Viii':'VIII'};
+
+function qaSlugToName(slug, denom, year) {
+  return slug.split('-')
+    .filter(w => w && w !== year && !QA_SKIP.has(w.toLowerCase()) && !/^\d+$/.test(w))
+    .map((w, i) => {
+      const lo = w.toLowerCase();
+      if (i > 0 && QA_LOWER.has(lo)) return lo;
+      const t = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      return QA_ROMAN[t] || t;
+    }).join(' ').trim();
+}
+function qaGuessDenom(text) {
+  const t = text.toLowerCase();
+  if (t.includes('£5')||t.includes('five-pound')) return '£5';
+  if (t.includes('£2')||t.includes('two-pound')) return '£2';
+  if (t.includes('£1')||t.includes('one-pound')) return '£1';
+  if (t.includes('50p')||t.includes('fifty-pence')||t.includes('50-pence')) return '50p';
+  if (t.includes('20p')) return '20p';
+  if (t.includes('10p')) return '10p';
+  if (t.includes('5p')) return '5p';
+  if (t.includes('2p')) return '2p';
+  if (t.includes('1p')) return '1p';
+  return '';
+}
+function qaGuessYear(text) {
+  const cur = new Date().getFullYear();
+  const m = [...text.matchAll(/\b(20\d{2})\b/g)].map(x => parseInt(x[1]));
+  if (!m.length) return String(cur);
+  return String(m.sort((a,b)=>Math.abs(a-cur)-Math.abs(b-cur))[0]);
+}
+
+function parseRoyalMintUrl(url) {
+  const preview = document.getElementById('qaPreview');
+  if (!url || !url.includes('royalmint.com/shop/')) { preview.style.display='none'; return; }
+  const slug = url.replace(/\/$/, '').split('/').pop();
+  const denom = qaGuessDenom(slug);
+  const year = qaGuessYear(slug);
+  const name = qaSlugToName(slug, denom, year);
+  document.getElementById('qaName').value = name;
+  const denomSel = document.getElementById('qaDenom');
+  denomSel.value = denom || '';
+  document.getElementById('qaYear').value = year;
+  document.getElementById('qaImage').value = '';
+  document.getElementById('qaPrice').value = '';
+  document.getElementById('qaMsg').className = 'msg';
+  preview.style.display = 'block';
+}
+
+function qaMakeCode(name) {
+  const words = name.toUpperCase().replace(/[^A-Z0-9 ]/g,'').split(/\s+/).filter(Boolean);
+  if (!words.length) return 'XXXX';
+  if (words.length === 1) return words[0].slice(0,4).padEnd(4,'X');
+  return words.map(w=>w[0]).join('').slice(0,4).padEnd(4, words[0][1]||'X');
+}
+
+async function quickAddCoin() {
+  const msg = document.getElementById('qaMsg');
+  const name = document.getElementById('qaName').value.trim();
+  const denom = document.getElementById('qaDenom').value;
+  const year = document.getElementById('qaYear').value.trim();
+  const imageUrl = document.getElementById('qaImage').value.trim();
+  const price = document.getElementById('qaPrice').value.trim();
+  const sourceUrl = document.getElementById('qaUrl').value.trim();
+  if (!name || !denom || !year) { showMsg(msg,'err','Name, denomination and year are required.'); return; }
+
+  const denomPart = denom.toUpperCase().replace('£','£');
+  const variantCode = `UK-COMM-${denomPart}-${year}-${qaMakeCode(name)}-`;
+  const monarch = parseInt(year) >= 2023 ? 'King Charles III' : 'Queen Elizabeth II';
+
+  msg.className = 'msg';
+  try {
+    const r = await fetch('/api/inbox-stage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getOwnerToken() },
+      body: JSON.stringify({ coins: [{ variantCode, name, denomination: denom, collection: 'Commemorative', monarch, year, imageUrl, sourceUrl, price }] }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showMsg(msg,'err',d.error||'Failed to add.'); return; }
+    if (d.staged === 0) { showMsg(msg,'err','Already in your collection or inbox.'); return; }
+    showMsg(msg,'ok',`Added "${name}" to inbox.`);
+    document.getElementById('qaUrl').value = '';
+    document.getElementById('qaPreview').style.display = 'none';
+    await loadInbox();
+  } catch { showMsg(msg,'err','Network error.'); }
+}
+
+// ── Scan ──────────────────────────────────────────────────────────────────────
 async function scanCoins() {
   const btn = document.getElementById('scanBtn');
   const msg = document.getElementById('scanMsg');
   const result = document.getElementById('scanResult');
+  const detail = document.getElementById('sourcesDetail');
   msg.className = 'msg';
+  detail.textContent = '';
   btn.disabled = true;
   btn.textContent = 'Scanning…';
   result.textContent = '';
@@ -286,10 +431,20 @@ async function scanCoins() {
     });
     const d = await r.json();
     if (!r.ok) { showMsg(msg, 'err', d.error || 'Scan failed.'); return; }
-    const summary = d.message ||
-      `Found ${d.found ?? '?'} coins — staged ${d.staged ?? 0} new, skipped ${d.skipped ?? 0} already known.`;
+
+    // Source breakdown
+    if (Array.isArray(d.sources) && d.sources.length) {
+      detail.textContent = d.sources
+        .map(s => `${s.source}: ${s.found} found${s.errors?.length ? ` (${s.errors.length} error${s.errors.length>1?'s':''})` : ''}`)
+        .join('  ·  ');
+    }
+
+    const n = d.staged ?? 0;
+    const summary = n > 0
+      ? `Staged ${n} new coin${n!==1?'s':''} to inbox.`
+      : (d.message || `Nothing new found — ${d.skipped ?? 0} already known.`);
     result.textContent = summary;
-    if (d.staged > 0 || d.found > 0) await loadInbox();
+    if (n > 0) await loadInbox();
     else showMsg(msg, 'ok', summary);
   } catch { showMsg(msg, 'err', 'Network error.'); }
   finally { btn.disabled = false; btn.textContent = 'Scan for new coins'; }
