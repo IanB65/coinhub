@@ -130,10 +130,11 @@ function cleanCoinName(raw) {
 }
 
 function guessDenomination(text) {
+  // Use word-boundary checks so "£2,000" or "£500" don't match £2/£5
   const t = text.toLowerCase();
-  if (t.includes('£5') || t.includes('five pound') || t.includes('5 pound')) return '£5';
-  if (t.includes('£2') || t.includes('two pound') || t.includes('2 pound') || t.includes('2-pound')) return '£2';
-  if (t.includes('£1') || t.includes('one pound') || t.includes('1 pound') || t.includes('1-pound')) return '£1';
+  if (/£5(?!\d|,\d)/.test(t) || t.includes('five pound') || t.includes('5 pound')) return '£5';
+  if (/£2(?!\d|,\d)/.test(t) || t.includes('two pound') || t.includes('2 pound') || t.includes('2-pound')) return '£2';
+  if (/£1(?!\d|,\d)/.test(t) || t.includes('one pound') || t.includes('1 pound') || t.includes('1-pound')) return '£1';
   if (t.includes('50p') || t.includes('fifty pence') || t.includes('50 pence') || t.includes('50-pence')) return '50p';
   if (t.includes('20p') || t.includes('twenty pence')) return '20p';
   if (t.includes('10p') || t.includes('ten pence') || t.includes('a-z')) return '10p';
@@ -279,7 +280,7 @@ async function scrapeGoogleNews() {
 
   // Article phrases that signal a price/rarity/archive story, NOT a new release
   const SKIP_PHRASES = [
-    'selling for', 'sold for', 'worth £', 'worth more', 'worth over', 'worth up to',
+    'selling for', 'sold for', 'on sale for', 'worth £', 'worth more', 'worth over', 'worth up to',
     'check your change', 'check their change', 'urged to check', 'urges brits',
     'rarest', 'rare coin', 'error coin', 'print error', 'mistakenly created',
     'entering circulation', 'enters circulation', 'in circulation', 'entered circulation',
@@ -291,7 +292,7 @@ async function scrapeGoogleNews() {
   const ANNOUNCE_WORDS = [
     'unveil', 'release', 'launch', 'new 50p', 'new £', 'new coin',
     'commemorat', 'mark ', 'celebrat', 'honour', 'announced', 'first look',
-    'forge', 'mint', 'creat', 'struck', 'revealed', 'designed',
+    'forge', 'newly minted', 'creat', 'struck', 'revealed', 'designed',
   ];
 
   const queries = [
