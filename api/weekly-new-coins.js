@@ -291,6 +291,7 @@ async function scrapeGoogleNews() {
   const ANNOUNCE_WORDS = [
     'unveil', 'release', 'launch', 'new 50p', 'new £', 'new coin',
     'commemorat', 'mark ', 'celebrat', 'honour', 'announced', 'first look',
+    'forge', 'mint', 'creat', 'struck', 'revealed', 'designed',
   ];
 
   const queries = [
@@ -524,15 +525,20 @@ module.exports = async function handler(req, res) {
       ...((inboxResp.ok ? await inboxResp.json() : {}).values || []).slice(1).map(r => r[0]).filter(Boolean),
     ]);
 
-    // Read name+year combos already in sheet
+    // Read name+year combos already in Variants AND inbox to catch same coin with different names
     const variantNamesResp = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:F?majorDimension=ROWS`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
+    const inboxNamesResp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/NewCoinsInbox!A:F?majorDimension=ROWS`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     const existingNameYears = new Set();
-    if (variantNamesResp.ok) {
-      const vdata = await variantNamesResp.json();
-      for (const row of (vdata.values || []).slice(1)) {
+    for (const resp of [variantNamesResp, inboxNamesResp]) {
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      for (const row of (data.values || []).slice(1)) {
         const name = (row[1] || '').toLowerCase().trim();
         const year = (row[5] || '').trim();
         if (name && year) existingNameYears.add(`${name}|${year}`);
