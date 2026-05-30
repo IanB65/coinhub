@@ -261,53 +261,28 @@ async function scrapeRoyalMintSitemap() {
   return { coins, errors, source: 'Royal Mint (sitemap)' };
 }
 
-async function scrapeRoyalMint() {
+async function scrapeGoogleNews() {
+  // Google News RSS — indexed within hours of a new Royal Mint release,
+  // served by Google (not blocked by coin-site CDNs).
   const coins = [];
   const errors = [];
   const seen = new Set();
 
-  // Try the press centre — these are news articles, less aggressively blocked
-  const pressUrls = [
-    'https://www.royalmint.com/aboutus/press-centre/',
-    'https://www.royalmint.com/new-coins/',
-    'https://www.royalmint.com/our-coins/',
+  const queries = [
+    'royal+mint+new+coin+UK+50p',
+    'royal+mint+new+coin+UK+%C2%A32',
+    'royal+mint+new+commemorative+coin+2026',
   ];
 
-  for (const url of pressUrls) {
-    const { ok, status, text, error } = await safeFetch(url, HEADERS_BROWSER);
-    if (!ok) { errors.push(`Royal Mint ${url}: HTTP ${status}${error ? ' ' + error : ''}`); continue; }
+  for (const q of queries) {
+    const url = `https://news.google.com/rss/search?q=${q}&hl=en-GB&gl=GB&ceid=GB:en`;
+    const { ok, status, text, error } = await safeFetch(url, HEADERS_FEED, 12000);
+    if (!ok) { errors.push(`Google News (${q}): HTTP ${status}${error ? ' ' + error : ''}`); continue; }
 
-    // JSON-LD structured data — product names from Royal Mint are usually clean here
-    const jsonLdPattern = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+    const titlePattern = /<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/gi;
     let m;
-    while ((m = jsonLdPattern.exec(text)) !== null) {
-      try {
-        const data = JSON.parse(m[1]);
-        const items = Array.isArray(data) ? data.flat() : [data];
-        for (const item of items) {
-          const nodes = item['@graph'] ? item['@graph'] : [item];
-          for (const node of nodes) {
-            const rawName = extractText(node.name || '');
-            if (!rawName) continue;
-            const combined = rawName + ' ' + (node.description || '');
-            const denom = guessDenomination(combined);
-            if (!denom) continue;
-            const cleanName = cleanCoinName(rawName);
-            if (!cleanName) continue;
-            const year = guessYear(combined);
-            const key = `${cleanName.toLowerCase()}|${year}`;
-            if (seen.has(key)) continue;
-            seen.add(key);
-            coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, imageUrl: node.image || '', sourceUrl: url, price: node.offers?.price ? String(node.offers.price) : '' });
-          }
-        }
-      } catch { /* skip malformed */ }
-    }
-
-    // Headings
-    const headingPattern = /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/gi;
-    while ((m = headingPattern.exec(text)) !== null) {
-      const rawName = extractText(m[1]);
+    while ((m = titlePattern.exec(text)) !== null) {
+      const rawName = extractText(m[1] || m[2] || '');
       const denom = guessDenomination(rawName);
       if (!denom) continue;
       const cleanName = cleanCoinName(rawName);
@@ -316,11 +291,11 @@ async function scrapeRoyalMint() {
       const key = `${cleanName.toLowerCase()}|${year}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: url });
+      coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, sourceUrl: 'https://www.royalmint.com/' });
     }
   }
 
-  return { coins, errors, source: 'Royal Mint' };
+  return { coins, errors, source: 'Google News' };
 }
 
 async function scrapeChangechecker() {
@@ -465,22 +440,21 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const [rmResult, rmSitemapResult, ccResult, wmResult, cnResult] = await Promise.all([
-      scrapeRoyalMint(),
-      scrapeRoyalMintSitemap(),
+    const [gnResult, ccResult, wmResult, cnResult] = await Promise.all([
+      scrapeGoogleNews(),
       scrapeChangechecker(),
       scrapeWestminster(),
       scrapeCoinNewsUK(),
     ]);
 
-    const sourceSummary = [rmResult, rmSitemapResult, ccResult, wmResult, cnResult].map(r => ({
+    const sourceSummary = [gnResult, ccResult, wmResult, cnResult].map(r => ({
       source: r.source,
       found: r.coins.length,
       errors: r.errors,
     }));
 
     // Deduplicate across sources
-    const allScraped = [...rmResult.coins, ...rmSitemapResult.coins, ...ccResult.coins, ...wmResult.coins, ...cnResult.coins];
+    const allScraped = [...gnResult.coins, ...ccResult.coins, ...wmResult.coins, ...cnResult.coins];
     const dedupedMap = new Map();
     for (const c of allScraped) {
       const key = `${c.denomination}|${c.year}|${c.name.toLowerCase()}`;
