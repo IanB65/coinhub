@@ -33,19 +33,17 @@ async function getGoogleToken() {
   return (await resp.json()).access_token;
 }
 
-function buildSearchQuery(name, denom) {
+function buildSearchQuery(name, denom, includeDenom = true) {
   // CoinHub names are often "Collection - Design name". Use the design part.
   const designPart = name.includes(' - ') ? name.split(' - ').slice(1).join(' ') : name;
-  const clean = designPart.replace(/['"]/g, '').trim();
-  // Prepend denomination for better matching (e.g. "50p Peter Rabbit")
-  return denom ? `${denom} ${clean}` : clean;
+  // Strip dots and punctuation that can confuse Numista search (e.g. J.R.R. → JRR)
+  const clean = designPart.replace(/[.,'"""]/g, '').replace(/\s+/g, ' ').trim();
+  return includeDenom && denom ? `${denom} ${clean}` : clean;
 }
 
 async function numistaSearch(name, year, denom, apiKey) {
-  const q = encodeURIComponent(buildSearchQuery(name, denom));
-  // Single search only — no fallback, to stay within the 2000/month free quota
-  const url = `https://api.numista.com/api/v3/coins?q=${q}&issuer=united-kingdom&count=10&lang=en`;
-  try {
+  const doSearch = async (q) => {
+    const url = `https://api.numista.com/api/v3/coins?q=${encodeURIComponent(q)}&issuer=united-kingdom&count=10&lang=en`;
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
     if (r.status === 429) throw new Error('Quota exceeded');
     if (!r.ok) return null;
@@ -62,8 +60,17 @@ async function numistaSearch(name, year, denom, apiKey) {
       if (match) return match.id;
     }
     return items[0].id;
+  };
+
+  try {
+    // First try: with denomination prefix
+    const id = await doSearch(buildSearchQuery(name, denom, true));
+    if (id) return id;
+    // Fallback: without denomination prefix (costs one extra call only on miss)
+    if (denom) return await doSearch(buildSearchQuery(name, denom, false));
+    return null;
   } catch(e) {
-    if (e.message === 'Quota exceeded') throw e; // propagate to stop processing
+    if (e.message === 'Quota exceeded') throw e;
     return null;
   }
 }
@@ -194,6 +201,33 @@ module.exports = async function handler(req, res) {
             body: JSON.stringify({ values: appendRows }),
           }
         );
+      }
+
+      // Also write estimatedValue + valueDate back to Variants sheet (cols M & N) for analysis
+      const foundResults = results.filter(r => r.found);
+      if (foundResults.length) {
+        const varResp = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (varResp.ok) {
+          const { values: varCodes } = await varResp.json();
+          const varRowMap = {};
+          (varCodes || []).forEach((r, i) => { if (i > 0 && r[0]?.trim()) varRowMap[r[0].trim()] = i + 1; });
+          const varBatch = foundResults
+            .filter(r => varRowMap[r.variantCode])
+            .map(r => ({
+              range: `Variants!M${varRowMap[r.variantCode]}:N${varRowMap[r.variantCode]}`,
+              values: [[r.estimatedValue !== null ? String(r.estimatedValue) : '', now]],
+            }));
+          if (varBatch.length) {
+            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: varBatch }),
+            });
+          }
+        }
       }
     } catch (e) {
       console.error('Values sheet write error:', e.message);
