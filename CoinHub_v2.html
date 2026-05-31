@@ -1191,7 +1191,7 @@ async function loadFromSheets() {
       .sort((a,b)=> (isNaN(a.sort)?Infinity:a.sort) - (isNaN(b.sort)?Infinity:b.sort))
       .map(g=>g.name);
     if (_groupOrder.length) DENOM_GROUP_ORDER = _groupOrder;
-    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes,,,iValPri] = [0,1,2,3,4,5,6,7,8,9,10,11];
+    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes,,,iValPri,,, iNumistaId] = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
@@ -1219,6 +1219,8 @@ async function loadFromSheets() {
       const r = varRows[i]; const vc = r[iVC]?.trim(); if (!vc) continue;
       const instCount = (INSTANCE_DATA[vc]||[]).length;
       const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
+      const manualNumistaId = r[iNumistaId]?.trim() || '';
+      if (manualNumistaId) { if (!VALUES_MAP[vc]) VALUES_MAP[vc] = { numistaId:'', estimatedValue:null, lastUpdated:'' }; VALUES_MAP[vc].numistaId = manualNumistaId; }
       const vm = VALUES_MAP[vc];
       if (r[iValPri]?.trim().toUpperCase() === 'TRUE') VALUE_PRIORITY_SET.add(vc);
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
