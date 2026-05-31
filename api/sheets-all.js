@@ -63,9 +63,13 @@ module.exports = async function handler(req, res) {
     let groups = [];
     try { groups = await fetchTab('Groups'); } catch { /* optional */ }
 
+    // Collections tab: col A=collection name
+    let collections = [];
+    try { collections = await fetchTab('Collections'); } catch { /* optional */ }
+
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ variants, instances, images, storage, storage1, storage2, storage3, values, conditions, ptypes, denominations, groups });
+    return res.status(200).json({ variants, instances, images, storage, storage1, storage2, storage3, values, conditions, ptypes, denominations, groups, collections });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
