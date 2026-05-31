@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drive Image Host Test — CoinHub</title>
+<style>
+  body { font-family: 'DM Mono', monospace; background: #F5F2EB; color: #0C0C0A; padding: 2rem; max-width: 680px; margin: 0 auto; }
+  h1 { font-family: 'Bodoni Moda', serif; font-size: 1.4rem; margin-bottom: 0.25rem; color: #8B6914; }
+  p.sub { color: #4A4438; font-size: 0.8rem; margin-top: 0; margin-bottom: 2rem; }
+  label { display: block; font-size: 0.75rem; margin-bottom: 0.4rem; color: #4A4438; }
+  input { width: 100%; box-sizing: border-box; padding: 0.5rem 0.6rem; font-family: 'DM Mono', monospace; font-size: 0.8rem; border: 1px solid #C8BFA8; border-radius: 3px; background: #fff; margin-bottom: 1rem; }
+  button { padding: 0.5rem 1.2rem; background: #8B6914; color: #F5F2EB; border: none; border-radius: 3px; font-family: 'DM Mono', monospace; font-size: 0.8rem; cursor: pointer; }
+  button:hover { background: #C49A2A; }
+  .results { margin-top: 2rem; }
+  .test-row { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #C8BFA8; border-radius: 3px; background: #EDE9DF; }
+  .test-row img { width: 100px; height: 100px; object-fit: contain; border: 1px solid #C8BFA8; background: #fff; border-radius: 3px; flex-shrink: 0; }
+  .test-info { flex: 1; font-size: 0.75rem; }
+  .test-info .label { font-weight: bold; margin-bottom: 0.3rem; color: #0C0C0A; }
+  .test-info .url { word-break: break-all; color: #4A4438; margin-bottom: 0.4rem; }
+  .status { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-size: 0.7rem; }
+  .status.ok { background: #D8F3DC; color: #2D6A4F; }
+  .status.fail { background: #FFE4E8; color: #9B2335; }
+  .status.loading { background: #DBEAFE; color: #1A3A6B; }
+  .folder-info { background: #EDE9DF; border: 1px solid #C8BFA8; border-radius: 3px; padding: 0.75rem 1rem; font-size: 0.75rem; margin-bottom: 1.5rem; }
+  .folder-info strong { display: block; margin-bottom: 0.3rem; }
+  a { color: #8B6914; }
+</style>
+</head>
+<body>
+
+<h1>Google Drive Image Host Test</h1>
+<p class="sub">Tests whether Drive-hosted images load correctly in CoinHub's display context.</p>
+
+<div class="folder-info">
+  <strong>Test folder (already created):</strong>
+  <a href="https://drive.google.com/drive/folders/1Is60-8r2fH-yOMnVowYDW6_33GuUeoRQ" target="_blank">
+    CoinHub Images (Test)
+  </a><br>
+  Upload a coin image there, set sharing to <em>"Anyone with the link"</em>, then paste the file ID below.
+</div>
+
+<label for="fileId">Google Drive File ID
+  <span style="color:#4A4438;font-weight:normal"> — from the file's share URL: drive.google.com/file/d/<strong>THIS_PART</strong>/view</span>
+</label>
+<input type="text" id="fileId" placeholder="e.g. 1ABCxyz123...">
+<button onclick="runTest()">Test image loading</button>
+
+<div class="results" id="results"></div>
+
+<script>
+function runTest() {
+  const id = document.getElementById('fileId').value.trim();
+  if (!id) { alert('Paste a file ID first.'); return; }
+
+  const formats = [
+    {
+      label: 'Format A — lh3.googleusercontent.com (recommended)',
+      url: `https://lh3.googleusercontent.com/d/${id}`
+    },
+    {
+      label: 'Format B — uc?export=view',
+      url: `https://drive.google.com/uc?export=view&id=${id}`
+    },
+    {
+      label: 'Format C — thumbnail API',
+      url: `https://drive.google.com/thumbnail?id=${id}&sz=w400`
+    }
+  ];
+
+  const container = document.getElementById('results');
+  container.innerHTML = '<p style="font-size:0.8rem;color:#4A4438">Testing three URL formats — results appear as images load or fail…</p>';
+
+  formats.forEach(({ label, url }) => {
+    const row = document.createElement('div');
+    row.className = 'test-row';
+
+    const img = document.createElement('img');
+    img.alt = 'coin';
+
+    const info = document.createElement('div');
+    info.className = 'test-info';
+    const status = document.createElement('span');
+    status.className = 'status loading';
+    status.textContent = 'loading…';
+
+    info.innerHTML = `<div class="label">${label}</div><div class="url">${url}</div>`;
+    info.appendChild(status);
+
+    img.onload = () => {
+      status.className = 'status ok';
+      status.textContent = `✓ loaded (${img.naturalWidth}×${img.naturalHeight}px)`;
+    };
+    img.onerror = () => {
+      status.className = 'status fail';
+      status.textContent = '✗ failed to load';
+      img.style.opacity = '0.2';
+    };
+
+    img.src = url;
+    row.appendChild(img);
+    row.appendChild(info);
+    container.appendChild(row);
+  });
+}
+</script>
+
+</body>
+</html>
