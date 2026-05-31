@@ -241,6 +241,7 @@ body.guest-mode #bottomNav{bottom:0}
 .coin-card-img{width:100%;aspect-ratio:1;background:var(--paper3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .coin-card-img img{width:100%;height:100%;object-fit:contain;padding:.5rem}
 .coin-card-status{position:absolute;top:.4rem;right:.4rem;font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.07em;padding:2px 6px;border-radius:10px;text-transform:uppercase;font-weight:500}
+.coin-card-priority{position:absolute;top:.35rem;left:.35rem;font-size:.7rem;line-height:1;color:var(--gold2);pointer-events:none}
 .coin-card-status.Got{background:var(--got-bg);color:var(--got)}
 .coin-card-status.Need{background:var(--need-bg);color:var(--need)}
 .coin-card-status.List{background:var(--list-bg);color:var(--list)}
@@ -830,6 +831,42 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
   </div>
 </div>
 
+<!-- ── UPDATE VALUES CONFIG OVERLAY ── -->
+<div id="valuesConfigOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(12,12,10,.7);align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:var(--r);padding:2rem;width:min(420px,92vw);font-family:'Cormorant Garamond',serif">
+    <div style="font-family:'Bodoni Moda',serif;font-size:1.2rem;margin-bottom:.25rem;color:var(--ink)">Update Values</div>
+    <div id="valConfigLastRun" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:1.25rem"></div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.25rem">
+      <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer">
+        <input type="radio" name="valMode" value="smart" checked onchange="_valConfigCount()" style="margin-top:.2rem;accent-color:var(--gold)">
+        <div>
+          <div style="font-size:.95rem;font-weight:600;color:var(--ink)">Smart</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted)">Skip coins already updated this month · priority coins first</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer">
+        <input type="radio" name="valMode" value="priority" onchange="_valConfigCount()" style="margin-top:.2rem;accent-color:var(--gold)">
+        <div>
+          <div style="font-size:.95rem;font-weight:600;color:var(--ink)">Priority only</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted)">Run only coins you have flagged ★</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer">
+        <input type="radio" name="valMode" value="all" onchange="_valConfigCount()" style="margin-top:.2rem;accent-color:var(--gold)">
+        <div>
+          <div style="font-size:.95rem;font-weight:600;color:var(--ink)">All coins</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted)">Force-refresh every owned coin</div>
+        </div>
+      </label>
+    </div>
+    <div id="valConfigCount" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);margin-bottom:1.25rem"></div>
+    <div style="display:flex;justify-content:flex-end;gap:.6rem">
+      <button class="btn-sm" onclick="closeValuesConfig()" style="background:transparent;border:1px solid var(--border);color:var(--ink);font-family:'DM Mono',monospace;font-size:.6rem;padding:.45rem .9rem;border-radius:var(--r);cursor:pointer">Cancel</button>
+      <button class="btn-sm" onclick="runUpdateValues()" style="background:var(--gold);border:none;color:#fff;font-family:'DM Mono',monospace;font-size:.6rem;padding:.45rem .9rem;border-radius:var(--r);cursor:pointer;letter-spacing:.05em">Run ›</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── UPDATE VALUES PROGRESS OVERLAY ── -->
 <div id="valuesProgressOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(12,12,10,.7);align-items:center;justify-content:center">
   <div style="background:var(--paper);border-radius:var(--r);padding:2rem;width:min(400px,90vw);text-align:center;font-family:'Cormorant Garamond',serif">
@@ -891,6 +928,11 @@ const STORAGE3_LIST = [];
 const PTYPE_LIST = [];
 const COLLECTIONS_LIST = [];
 const VALUES_MAP = {}; // { variantCode: { numistaId, estimatedValue, lastUpdated } }
+let VALUE_PRIORITY_SET = new Set();
+try { VALUE_PRIORITY_SET = new Set(JSON.parse(localStorage.getItem('COINHUB_VALUE_PRIORITY') || '[]')); } catch(e) {}
+function _saveValuePriority() { try { localStorage.setItem('COINHUB_VALUE_PRIORITY', JSON.stringify([...VALUE_PRIORITY_SET])); } catch(e) {} }
+function _loadLastRunInfo() { try { return JSON.parse(localStorage.getItem('COINHUB_VALUE_LASTRUN') || 'null'); } catch(e) { return null; } }
+function _saveLastRunInfo(info) { try { localStorage.setItem('COINHUB_VALUE_LASTRUN', JSON.stringify(info)); } catch(e) {} }
 
 const MONARCH_META = {
   'King Charles III':   {
@@ -1149,7 +1191,7 @@ async function loadFromSheets() {
       .sort((a,b)=> (isNaN(a.sort)?Infinity:a.sort) - (isNaN(b.sort)?Infinity:b.sort))
       .map(g=>g.name);
     if (_groupOrder.length) DENOM_GROUP_ORDER = _groupOrder;
-    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes] = [0,1,2,3,4,5,6,7,8];
+    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes,,,iValPri] = [0,1,2,3,4,5,6,7,8,9,10,11];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
@@ -1172,13 +1214,16 @@ async function loadFromSheets() {
     _seedScCheckedFromInstances(INSTANCE_DATA);
 
     const coins = [];
+    VALUE_PRIORITY_SET.clear();
     for (let i=1; i<varRows.length; i++) {
       const r = varRows[i]; const vc = r[iVC]?.trim(); if (!vc) continue;
       const instCount = (INSTANCE_DATA[vc]||[]).length;
       const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
       const vm = VALUES_MAP[vc];
+      if (r[iValPri]?.trim().toUpperCase() === 'TRUE') VALUE_PRIORITY_SET.add(vc);
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
+    _saveValuePriority();
 
     try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], collectionsList:[...COLLECTIONS_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
     return coins;
@@ -1728,8 +1773,9 @@ function coinCardHTML(coin, ctxId, idx) {
   const imgEl = img
     ? `<img src="${img}" alt="" loading="lazy" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')">`
     : coinPlaceholderSVG(coin.denom);
+  const priorityStar = VALUE_PRIORITY_SET.has(coin.variantCode) ? '<span class="coin-card-priority">★</span>' : '';
   return `<div class="coin-card" onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${idx})">
-    <div class="coin-card-img">${imgEl}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
+    <div class="coin-card-img">${imgEl}${priorityStar}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
     <div class="coin-card-body">
       <div class="coin-card-name">${esc(coin.name)}</div>
       <div class="coin-card-meta"><span>${coin.year||'—'}</span><span>${esc(coin.denom)}</span>${coin.instCount>0?`<span style="color:var(--got)">×${coin.instCount}</span>`:''}</div>
@@ -1982,7 +2028,9 @@ function renderLightboxContent(vc) {
         <dt>Collection</dt><dd>${esc(coin.collection||'—')}</dd>
         <dt>Status</dt><dd><span class="badge-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></dd>
         <dt>Est. Value</dt><dd id="ev-${esc(vc)}">${coin.estimatedValue !== null ? '£'+coin.estimatedValue.toFixed(2) : '—'}</dd>
+        <dt>Value Date</dt><dd id="evd-${esc(vc)}">${VALUES_MAP[vc]?.lastUpdated||'—'}</dd>
       </dl>
+      ${GUEST_MODE?'':`<div style="margin:-.25rem 0 .75rem"><button id="evp-${esc(vc)}" onclick="toggleValuePriority('${esc(vc)}')" style="background:transparent;border:1px solid var(--border);border-radius:var(--r);font-family:'DM Mono',monospace;font-size:.6rem;padding:.3rem .7rem;cursor:pointer;color:${VALUE_PRIORITY_SET.has(vc)?'var(--gold2)':'var(--muted)'};">${VALUE_PRIORITY_SET.has(vc)?'★':'☆'} Value priority</button></div>`}
       ${coin.notes?`<div class="lb-variant-notes">${esc(coin.notes)}</div>`:''}
       <div class="lb-instances">
         <h3 class="lb-section-title">Your Copies (${instances.length})</h3>
@@ -2468,27 +2516,109 @@ function refreshSheetData() {
   setTimeout(() => location.reload(), 800);
 }
 
-// ── UPDATE VALUES (Numista) ───────────────────────────────────────────────────
-async function updateValues() {
-  if (GUEST_MODE) { showToast('Log in to update values'); return; }
+// ── VALUE PRIORITY ────────────────────────────────────────────────────────────
+async function toggleValuePriority(vc) {
+  const wasOn = VALUE_PRIORITY_SET.has(vc);
+  wasOn ? VALUE_PRIORITY_SET.delete(vc) : VALUE_PRIORITY_SET.add(vc);
+  _saveValuePriority();
+  const on = VALUE_PRIORITY_SET.has(vc);
+  const btn = document.getElementById('evp-' + vc);
+  if (btn) { btn.textContent = (on ? '★' : '☆') + ' Value priority'; btn.style.color = on ? 'var(--gold2)' : 'var(--muted)'; btn.disabled = true; }
+  try {
+    const res = await authFetch('/api/variants-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'setPriority', variantCode: vc, priority: on }),
+    });
+    if (!res.ok) throw new Error(await res.text().catch(() => res.status));
+  } catch(e) {
+    wasOn ? VALUE_PRIORITY_SET.add(vc) : VALUE_PRIORITY_SET.delete(vc);
+    _saveValuePriority();
+    if (btn) { btn.textContent = (wasOn ? '★' : '☆') + ' Value priority'; btn.style.color = wasOn ? 'var(--gold2)' : 'var(--muted)'; }
+    showToast('Could not save priority — ' + e.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
+// ── UPDATE VALUES (Numista) ───────────────────────────────────────────────────
+function _valConfigCoinList(mode) {
   const gotCoins = ALL_COINS.filter(c => c.status === 'Got');
-  if (!gotCoins.length) { showToast('No owned coins to value'); return; }
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  if (mode === 'priority') return gotCoins.filter(c => VALUE_PRIORITY_SET.has(c.variantCode));
+  if (mode === 'all') return gotCoins;
+  // smart: exclude coins updated this month
+  return gotCoins.filter(c => !(VALUES_MAP[c.variantCode]?.lastUpdated || '').startsWith(thisMonth));
+}
+
+function _valConfigCount() {
+  const mode = document.querySelector('input[name="valMode"]:checked')?.value || 'smart';
+  const coins = _valConfigCoinList(mode);
+  const priority = coins.filter(c => VALUE_PRIORITY_SET.has(c.variantCode)).length;
+  const unvalued = coins.filter(c => !VALUES_MAP[c.variantCode]?.lastUpdated).length;
+  let detail = '';
+  if (mode !== 'priority') {
+    const parts = [];
+    if (priority) parts.push(`${priority} priority`);
+    if (unvalued) parts.push(`${unvalued} never valued`);
+    if (parts.length) detail = ` (${parts.join(', ')} first)`;
+  }
+  document.getElementById('valConfigCount').textContent = `${coins.length} coin${coins.length !== 1 ? 's' : ''} will be checked${detail}`;
+}
+
+function updateValues() {
+  if (GUEST_MODE) { showToast('Log in to update values'); return; }
+  if (!ALL_COINS.filter(c => c.status === 'Got').length) { showToast('No owned coins to value'); return; }
+  const lastRun = _loadLastRunInfo();
+  const el = document.getElementById('valConfigLastRun');
+  if (el) el.textContent = lastRun ? `Last run: ${lastRun.date} — ${lastRun.priced} prices updated` : 'No previous run recorded';
+  document.querySelector('input[name="valMode"][value="smart"]').checked = true;
+  _valConfigCount();
+  document.getElementById('valuesConfigOverlay').style.display = 'flex';
+}
+
+function closeValuesConfig() {
+  document.getElementById('valuesConfigOverlay').style.display = 'none';
+}
+
+async function runUpdateValues() {
+  if (GUEST_MODE) return;
+  const mode = document.querySelector('input[name="valMode"]:checked')?.value || 'smart';
+  closeValuesConfig();
+
+  let toProcess = _valConfigCoinList(mode);
+  // Sort: priority first → never valued → oldest updated
+  toProcess = [...toProcess].sort((a, b) => {
+    const ap = VALUE_PRIORITY_SET.has(a.variantCode) ? 0 : 1;
+    const bp = VALUE_PRIORITY_SET.has(b.variantCode) ? 0 : 1;
+    if (ap !== bp) return ap - bp;
+    const av = VALUES_MAP[a.variantCode]?.lastUpdated || '';
+    const bv = VALUES_MAP[b.variantCode]?.lastUpdated || '';
+    if (!av && !bv) return 0;
+    if (!av) return -1;
+    if (!bv) return 1;
+    return av < bv ? -1 : 1;
+  });
+
+  if (!toProcess.length) { showToast('No coins to update for this mode'); return; }
 
   const overlay = document.getElementById('valuesProgressOverlay');
   const progText = document.getElementById('valuesProgText');
   const progBar  = document.getElementById('valuesProgBar');
+  progBar.style.background = 'var(--gold)';
+  progBar.style.width = '0%';
   overlay.style.display = 'flex';
 
   const BATCH = 15;
   let done = 0, found = 0, priced = 0;
-  const total = gotCoins.length;
+  const total = toProcess.length;
+  const today = new Date().toISOString().split('T')[0];
 
   try {
-    for (let i = 0; i < gotCoins.length; i += BATCH) {
-      const batch = gotCoins.slice(i, i + BATCH).map(c => {
+    for (let i = 0; i < toProcess.length; i += BATCH) {
+      const batch = toProcess.slice(i, i + BATCH).map(c => {
         const insts = INSTANCE_DATA[c.variantCode] || [];
-        const numistaGrade = insts.map(i => CONDITION_NUMISTA_MAP[i.cond]).find(g => g) || null;
+        const numistaGrade = insts.map(inst => CONDITION_NUMISTA_MAP[inst.cond]).find(g => g) || null;
         return {
           variantCode: c.variantCode,
           name: c.name,
@@ -2508,7 +2638,8 @@ async function updateValues() {
       if (res.ok) {
         const { results } = await res.json();
         if (results.some(r => r.quotaExceeded)) {
-          progText.textContent = 'Numista monthly quota exceeded — try again next month.';
+          _saveLastRunInfo({ date: today, priced });
+          progText.textContent = `Numista monthly quota exceeded after ${priced} updates — try again next month.`;
           progBar.style.background = 'var(--need)';
           setTimeout(() => { overlay.style.display = 'none'; }, 6000);
           return;
@@ -2516,21 +2647,17 @@ async function updateValues() {
         for (const r of results) {
           if (r.found) {
             found++;
-            VALUES_MAP[r.variantCode] = {
-              numistaId: r.numistaId,
-              estimatedValue: r.estimatedValue,
-              lastUpdated: new Date().toISOString().split('T')[0],
-            };
+            VALUES_MAP[r.variantCode] = { numistaId: r.numistaId, estimatedValue: r.estimatedValue, lastUpdated: today };
             const coin = ALL_COINS.find(c => c.variantCode === r.variantCode);
             if (coin) coin.estimatedValue = r.estimatedValue;
             if (r.estimatedValue !== null) priced++;
-            // Update open lightbox live
             const el = document.getElementById('ev-' + r.variantCode);
             if (el) el.textContent = r.estimatedValue !== null ? '£' + r.estimatedValue.toFixed(2) : '—';
+            const eld = document.getElementById('evd-' + r.variantCode);
+            if (eld) eld.textContent = today;
           }
         }
       } else {
-        // Surface the actual error so we know what went wrong
         const errMsg = await res.text().catch(() => res.status);
         progText.textContent = `Error (HTTP ${res.status}): ${errMsg}`;
         progBar.style.background = 'var(--need)';
@@ -2539,12 +2666,12 @@ async function updateValues() {
       }
 
       done += batch.length;
-      const pct = Math.round((done / total) * 100);
       progText.textContent = `Checking ${done} / ${total} coins…`;
-      progBar.style.width = pct + '%';
+      progBar.style.width = Math.round((done / total) * 100) + '%';
     }
 
-    // Persist updated valuesMap into cache
+    _saveLastRunInfo({ date: today, priced });
+
     try {
       const raw = localStorage.getItem(GS_CACHE_KEY);
       if (raw) {
@@ -2556,8 +2683,8 @@ async function updateValues() {
     } catch(e) {}
 
     progText.textContent = found === 0
-      ? `Done — no coins matched on Numista (${total} checked). Check coin names match Numista's catalogue.`
-      : `Done! ${priced} of ${found} Numista matches have price data.`;
+      ? `Done — no coins matched on Numista (${total} checked).`
+      : `Done! ${priced} price${priced !== 1 ? 's' : ''} updated from ${found} Numista match${found !== 1 ? 'es' : ''}.`;
     progBar.style.width = '100%';
     setTimeout(() => { overlay.style.display = 'none'; }, 5000);
   } catch(e) {
