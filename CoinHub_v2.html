@@ -2547,8 +2547,11 @@ function _valConfigCoinList(mode) {
   const thisMonth = new Date().toISOString().slice(0, 7);
   if (mode === 'priority') return gotCoins.filter(c => VALUE_PRIORITY_SET.has(c.variantCode));
   if (mode === 'all') return gotCoins;
-  // smart: exclude coins updated this month
-  return gotCoins.filter(c => !(VALUES_MAP[c.variantCode]?.lastUpdated || '').startsWith(thisMonth));
+  // smart: always include priority coins; skip non-priority coins updated this month
+  return gotCoins.filter(c =>
+    VALUE_PRIORITY_SET.has(c.variantCode) ||
+    !(VALUES_MAP[c.variantCode]?.lastUpdated || '').startsWith(thisMonth)
+  );
 }
 
 function _valConfigCount() {
