@@ -889,6 +889,7 @@ const STORAGE1_LIST = [];
 const STORAGE2_LIST = [];
 const STORAGE3_LIST = [];
 const PTYPE_LIST = [];
+const COLLECTIONS_LIST = [];
 const VALUES_MAP = {}; // { variantCode: { numistaId, estimatedValue, lastUpdated } }
 
 const MONARCH_META = {
@@ -1112,7 +1113,7 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, valuesMap, denomGroupMap, denomSortMap, denomGroupOrder } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, collectionsList, valuesMap, denomGroupMap, denomSortMap, denomGroupOrder } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         setMsg('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
@@ -1125,6 +1126,7 @@ async function loadFromSheets() {
         STORAGE2_LIST.push(...(storage2||[]));
         STORAGE3_LIST.push(...(storage3||[]));
         PTYPE_LIST.push(...(ptypeList||[]));
+        COLLECTIONS_LIST.push(...(collectionsList||[]));
         Object.assign(VALUES_MAP, valuesMap || {});
         _seedScCheckedFromInstances(instances);
         return coins;
@@ -1136,7 +1138,7 @@ async function loadFromSheets() {
     setMsg('Fetching coin data…');
     const res = await authFetch('/api/sheets-all?_=' + Date.now(), { cache:'no-store' });
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
-    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows, groups:groupRows } = await res.json();
+    const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows, groups:groupRows, collections:collRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
     (denomRows||[]).slice(1).forEach(r=>{ const n=r[0]?.trim(),g=r[1]?.trim(),s=parseFloat(r[2]); if(n&&g) DENOM_GROUP_MAP[n]=g; if(n&&!isNaN(s)) DENOM_SORT_KEY[n]=s; });
     const _groupOrder = (groupRows||[]).slice(1)
@@ -1154,6 +1156,7 @@ async function loadFromSheets() {
     _parseStorList(stor2Rows, STORAGE2_LIST);
     _parseStorList(stor3Rows, STORAGE3_LIST);
     _parseStorList(ptypeRows, PTYPE_LIST);
+    _parseStorList(collRows, COLLECTIONS_LIST);
     for (let i=1; i<(valRows||[]).length; i++) {
       const r=valRows[i]; if (!r[0]?.trim()) continue;
       const ev = parseFloat(r[2]); VALUES_MAP[r[0].trim()] = { numistaId:r[1]?.trim()||'', estimatedValue:isNaN(ev)?null:ev, lastUpdated:r[3]?.trim()||'' };
@@ -1175,7 +1178,7 @@ async function loadFromSheets() {
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
 
-    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], collectionsList:[...COLLECTIONS_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
@@ -2208,7 +2211,7 @@ function openEditVariant(vc) {
   document.getElementById('evDenom').value = coin.denom;
   _populateSelect('evYear',    ALL_COINS.map(c=>c.year),        coin.year||'');
   _populateSelect('evMonarch', ALL_COINS.map(c=>c.monarch),     coin.monarch||'');
-  _populateSelect('evCollect', ALL_COINS.map(c=>c.collection),  coin.collection||'');
+  _populateSelect('evCollect', COLLECTIONS_LIST.length ? COLLECTIONS_LIST : ALL_COINS.map(c=>c.collection), coin.collection||'');
   document.getElementById('evStatus').value  = coin.status||'Unknown';
   document.getElementById('evImgUrl').value  = coin.imgUrl||'';
   document.getElementById('evNotes').value   = coin.notes||'';
