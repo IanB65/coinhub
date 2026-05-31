@@ -47,12 +47,34 @@ module.exports = async function handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { return res.status(400).json({ error: 'Invalid JSON' }); }
 
-  const { action, variantCode, name, denom, collection, monarch, year, status, imgUrl, notes } = body || {};
+  const { action, variantCode, name, denom, collection, monarch, year, status, imgUrl, notes, priority } = body || {};
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
     const token = await getAccessToken();
     const today = new Date().toISOString().slice(0, 10);
+
+    if (action === 'setPriority') {
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Sheet fetch failed: ' + readResp.status);
+      const { values } = await readResp.json();
+      const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === variantCode);
+      if (rowIndex === -1) return res.status(404).json({ error: `Variant ${variantCode} not found` });
+      const sheetRow = rowIndex + 1;
+      const writeResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!L${sheetRow}?valueInputOption=USER_ENTERED`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ values: [[priority ? 'TRUE' : 'FALSE']] }),
+        }
+      );
+      if (!writeResp.ok) throw new Error('Priority write failed: ' + await writeResp.text());
+      return res.status(200).json({ ok: true, variantCode, priority: !!priority });
+    }
 
     if (action === 'delete') {
       const readResp = await fetch(

@@ -1191,7 +1191,7 @@ async function loadFromSheets() {
       .sort((a,b)=> (isNaN(a.sort)?Infinity:a.sort) - (isNaN(b.sort)?Infinity:b.sort))
       .map(g=>g.name);
     if (_groupOrder.length) DENOM_GROUP_ORDER = _groupOrder;
-    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes] = [0,1,2,3,4,5,6,7,8];
+    const [iVC,iName,iDenom,iColl,iMon,iYear,iStat,iImg,iNotes,,,iValPri] = [0,1,2,3,4,5,6,7,8,9,10,11];
 
     for (let i=1; i<imgRows.length; i++) { const r=imgRows[i]; if (r[0]&&r[1]) COTUK_MAP[r[0].trim()]=r[1].trim(); }
     for (let i=1; i<(storRows||[]).length; i++) { const r=storRows[i]; if (r[0]&&r[1]) STORAGE_MAP[r[0].trim()]=r[1].trim(); }
@@ -1214,13 +1214,16 @@ async function loadFromSheets() {
     _seedScCheckedFromInstances(INSTANCE_DATA);
 
     const coins = [];
+    VALUE_PRIORITY_SET.clear();
     for (let i=1; i<varRows.length; i++) {
       const r = varRows[i]; const vc = r[iVC]?.trim(); if (!vc) continue;
       const instCount = (INSTANCE_DATA[vc]||[]).length;
       const status = instCount > 0 ? 'Got' : (r[iStat]?.trim()||'Need');
       const vm = VALUES_MAP[vc];
+      if (r[iValPri]?.trim().toUpperCase() === 'TRUE') VALUE_PRIORITY_SET.add(vc);
       coins.push({ variantCode:vc, name:r[iName]?.trim()||'', denom:r[iDenom]?.trim()||'', collection:r[iColl]?.trim()||'', monarch:r[iMon]?.trim()||'', year:parseInt(r[iYear])||0, status, imgUrl:r[iImg]?.trim()||'', notes:r[iNotes]?.trim()||'', instCount, parsed:parseVariant(vc), estimatedValue:vm?.estimatedValue??null });
     }
+    _saveValuePriority();
 
     try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], collectionsList:[...COLLECTIONS_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
     return coins;
@@ -2514,14 +2517,27 @@ function refreshSheetData() {
 }
 
 // ── VALUE PRIORITY ────────────────────────────────────────────────────────────
-function toggleValuePriority(vc) {
-  VALUE_PRIORITY_SET.has(vc) ? VALUE_PRIORITY_SET.delete(vc) : VALUE_PRIORITY_SET.add(vc);
+async function toggleValuePriority(vc) {
+  const wasOn = VALUE_PRIORITY_SET.has(vc);
+  wasOn ? VALUE_PRIORITY_SET.delete(vc) : VALUE_PRIORITY_SET.add(vc);
   _saveValuePriority();
+  const on = VALUE_PRIORITY_SET.has(vc);
   const btn = document.getElementById('evp-' + vc);
-  if (btn) {
-    const on = VALUE_PRIORITY_SET.has(vc);
-    btn.textContent = (on ? '★' : '☆') + ' Value priority';
-    btn.style.color = on ? 'var(--gold2)' : 'var(--muted)';
+  if (btn) { btn.textContent = (on ? '★' : '☆') + ' Value priority'; btn.style.color = on ? 'var(--gold2)' : 'var(--muted)'; btn.disabled = true; }
+  try {
+    const res = await authFetch('/api/variants-write', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'setPriority', variantCode: vc, priority: on }),
+    });
+    if (!res.ok) throw new Error(await res.text().catch(() => res.status));
+  } catch(e) {
+    wasOn ? VALUE_PRIORITY_SET.add(vc) : VALUE_PRIORITY_SET.delete(vc);
+    _saveValuePriority();
+    if (btn) { btn.textContent = (wasOn ? '★' : '☆') + ' Value priority'; btn.style.color = wasOn ? 'var(--gold2)' : 'var(--muted)'; }
+    showToast('Could not save priority — ' + e.message);
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
