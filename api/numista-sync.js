@@ -195,6 +195,33 @@ module.exports = async function handler(req, res) {
           }
         );
       }
+
+      // Also write estimatedValue + valueDate back to Variants sheet (cols M & N) for analysis
+      const foundResults = results.filter(r => r.found);
+      if (foundResults.length) {
+        const varResp = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (varResp.ok) {
+          const { values: varCodes } = await varResp.json();
+          const varRowMap = {};
+          (varCodes || []).forEach((r, i) => { if (i > 0 && r[0]?.trim()) varRowMap[r[0].trim()] = i + 1; });
+          const varBatch = foundResults
+            .filter(r => varRowMap[r.variantCode])
+            .map(r => ({
+              range: `Variants!M${varRowMap[r.variantCode]}:N${varRowMap[r.variantCode]}`,
+              values: [[r.estimatedValue !== null ? String(r.estimatedValue) : '', now]],
+            }));
+          if (varBatch.length) {
+            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: varBatch }),
+            });
+          }
+        }
+      }
     } catch (e) {
       console.error('Values sheet write error:', e.message);
       // Return results even if sheet write failed
