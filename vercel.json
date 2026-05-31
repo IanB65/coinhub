@@ -1,8 +1,5 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" }
-  ],
-  "functions": {
-    "api/drive-migrate-images.js": { "maxDuration": 60 }
-  }
+  ]
 }
