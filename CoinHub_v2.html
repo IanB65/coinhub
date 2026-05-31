@@ -851,9 +851,9 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
       <label>Code<input id="evCode" type="text" readonly style="opacity:.6"></label>
       <label>Name<input id="evName" type="text"></label>
       <label>Denomination<input id="evDenom" type="text"></label>
-      <label>Year<input id="evYear" type="text"></label>
-      <label>Monarch<input id="evMonarch" type="text"></label>
-      <label>Collection<input id="evCollect" type="text"></label>
+      <label>Year<select id="evYear"></select></label>
+      <label>Monarch<select id="evMonarch"></select></label>
+      <label>Collection<select id="evCollect"></select></label>
       <label>Status
         <select id="evStatus">
           <option>Got</option><option>Need</option><option>List</option><option>Unknown</option>
@@ -2186,19 +2186,32 @@ async function removeInstance(vc, id) {
 }
 
 // ── ADMIN: VARIANTS ───────────────────────────────────────────────────────────
+function _populateSelect(id, values, current) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = '';
+  const all = [...new Set(values.filter(Boolean))].sort();
+  if (current && !all.includes(current)) all.push(current);
+  all.forEach(v => {
+    const o = document.createElement('option');
+    o.value = o.textContent = v;
+    if (v === current) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
 function openEditVariant(vc) {
   const coin = ALL_COINS.find(c=>c.variantCode===vc);
   if (!coin) return;
   const m = document.getElementById('editVariantModal');
-  document.getElementById('evCode').value     = vc;
-  document.getElementById('evName').value     = coin.name;
-  document.getElementById('evDenom').value    = coin.denom;
-  document.getElementById('evYear').value     = coin.year||'';
-  document.getElementById('evMonarch').value  = coin.monarch||'';
-  document.getElementById('evCollect').value  = coin.collection||'';
-  document.getElementById('evStatus').value   = coin.status||'Unknown';
-  document.getElementById('evImgUrl').value   = coin.imgUrl||'';
-  document.getElementById('evNotes').value    = coin.notes||'';
+  document.getElementById('evCode').value  = vc;
+  document.getElementById('evName').value  = coin.name;
+  document.getElementById('evDenom').value = coin.denom;
+  _populateSelect('evYear',    ALL_COINS.map(c=>c.year),        coin.year||'');
+  _populateSelect('evMonarch', ALL_COINS.map(c=>c.monarch),     coin.monarch||'');
+  _populateSelect('evCollect', ALL_COINS.map(c=>c.collection),  coin.collection||'');
+  document.getElementById('evStatus').value  = coin.status||'Unknown';
+  document.getElementById('evImgUrl').value  = coin.imgUrl||'';
+  document.getElementById('evNotes').value   = coin.notes||'';
   m.style.display='flex';
 }
 function closeEditVariant() { document.getElementById('editVariantModal').style.display='none'; _editModalClosedAt = Date.now(); }
