@@ -33,19 +33,17 @@ async function getGoogleToken() {
   return (await resp.json()).access_token;
 }
 
-function buildSearchQuery(name, denom) {
+function buildSearchQuery(name, denom, includeDenom = true) {
   // CoinHub names are often "Collection - Design name". Use the design part.
   const designPart = name.includes(' - ') ? name.split(' - ').slice(1).join(' ') : name;
-  const clean = designPart.replace(/['"]/g, '').trim();
-  // Prepend denomination for better matching (e.g. "50p Peter Rabbit")
-  return denom ? `${denom} ${clean}` : clean;
+  // Strip dots and punctuation that can confuse Numista search (e.g. J.R.R. → JRR)
+  const clean = designPart.replace(/[.,'"""]/g, '').replace(/\s+/g, ' ').trim();
+  return includeDenom && denom ? `${denom} ${clean}` : clean;
 }
 
 async function numistaSearch(name, year, denom, apiKey) {
-  const q = encodeURIComponent(buildSearchQuery(name, denom));
-  // Single search only — no fallback, to stay within the 2000/month free quota
-  const url = `https://api.numista.com/api/v3/coins?q=${q}&issuer=united-kingdom&count=10&lang=en`;
-  try {
+  const doSearch = async (q) => {
+    const url = `https://api.numista.com/api/v3/coins?q=${encodeURIComponent(q)}&issuer=united-kingdom&count=10&lang=en`;
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
     if (r.status === 429) throw new Error('Quota exceeded');
     if (!r.ok) return null;
@@ -62,8 +60,17 @@ async function numistaSearch(name, year, denom, apiKey) {
       if (match) return match.id;
     }
     return items[0].id;
+  };
+
+  try {
+    // First try: with denomination prefix
+    const id = await doSearch(buildSearchQuery(name, denom, true));
+    if (id) return id;
+    // Fallback: without denomination prefix (costs one extra call only on miss)
+    if (denom) return await doSearch(buildSearchQuery(name, denom, false));
+    return null;
   } catch(e) {
-    if (e.message === 'Quota exceeded') throw e; // propagate to stop processing
+    if (e.message === 'Quota exceeded') throw e;
     return null;
   }
 }
