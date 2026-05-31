@@ -76,25 +76,32 @@ async function numistaSearch(name, year, denom, apiKey) {
 }
 
 async function numistaPrice(numistaId, apiKey) {
-  const url = `https://api.numista.com/api/v3/coins/${numistaId}/prices?currency=GBP`;
+  const url = `https://api.numista.com/api/v3/coins/${numistaId}/prices`;
   try {
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
     if (!r.ok) return { estimatedValue: null, pricesByGrade: {} };
     const data = await r.json();
     const prices = data.prices || [];
-    // Build a grade → price map from all GBP prices
+    // Build a grade → price map, preferring GBP then EUR then first available
     const pricesByGrade = {};
     for (const p of prices) {
-      if (p.currency === 'GBP' && p.grade) {
-        const val = p.average ?? p.median ?? p.max ?? null;
-        if (val !== null) pricesByGrade[p.grade] = Math.round(Number(val) * 100) / 100;
+      if (!p.grade) continue;
+      const val = p.average ?? p.median ?? p.max ?? null;
+      if (val === null) continue;
+      const rounded = Math.round(Number(val) * 100) / 100;
+      // Only overwrite if this is a better currency match
+      if (!pricesByGrade[p.grade] || p.currency === 'GBP' || (p.currency === 'EUR' && pricesByGrade[p.grade].currency !== 'GBP')) {
+        pricesByGrade[p.grade] = { value: rounded, currency: p.currency };
       }
     }
-    // General fallback: first GBP price (used for variant-level display and want-list analysis)
-    const gbp = prices.find(p => p.currency === 'GBP') || prices[0];
-    if (!gbp) return { estimatedValue: null, pricesByGrade };
+    // Flatten to value only (currency stored temporarily for priority logic above)
+    const gradeMap = {};
+    for (const [grade, entry] of Object.entries(pricesByGrade)) gradeMap[grade] = entry.value;
+    // General fallback: best currency price overall
+    const gbp = prices.find(p => p.currency === 'GBP') || prices.find(p => p.currency === 'EUR') || prices[0];
+    if (!gbp) return { estimatedValue: null, pricesByGrade: gradeMap };
     const val = gbp.average ?? gbp.median ?? gbp.max ?? null;
-    return { estimatedValue: val !== null ? Math.round(Number(val) * 100) / 100 : null, pricesByGrade };
+    return { estimatedValue: val !== null ? Math.round(Number(val) * 100) / 100 : null, pricesByGrade: gradeMap };
   } catch { return { estimatedValue: null, pricesByGrade: {} }; }
 }
 
