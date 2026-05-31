@@ -1203,7 +1203,7 @@ async function loadFromSheets() {
     _parseStorList(collRows, COLLECTIONS_LIST);
     for (let i=1; i<(valRows||[]).length; i++) {
       const r=valRows[i]; if (!r[0]?.trim()) continue;
-      const ev = parseFloat(r[2]); VALUES_MAP[r[0].trim()] = { numistaId:r[1]?.trim()||'', estimatedValue:isNaN(ev)?null:ev, lastUpdated:r[3]?.trim()||'' };
+      const ev = parseFloat(r[2]); VALUES_MAP[r[0].trim()] = { numistaId:r[1]?.trim()||'', estimatedValue:isNaN(ev)?null:ev, lastUpdated:r[3]?.trim()||'', pricesByGrade:{} };
     }
 
     for (let i=1; i<instRows.length; i++) {
@@ -2055,11 +2055,13 @@ function buildInstItemHTML(inst, i, vc) {
   const scRaw = _scChecked[inst.id] || _scChecked[`${vc}::${inst.id}`];
   const lastChecked = scRaw ? new Date(scRaw).toLocaleDateString('en-GB') : '—';
   const condOpts = _getCondList().map(c=>`<option value="${esc(c)}"${c===cond?' selected':''}>${esc(c)}</option>`).join('');
+  const instVal = getInstanceValue(inst, vc);
   return `<div class="inst-item" id="inst-${esc(inst.id)}">
     <div class="inst-header">
       <span class="inst-id">${esc(inst.id)}</span>
       <span class="inst-grade">${esc(cond||'—')}</span>
-      ${price?`<span class="inst-price">${esc(price)}</span>`:''}
+      <span id="iev-${esc(inst.id)}" style="font-size:.75rem;color:var(--gold);margin-left:.4rem">${instVal !== null ? '≈£'+instVal.toFixed(2) : ''}</span>
+      ${price?`<span class="inst-price">paid: ${esc(price)}</span>`:''}
       ${GUEST_MODE?'':
         `<button class="btn-sm" onclick="toggleInstEdit('${esc(inst.id)}')">Edit</button>`}
     </div>
@@ -2462,9 +2464,11 @@ function showStats() {
   const list    = ALL_COINS.filter(c=>c.status==='List').length;
   const insts   = Object.values(INSTANCE_DATA).reduce((s,a)=>s+a.length,0);
   const colls   = new Set(ALL_COINS.map(c=>c.collection).filter(Boolean)).size;
-  const portCoins = ALL_COINS.filter(c=>c.status==='Got' && c.estimatedValue !== null);
-  const portVal = portCoins.reduce((s,c)=>s+(c.estimatedValue * Math.max(1,c.instCount)),0);
-  const portStr = portCoins.length ? '£'+portVal.toFixed(2) : '—';
+  let portVal = 0, portInstCount = 0;
+  Object.entries(INSTANCE_DATA).forEach(([vc, insts]) => {
+    insts.forEach(inst => { const v = getInstanceValue(inst, vc); if (v !== null) { portVal += v; portInstCount++; } });
+  });
+  const portStr = portInstCount ? '£'+portVal.toFixed(2) : '—';
   document.getElementById('statsBody').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Total Variants</div></div>
@@ -2473,7 +2477,7 @@ function showStats() {
       <div class="stat-card"><div class="stat-num" style="color:var(--list)">${list}</div><div class="stat-lbl">On List</div></div>
       <div class="stat-card"><div class="stat-num">${insts}</div><div class="stat-lbl">Instances</div></div>
       <div class="stat-card"><div class="stat-num">${colls}</div><div class="stat-lbl">Collections</div></div>
-      <div class="stat-card" style="grid-column:1/-1"><div class="stat-num" style="color:var(--gold)">${portStr}</div><div class="stat-lbl">Est. Portfolio Value${portCoins.length ? ' ('+portCoins.length+' coins valued)' : ' — run Update Values first'}</div></div>
+      <div class="stat-card" style="grid-column:1/-1"><div class="stat-num" style="color:var(--gold)">${portStr}</div><div class="stat-lbl">Est. Portfolio Value${portInstCount ? ' ('+portInstCount+' instance'+( portInstCount!==1?'s':'')+' valued)' : ' — run Update Values first'}</div></div>
     </div>`;
   document.getElementById('statsModalBg').style.display='flex';
 }
@@ -2516,6 +2520,17 @@ function refreshSheetData() {
   try { localStorage.removeItem(GS_CACHE_KEY); } catch(e) {}
   showToast('Cache cleared — reloading…');
   setTimeout(() => location.reload(), 800);
+}
+
+// ── PER-INSTANCE VALUATION ────────────────────────────────────────────────────
+function getInstanceValue(inst, vc) {
+  const vm = VALUES_MAP[vc];
+  if (!vm) return null;
+  const numistaGrade = CONDITION_NUMISTA_MAP[inst.cond || inst.condition || ''];
+  if (numistaGrade && vm.pricesByGrade && vm.pricesByGrade[numistaGrade] !== undefined) {
+    return vm.pricesByGrade[numistaGrade];
+  }
+  return vm.estimatedValue ?? null;
 }
 
 // ── VALUE PRIORITY ────────────────────────────────────────────────────────────
@@ -2622,15 +2637,12 @@ async function runUpdateValues() {
   try {
     for (let i = 0; i < toProcess.length; i += BATCH) {
       const batch = toProcess.slice(i, i + BATCH).map(c => {
-        const insts = INSTANCE_DATA[c.variantCode] || [];
-        const numistaGrade = insts.map(inst => CONDITION_NUMISTA_MAP[inst.cond]).find(g => g) || null;
         return {
           variantCode: c.variantCode,
           name: c.name,
           year: c.year,
           denom: c.denom,
           numistaId: VALUES_MAP[c.variantCode]?.numistaId || null,
-          grade: numistaGrade,
         };
       });
 
@@ -2652,14 +2664,20 @@ async function runUpdateValues() {
         for (const r of results) {
           if (r.found) {
             found++;
-            VALUES_MAP[r.variantCode] = { numistaId: r.numistaId, estimatedValue: r.estimatedValue, lastUpdated: today };
+            VALUES_MAP[r.variantCode] = { numistaId: r.numistaId, estimatedValue: r.estimatedValue, lastUpdated: today, pricesByGrade: r.pricesByGrade || {} };
             const coin = ALL_COINS.find(c => c.variantCode === r.variantCode);
             if (coin) coin.estimatedValue = r.estimatedValue;
             if (r.estimatedValue !== null) priced++;
+            // Update variant-level displays
             const el = document.getElementById('ev-' + r.variantCode);
             if (el) el.textContent = r.estimatedValue !== null ? '£' + r.estimatedValue.toFixed(2) : '—';
             const eld = document.getElementById('evd-' + r.variantCode);
             if (eld) eld.textContent = today;
+            // Update per-instance value displays
+            (INSTANCE_DATA[r.variantCode] || []).forEach(inst => {
+              const iev = document.getElementById('iev-' + inst.id);
+              if (iev) { const v = getInstanceValue(inst, r.variantCode); iev.textContent = v !== null ? '≈£'+v.toFixed(2) : ''; }
+            });
           }
         }
       } else {

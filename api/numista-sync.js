@@ -75,21 +75,27 @@ async function numistaSearch(name, year, denom, apiKey) {
   }
 }
 
-async function numistaPrice(numistaId, apiKey, grade) {
+async function numistaPrice(numistaId, apiKey) {
   const url = `https://api.numista.com/api/v3/coins/${numistaId}/prices?currency=GBP`;
   try {
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
-    if (!r.ok) return null;
+    if (!r.ok) return { estimatedValue: null, pricesByGrade: {} };
     const data = await r.json();
     const prices = data.prices || [];
-    // Filter by grade if supplied, fall back to any GBP price
-    const gbp = (grade ? prices.find(p => p.grade === grade && p.currency === 'GBP') : null)
-      || prices.find(p => p.currency === 'GBP')
-      || prices[0];
-    if (!gbp) return null;
+    // Build a grade → price map from all GBP prices
+    const pricesByGrade = {};
+    for (const p of prices) {
+      if (p.currency === 'GBP' && p.grade) {
+        const val = p.average ?? p.median ?? p.max ?? null;
+        if (val !== null) pricesByGrade[p.grade] = Math.round(Number(val) * 100) / 100;
+      }
+    }
+    // General fallback: first GBP price (used for variant-level display and want-list analysis)
+    const gbp = prices.find(p => p.currency === 'GBP') || prices[0];
+    if (!gbp) return { estimatedValue: null, pricesByGrade };
     const val = gbp.average ?? gbp.median ?? gbp.max ?? null;
-    return val !== null ? Math.round(Number(val) * 100) / 100 : null;
-  } catch { return null; }
+    return { estimatedValue: val !== null ? Math.round(Number(val) * 100) / 100 : null, pricesByGrade };
+  } catch { return { estimatedValue: null, pricesByGrade: {} }; }
 }
 
 module.exports = async function handler(req, res) {
@@ -110,18 +116,18 @@ module.exports = async function handler(req, res) {
   if (!coins.length) return res.status(200).json({ results: [] });
 
   const results = await Promise.all(coins.map(async coin => {
-    const { variantCode, name, year, denom, numistaId: knownId, grade } = coin;
+    const { variantCode, name, year, denom, numistaId: knownId } = coin;
     try {
       let numistaId = knownId || null;
       if (!numistaId && name) {
         numistaId = await numistaSearch(name, year, denom, apiKey);
       }
-      if (!numistaId) return { variantCode, numistaId: null, estimatedValue: null, found: false };
-      const estimatedValue = await numistaPrice(numistaId, apiKey, grade || null);
-      return { variantCode, numistaId, estimatedValue, found: true };
+      if (!numistaId) return { variantCode, numistaId: null, estimatedValue: null, pricesByGrade: {}, found: false };
+      const { estimatedValue, pricesByGrade } = await numistaPrice(numistaId, apiKey);
+      return { variantCode, numistaId, estimatedValue, pricesByGrade, found: true };
     } catch(e) {
-      if (e.message === 'Quota exceeded') return { variantCode, numistaId: null, estimatedValue: null, found: false, quotaExceeded: true };
-      return { variantCode, numistaId: null, estimatedValue: null, found: false };
+      if (e.message === 'Quota exceeded') return { variantCode, numistaId: null, estimatedValue: null, pricesByGrade: {}, found: false, quotaExceeded: true };
+      return { variantCode, numistaId: null, estimatedValue: null, pricesByGrade: {}, found: false };
     }
   }));
 
