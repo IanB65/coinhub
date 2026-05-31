@@ -1023,6 +1023,7 @@ let ALL_COINS = [];
 let FILTERED  = [];
 let GUEST_MODE = false;
 let CONDITION_LIST = [];
+const CONDITION_NUMISTA_MAP = {}; // { localCode: numistaGrade }
 let NEXT_INST_ID = 1520;
 
 // Archive state
@@ -1140,6 +1141,7 @@ async function loadFromSheets() {
     if (!res.ok) throw new Error('Sheet fetch failed (' + res.status + ')');
     const { variants:varRows, instances:instRows, images:imgRows, storage:storRows, storage1:stor1Rows, storage2:stor2Rows, storage3:stor3Rows, values:valRows, conditions:condRows, ptypes:ptypeRows, denominations:denomRows, groups:groupRows, collections:collRows } = await res.json();
     CONDITION_LIST = (condRows||[]).slice(1).map(r=>r[0]?.trim()).filter(Boolean);
+    (condRows||[]).slice(1).forEach(r=>{ const local=r[0]?.trim(), numista=r[2]?.trim(); if(local&&numista) CONDITION_NUMISTA_MAP[local]=numista; });
     (denomRows||[]).slice(1).forEach(r=>{ const n=r[0]?.trim(),g=r[1]?.trim(),s=parseFloat(r[2]); if(n&&g) DENOM_GROUP_MAP[n]=g; if(n&&!isNaN(s)) DENOM_SORT_KEY[n]=s; });
     const _groupOrder = (groupRows||[]).slice(1)
       .map(r=>({ name:r[0]?.trim(), sort:parseFloat(r[1]) }))
@@ -2484,13 +2486,18 @@ async function updateValues() {
 
   try {
     for (let i = 0; i < gotCoins.length; i += BATCH) {
-      const batch = gotCoins.slice(i, i + BATCH).map(c => ({
-        variantCode: c.variantCode,
-        name: c.name,
-        year: c.year,
-        denom: c.denom,
-        numistaId: VALUES_MAP[c.variantCode]?.numistaId || null,
-      }));
+      const batch = gotCoins.slice(i, i + BATCH).map(c => {
+        const insts = INSTANCE_DATA[c.variantCode] || [];
+        const numistaGrade = insts.map(i => CONDITION_NUMISTA_MAP[i.cond]).find(g => g) || null;
+        return {
+          variantCode: c.variantCode,
+          name: c.name,
+          year: c.year,
+          denom: c.denom,
+          numistaId: VALUES_MAP[c.variantCode]?.numistaId || null,
+          grade: numistaGrade,
+        };
+      });
 
       const res = await authFetch('/api/numista-sync', {
         method: 'POST',

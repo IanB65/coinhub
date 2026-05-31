@@ -68,14 +68,17 @@ async function numistaSearch(name, year, denom, apiKey) {
   }
 }
 
-async function numistaPrice(numistaId, apiKey) {
+async function numistaPrice(numistaId, apiKey, grade) {
   const url = `https://api.numista.com/api/v3/coins/${numistaId}/prices?currency=GBP`;
   try {
     const r = await fetch(url, { headers: { 'Numista-API-Key': apiKey } });
     if (!r.ok) return null;
     const data = await r.json();
     const prices = data.prices || [];
-    const gbp = prices.find(p => p.currency === 'GBP') || prices[0];
+    // Filter by grade if supplied, fall back to any GBP price
+    const gbp = (grade ? prices.find(p => p.grade === grade && p.currency === 'GBP') : null)
+      || prices.find(p => p.currency === 'GBP')
+      || prices[0];
     if (!gbp) return null;
     const val = gbp.average ?? gbp.median ?? gbp.max ?? null;
     return val !== null ? Math.round(Number(val) * 100) / 100 : null;
@@ -100,14 +103,14 @@ module.exports = async function handler(req, res) {
   if (!coins.length) return res.status(200).json({ results: [] });
 
   const results = await Promise.all(coins.map(async coin => {
-    const { variantCode, name, year, denom, numistaId: knownId } = coin;
+    const { variantCode, name, year, denom, numistaId: knownId, grade } = coin;
     try {
       let numistaId = knownId || null;
       if (!numistaId && name) {
         numistaId = await numistaSearch(name, year, denom, apiKey);
       }
       if (!numistaId) return { variantCode, numistaId: null, estimatedValue: null, found: false };
-      const estimatedValue = await numistaPrice(numistaId, apiKey);
+      const estimatedValue = await numistaPrice(numistaId, apiKey, grade || null);
       return { variantCode, numistaId, estimatedValue, found: true };
     } catch(e) {
       if (e.message === 'Quota exceeded') return { variantCode, numistaId: null, estimatedValue: null, found: false, quotaExceeded: true };
