@@ -95,11 +95,20 @@ async function numistaPrice(numistaId, apiKey, grade) {
 async function fetchSpinkCode(numistaId, apiKey) {
   const r = await fetch(`https://api.numista.com/api/v3/coins/${numistaId}`, { headers: { 'Numista-API-Key': apiKey } });
   if (r.status === 429) throw new Error('Quota exceeded');
-  if (!r.ok) return null;
+  if (!r.ok) return { spinkCode: null, rawRefs: null };
   const data = await r.json();
-  const refs = data.references || [];
-  const spinkRef = refs.find(ref => ref.catalogue?.name?.toLowerCase().includes('spink'));
-  return spinkRef ? spinkRef.number || null : null;
+  const refs = data.references || data.catalogues || [];
+  const spinkRef = refs.find(ref => {
+    const cat = ref.catalogue;
+    if (!cat) return false;
+    if (typeof cat === 'string') return /spink|^sp$/i.test(cat);
+    const label = cat.name || cat.title || cat.code || cat.id || '';
+    return /spink|^sp$/i.test(label);
+  });
+  const spinkCode = spinkRef
+    ? (spinkRef.number || spinkRef.reference || spinkRef.value || spinkRef.catalog_number || null)
+    : null;
+  return { spinkCode, rawRefs: refs.slice(0, 3) };
 }
 
 function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
@@ -180,8 +189,8 @@ async function handleSpinkSync(body, apiKey, sheetId) {
           results.push({ variantCode: item.vc, numistaId: null, spinkCode: null, rowNum: item.rowNum });
           continue;
         }
-        const spinkCode = await fetchSpinkCode(numistaId, apiKey);
-        results.push({ variantCode: item.vc, numistaId, spinkCode, rowNum: item.rowNum });
+        const { spinkCode, rawRefs } = await fetchSpinkCode(numistaId, apiKey);
+        results.push({ variantCode: item.vc, numistaId, spinkCode, rowNum: item.rowNum, rawRefs });
       } catch (e) {
         if (e.message === 'Quota exceeded') { quotaExceeded = true; break; }
         results.push({ variantCode: item.vc, numistaId: item.numistaId, spinkCode: null, rowNum: item.rowNum });
@@ -203,11 +212,15 @@ async function handleSpinkSync(body, apiKey, sheetId) {
     });
   }
 
+  // Include raw refs from first few matched coins to help debug field name mismatches
+  const sampleRefs = results.filter(r => r.rawRefs?.length).slice(0, 3).map(r => ({ variantCode: r.variantCode, numistaId: r.numistaId, rawRefs: r.rawRefs }));
+
   return {
     updated: batchData.length,
     processed: results.length,
     skipped: toProcess.length - results.length,
     quotaExceeded,
+    sampleRefs,
     results: results.map(({ variantCode, numistaId, spinkCode }) => ({ variantCode, numistaId, spinkCode })),
   };
 }
