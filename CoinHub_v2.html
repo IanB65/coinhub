@@ -672,6 +672,7 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
         <a class="admin-dropdown-item" href="https://docs.google.com/spreadsheets/d/1rPiMIFhA0lPLGvPVgQKO6ZXu63QTsGFlPIE0P4OS2y4/edit" target="_blank" onclick="closeAdminMenu()">⊞ Open Spreadsheet</a>
         <a class="admin-dropdown-item" onclick="refreshSheetData();closeAdminMenu()">↻ Refresh Data</a>
         <a class="admin-dropdown-item" onclick="updateValues();closeAdminMenu()">💰 Update Values</a>
+        <a class="admin-dropdown-item" onclick="syncSpinkCodes();closeAdminMenu()">🔖 Sync Spink Codes</a>
         <div class="admin-dropdown-sep"></div>
         <a class="admin-dropdown-item" href="/admin" target="_blank">⚙ Admin Panel</a>
         <a class="admin-dropdown-item" onclick="doLogout();closeAdminMenu()">↩ Log Out</a>
@@ -876,6 +877,18 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
       <div id="valuesProgBar" style="height:100%;width:0%;background:var(--gold);transition:width .3s"></div>
     </div>
     <div style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Values are fetched from Numista and saved to your spreadsheet</div>
+  </div>
+</div>
+
+<!-- ── SPINK SYNC PROGRESS OVERLAY ── -->
+<div id="spinkProgressOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(12,12,10,.7);align-items:center;justify-content:center">
+  <div style="background:var(--paper);border-radius:var(--r);padding:2rem;width:min(400px,90vw);text-align:center;font-family:'Cormorant Garamond',serif">
+    <div style="font-family:'Bodoni Moda',serif;font-size:1.2rem;margin-bottom:1rem;color:var(--ink)">Syncing Spink Codes</div>
+    <div id="spinkProgText" style="font-size:.95rem;color:var(--muted);margin-bottom:1rem">Fetching from Numista…</div>
+    <div style="background:#e8e3d9;border-radius:999px;height:8px;overflow:hidden">
+      <div id="spinkProgBar" style="height:100%;width:0%;background:var(--gold);transition:width .3s"></div>
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:.75rem">Spink reference numbers are saved to your spreadsheet</div>
   </div>
 </div>
 
@@ -2585,6 +2598,37 @@ function updateValues() {
 
 function closeValuesConfig() {
   document.getElementById('valuesConfigOverlay').style.display = 'none';
+}
+
+async function syncSpinkCodes() {
+  if (GUEST_MODE) { showToast('Log in to sync Spink codes'); return; }
+  const overlay = document.getElementById('spinkProgressOverlay');
+  const progText = document.getElementById('spinkProgText');
+  const progBar = document.getElementById('spinkProgBar');
+  progText.textContent = 'Fetching from Numista…';
+  progBar.style.width = '30%';
+  progBar.style.background = 'var(--gold)';
+  overlay.style.display = 'flex';
+  try {
+    const res = await authFetch('/api/spink-sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    progBar.style.width = '100%';
+    if (!res.ok) {
+      const msg = await res.text().catch(() => res.status);
+      progText.textContent = `Error (HTTP ${res.status}): ${msg}`;
+      progBar.style.background = 'var(--need)';
+      setTimeout(() => { overlay.style.display = 'none'; }, 5000);
+      return;
+    }
+    const { updated, processed, quotaExceeded } = await res.json();
+    progText.textContent = quotaExceeded
+      ? `Quota exceeded — ${updated} codes saved before limit hit. Try again next month.`
+      : `Done — ${updated} Spink code${updated !== 1 ? 's' : ''} saved (${processed} coins checked). Refresh to see codes.`;
+    setTimeout(() => { overlay.style.display = 'none'; }, 5000);
+  } catch (e) {
+    progText.textContent = 'Network error: ' + e.message;
+    progBar.style.background = 'var(--need)';
+    setTimeout(() => { overlay.style.display = 'none'; }, 5000);
+  }
 }
 
 async function runUpdateValues() {
