@@ -126,8 +126,7 @@ All endpoints are available at `https://coins.ghghome.co.uk/api/...`
 | `instances-write.js` | `/api/instances-write` | JWT | Add (append row) or remove (delete row) instances in Instances tab |
 | `sheets.js` | `/api/sheets` | JWT | General sheet read |
 | `images-update.js` | `/api/images-update` | JWT | Update image URLs |
-| `numista-sync.js` | `/api/numista-sync` | JWT | Sync coin values from Numista |
-| `spink-sync.js` | `/api/spink-sync` | JWT | Fetch Spink's catalogue reference numbers from Numista and write to Variants col P |
+| `numista-sync.js` | `/api/numista-sync` | JWT | Sync coin values from Numista; pass `action:"spink"` to fetch Spink catalogue refs instead |
 | `inbox-stage.js` | `/api/inbox-stage` | Service key | Append new coins to NewCoinsInbox tab (deduplicates against Variants + inbox) |
 | `inbox-approve.js` | `/api/inbox-approve` | Service key | Move approved NewCoinsInbox rows → Variants tab, then delete them from inbox |
 | `auth/` | `/api/auth/*` | — | Login, logout, guest access, whoami |

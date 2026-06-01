@@ -2610,7 +2610,7 @@ async function syncSpinkCodes() {
   progBar.style.background = 'var(--gold)';
   overlay.style.display = 'flex';
   try {
-    const res = await authFetch('/api/spink-sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    const res = await authFetch('/api/numista-sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'spink' }) });
     progBar.style.width = '100%';
     if (!res.ok) {
       const msg = await res.text().catch(() => res.status);
