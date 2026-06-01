@@ -144,17 +144,22 @@ async function handleSpinkSync(body, apiKey, sheetId) {
     }
   }
 
-  // Build list of variants to process
+  // Build list of variants to process (all variants, not just those with a known numistaId)
   const toProcess = [];
   for (let i = 1; i < varRows.length; i++) {
     const r = varRows[i];
     const vc = r[0]?.trim();
     if (!vc) continue;
-    const numistaId = r[14]?.trim() || valuesNumistaMap[vc] || '';
-    if (!numistaId) continue;
     const existingSpink = r[15]?.trim() || '';
     if (existingSpink && !force) continue;
-    toProcess.push({ vc, numistaId, rowNum: i + 1 });
+    toProcess.push({
+      vc,
+      numistaId: r[14]?.trim() || valuesNumistaMap[vc] || '',
+      name: r[1]?.trim() || '',
+      denom: r[2]?.trim() || '',
+      year: parseInt(r[5]) || 0,
+      rowNum: i + 1,
+    });
   }
 
   // Fetch Spink codes in batches of 10 with 300ms pause between batches
@@ -167,8 +172,16 @@ async function handleSpinkSync(body, apiKey, sheetId) {
     const batch = toProcess.slice(i, i + BATCH);
     for (const item of batch) {
       try {
-        const spinkCode = await fetchSpinkCode(item.numistaId, apiKey);
-        results.push({ variantCode: item.vc, numistaId: item.numistaId, spinkCode, rowNum: item.rowNum });
+        let numistaId = item.numistaId;
+        if (!numistaId && item.name) {
+          numistaId = await numistaSearch(item.name, item.year, item.denom, apiKey);
+        }
+        if (!numistaId) {
+          results.push({ variantCode: item.vc, numistaId: null, spinkCode: null, rowNum: item.rowNum });
+          continue;
+        }
+        const spinkCode = await fetchSpinkCode(numistaId, apiKey);
+        results.push({ variantCode: item.vc, numistaId, spinkCode, rowNum: item.rowNum });
       } catch (e) {
         if (e.message === 'Quota exceeded') { quotaExceeded = true; break; }
         results.push({ variantCode: item.vc, numistaId: item.numistaId, spinkCode: null, rowNum: item.rowNum });
