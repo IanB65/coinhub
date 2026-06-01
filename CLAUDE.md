@@ -74,6 +74,11 @@ Vercel auto-deploys within ~30 seconds. No manual deploy step needed.
 | I | notes | free text |
 | J | dateAdded | YYYY-MM-DD |
 | K | lastModified | YYYY-MM-DD |
+| L | valuePriority | `TRUE` to prioritise in value sync |
+| M | estimatedValue | GBP value from Numista (written by numista-sync) |
+| N | valueDate | Date estimatedValue was last updated |
+| O | numistaId | Manual override Numista coin ID |
+| P | spinkCode | Spink's catalogue reference number (written by spink-sync) |
 
 **Instances** — one row per physical coin owned
 | Col | Name | Notes |
@@ -122,6 +127,7 @@ All endpoints are available at `https://coins.ghghome.co.uk/api/...`
 | `sheets.js` | `/api/sheets` | JWT | General sheet read |
 | `images-update.js` | `/api/images-update` | JWT | Update image URLs |
 | `numista-sync.js` | `/api/numista-sync` | JWT | Sync coin values from Numista |
+| `spink-sync.js` | `/api/spink-sync` | JWT | Fetch Spink's catalogue reference numbers from Numista and write to Variants col P |
 | `inbox-stage.js` | `/api/inbox-stage` | Service key | Append new coins to NewCoinsInbox tab (deduplicates against Variants + inbox) |
 | `inbox-approve.js` | `/api/inbox-approve` | Service key | Move approved NewCoinsInbox rows → Variants tab, then delete them from inbox |
 | `auth/` | `/api/auth/*` | — | Login, logout, guest access, whoami |
