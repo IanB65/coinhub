@@ -248,6 +248,8 @@ body.guest-mode #bottomNav{bottom:0}
 .coin-card-body{padding:.6rem .7rem}
 .coin-card-name{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-weight:600;line-height:1.2;color:var(--ink);margin-bottom:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .coin-card-meta{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);display:flex;gap:.4rem;flex-wrap:wrap}
+.coin-card-lotr-link{display:block;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);margin-top:.4rem;text-decoration:none;letter-spacing:.04em}
+.coin-card-lotr-link:hover,.coin-card-lotr-link:active{color:var(--gold2)}
 
 /* ── ARCHIVE PAGE ── */
 .archive-layout{max-width:var(--max-w);margin:0 auto;padding:1.5rem 2rem}
@@ -930,6 +932,7 @@ const DENOM_SORT_KEY = {
   'Shilling':15,'Florin':16,'Half Crown':17,'Crown':18,
   '1d':10,'½d':11,'3d':13,'6d':14,'1s':15,'2s':16,'2s 6d':17
 };
+const LOTR_VARIANTS = new Set(['UK-COMM-50P-2026-LOTB-','UK-COMM-50P-2026-LOTC-','UK-COMM-50P-2026-LOTS-']);
 const COTUK_MAP = {};
 const DENOM_GROUP_MAP = {};
 let DENOM_GROUP_ORDER = ['Decimal','Pre-decimal','Banknotes','Other'];
@@ -1798,11 +1801,13 @@ function coinCardHTML(coin, ctxId, idx) {
     ? `<img src="${img}" alt="" loading="lazy" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')">`
     : coinPlaceholderSVG(coin.denom);
   const priorityStar = VALUE_PRIORITY_SET.has(coin.variantCode) ? '<span class="coin-card-priority">★</span>' : '';
+  const lotrLink = LOTR_VARIANTS.has(coin.variantCode) ? `<a href="/lotr" class="coin-card-lotr-link" onclick="event.stopPropagation()">View Collection →</a>` : '';
   return `<div class="coin-card" onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${idx})">
     <div class="coin-card-img">${imgEl}${priorityStar}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
     <div class="coin-card-body">
       <div class="coin-card-name">${esc(coin.name)}</div>
       <div class="coin-card-meta"><span>${coin.year||'—'}</span><span>${esc(coin.denom)}</span>${coin.instCount>0?`<span style="color:var(--got)">×${coin.instCount}</span>`:''}</div>
+      ${lotrLink}
     </div>
   </div>`;
 }
