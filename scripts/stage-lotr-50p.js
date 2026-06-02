@@ -26,7 +26,7 @@ const COMM = 'Commemorative';
 
 const COINS = [
   {
-    variantCode: 'UK-D-50P-2026-LOTB-',
+    variantCode: 'UK-COMM-50P-2026-LOTB-',
     name: 'Lord of the Rings: The One Ring — BU',
     denomination: '50p',
     collection: COMM,
@@ -37,7 +37,7 @@ const COINS = [
     price: '15.00',
   },
   {
-    variantCode: 'UK-D-50P-2026-LOTC-',
+    variantCode: 'UK-COMM-50P-2026-LOTC-',
     name: 'Lord of the Rings: The One Ring — Colour BU (20,000)',
     denomination: '50p',
     collection: COMM,
@@ -48,7 +48,7 @@ const COINS = [
     price: '',
   },
   {
-    variantCode: 'UK-D-50P-2026-LOTS-',
+    variantCode: 'UK-COMM-50P-2026-LOTS-',
     name: 'Lord of the Rings: The One Ring — Silver Proof (7,500)',
     denomination: '50p',
     collection: COMM,
