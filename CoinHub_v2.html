@@ -1801,7 +1801,7 @@ function coinCardHTML(coin, ctxId, idx) {
     ? `<img src="${img}" alt="" loading="lazy" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')">`
     : coinPlaceholderSVG(coin.denom);
   const priorityStar = VALUE_PRIORITY_SET.has(coin.variantCode) ? '<span class="coin-card-priority">★</span>' : '';
-  const lotrLink = LOTR_VARIANTS.has(coin.variantCode) ? `<a href="/lotr" class="coin-card-lotr-link" onclick="event.stopPropagation()">View Collection →</a>` : '';
+  const lotrLink = LOTR_VARIANTS.has(coin.variantCode) ? `<a href="/lotr?vc=${encodeURIComponent(coin.variantCode)}" class="coin-card-lotr-link" onclick="event.stopPropagation()">View Collection →</a>` : '';
   return `<div class="coin-card" onclick="openCoinModal('${esc(coin.variantCode)}','${ctxId}',${idx})">
     <div class="coin-card-img">${imgEl}${priorityStar}<span class="coin-card-status ${coin.status||'Unknown'}">${coin.status||'?'}</span></div>
     <div class="coin-card-body">

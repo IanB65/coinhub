@@ -522,15 +522,36 @@ body {
 </section>
 
 <script>
-// ── SERIES DATA ────────────────────────────────────────────────────────────────
-const COIN_IMAGES = {
-  'UK-D-50P-2026-LOTB-': 'https://crawleycoins.co.uk/wp-content/uploads/2026/05/UK26LRCBU-The-Lord-of-the-Rings-2026-UK-50p-Brilliant-Uncirculated-Coin-Reverse.jpg',
-  'UK-D-50P-2026-LOTC-': 'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/coin-1---completer/product-images/uk26lrcbuc---the-lord-of-the-rings-2026-uk-50p-brilliant-uncirculated-colour-coin-reverse-edge.jpg',
-  'UK-D-50P-2026-LOTS-': 'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/one-ring-silver-1500x1500.jpg',
+// ── VARIANT DATA ──────────────────────────────────────────────────────────────
+const VARIANTS = {
+  'UK-D-50P-2026-LOTB-': {
+    label:    'Brilliant Uncirculated',
+    mintage:  null,
+    status:   'Got',
+    image:    'https://crawleycoins.co.uk/wp-content/uploads/2026/05/UK26LRCBU-The-Lord-of-the-Rings-2026-UK-50p-Brilliant-Uncirculated-Coin-Reverse.jpg',
+  },
+  'UK-D-50P-2026-LOTC-': {
+    label:    'Colour Brilliant Uncirculated',
+    mintage:  '20,000',
+    status:   'Need',
+    image:    'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/coin-1---completer/product-images/uk26lrcbuc---the-lord-of-the-rings-2026-uk-50p-brilliant-uncirculated-colour-coin-reverse-edge.jpg',
+  },
+  'UK-D-50P-2026-LOTS-': {
+    label:    'Silver Proof',
+    mintage:  '7,500',
+    status:   'Got',
+    image:    'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/one-ring-silver-1500x1500.jpg',
+  },
 };
 
+// Selected variant from URL param, default to BU
+const urlVc = new URLSearchParams(location.search).get('vc');
+const selectedVc = VARIANTS[urlVc] ? urlVc : 'UK-D-50P-2026-LOTB-';
+const selected = VARIANTS[selectedVc];
+
+// ── SERIES DATA ────────────────────────────────────────────────────────────────
 const SERIES = [
-  { num: 1, name: 'The One Ring',   year: 2026, owned: true,  release: null,            vc: 'UK-D-50P-2026-LOTB-' },
+  { num: 1, name: 'The One Ring',   year: 2026, owned: true,  release: null,            vc: selectedVc },
   { num: 2, name: 'TBC',            year: 2026, owned: false, release: 'Expected 2026' },
   { num: 3, name: 'TBC',            year: 2026, owned: false, release: 'Expected 2026' },
   { num: 4, name: 'TBC',            year: 2026, owned: false, release: 'Expected 2027' },
@@ -553,7 +574,7 @@ function getCoinImage(vc) {
       }
     }
   } catch(e) {}
-  return COIN_IMAGES[vc] || null;
+  return VARIANTS[vc]?.image || null;
 }
 
 function goldCoinSVG(label) {
@@ -585,18 +606,33 @@ function seriesCardPlaceholderSVG(num) {
   </svg>`;
 }
 
-// ── RENDER HERO COIN ──────────────────────────────────────────────────────────
+// ── RENDER HERO COIN + VARIANT INFO ──────────────────────────────────────────
 const heroCoin = document.getElementById('heroCoin');
-const heroImgUrl = getCoinImage('UK-D-50P-2026-LOTB-');
+const heroImgUrl = getCoinImage(selectedVc);
 if (heroImgUrl) {
   const img = document.createElement('img');
   img.src = heroImgUrl;
-  img.alt = 'The One Ring 50p';
+  img.alt = selected.label;
   img.onerror = () => { heroCoin.innerHTML = goldCoinSVG('50p'); };
   heroCoin.appendChild(img);
 } else {
   heroCoin.innerHTML = goldCoinSVG('50p');
 }
+
+// Inject variant label + details beneath the coin
+const heroContent = document.querySelector('.hero-content');
+const variantInfo = document.createElement('div');
+variantInfo.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:.4rem;margin-top:-.25rem;';
+const statusColour = selected.status === 'Got' ? '#2D6A4F' : '#9B2335';
+const statusBg     = selected.status === 'Got' ? '#D8F3DC' : '#FFE4E8';
+const mintageHtml  = selected.mintage
+  ? `<span style="font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.1em;color:rgba(240,200,74,.5);">Mintage: ${selected.mintage}</span>`
+  : '';
+variantInfo.innerHTML = `
+  <span style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.12em;color:var(--gold3);">${selected.label}</span>
+  <span style="font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.08em;padding:2px 8px;border-radius:10px;background:${statusBg};color:${statusColour};">${selected.status === 'Got' ? 'In Collection' : 'Wanted'}</span>
+  ${mintageHtml}`;
+heroContent.appendChild(variantInfo);
 
 // ── RENDER SERIES CARDS ───────────────────────────────────────────────────────
 const track = document.getElementById('seriesTrack');
