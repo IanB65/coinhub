@@ -943,6 +943,7 @@ const STORAGE2_LIST = [];
 const STORAGE3_LIST = [];
 const PTYPE_LIST = [];
 const COLLECTIONS_LIST = [];
+const COLLECTIONS_META = {}; // name → { homeDisplay:bool, homeOrder:number }
 const VALUES_MAP = {}; // { variantCode: { numistaId, estimatedValue, lastUpdated } }
 let VALUE_PRIORITY_SET = new Set();
 try { VALUE_PRIORITY_SET = new Set(JSON.parse(localStorage.getItem('COINHUB_VALUE_PRIORITY') || '[]')); } catch(e) {}
@@ -1009,11 +1010,20 @@ const MONARCH_META = {
   },
 };
 
-const FEATURED_COLLECTIONS = [
+// Featured collections are driven by homeDisplay=TRUE in the Collections sheet.
+// Falls back to this list if the sheet has no homeDisplay data.
+const FEATURED_COLLECTIONS_FALLBACK = [
   '10p Alphabet','London 2012 Olympics','Harry Potter','Disney',
   'Beatrix Potter','Paddington Bear','Winnie the Pooh','2007 Proof Set',
   'Britannia Characters Commemorative','Military',
 ];
+function getFeaturedCollections() {
+  const featured = Object.entries(COLLECTIONS_META)
+    .filter(([,m]) => m.homeDisplay)
+    .sort((a,b) => (a[1].homeOrder??999) - (b[1].homeOrder??999))
+    .map(([name]) => name);
+  return featured.length ? featured : FEATURED_COLLECTIONS_FALLBACK;
+}
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 const _TK = 'coinhub_token';
@@ -1172,7 +1182,7 @@ async function loadFromSheets() {
   try {
     const raw = localStorage.getItem(GS_CACHE_KEY);
     if (raw) {
-      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, collectionsList, valuesMap, denomGroupMap, denomSortMap, denomGroupOrder } = JSON.parse(raw);
+      const { ts, coins, cotuk, instances, storageMap, storage1, storage2, storage3, ptypeList, collectionsList, collectionsMeta, valuesMap, denomGroupMap, denomSortMap, denomGroupOrder } = JSON.parse(raw);
       if (Date.now() - ts < GS_CACHE_TTL) {
         setMsg('Loading from cache…');
         Object.assign(COTUK_MAP, cotuk);
@@ -1186,6 +1196,7 @@ async function loadFromSheets() {
         STORAGE3_LIST.push(...(storage3||[]));
         PTYPE_LIST.push(...(ptypeList||[]));
         COLLECTIONS_LIST.push(...(collectionsList||[]));
+        Object.assign(COLLECTIONS_META, collectionsMeta || {});
         Object.assign(VALUES_MAP, valuesMap || {});
         _seedScCheckedFromInstances(instances);
         return coins;
@@ -1217,6 +1228,14 @@ async function loadFromSheets() {
     _parseStorList(stor3Rows, STORAGE3_LIST);
     _parseStorList(ptypeRows, PTYPE_LIST);
     _parseStorList(collRows, COLLECTIONS_LIST);
+    // Parse homeDisplay (col B) and homeOrder (col C) from Collections tab
+    Object.keys(COLLECTIONS_META).forEach(k => delete COLLECTIONS_META[k]);
+    (collRows||[]).slice(1).forEach(r => {
+      const name = r[0]?.trim(); if (!name) return;
+      const homeDisplay = String(r[1]||'').trim().toUpperCase() === 'TRUE';
+      const homeOrder = parseFloat(r[2]) || 999;
+      COLLECTIONS_META[name] = { homeDisplay, homeOrder };
+    });
     // Overlay portrait URLs from Monarchs sheet tab (col A=name, col B=portraitUrl)
     (monarchRows||[]).slice(1).forEach(r => {
       const name = r[0]?.trim(), url = r[1]?.trim();
@@ -1250,7 +1269,7 @@ async function loadFromSheets() {
     }
     _saveValuePriority();
 
-    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], collectionsList:[...COLLECTIONS_LIST], valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
+    try { localStorage.setItem(GS_CACHE_KEY, JSON.stringify({ ts:Date.now(), coins, cotuk:{...COTUK_MAP}, instances:{...INSTANCE_DATA}, storageMap:{...STORAGE_MAP}, storage1:[...STORAGE1_LIST], storage2:[...STORAGE2_LIST], storage3:[...STORAGE3_LIST], ptypeList:[...PTYPE_LIST], collectionsList:[...COLLECTIONS_LIST], collectionsMeta:{...COLLECTIONS_META}, valuesMap:{...VALUES_MAP}, denomGroupMap:{...DENOM_GROUP_MAP}, denomSortMap:{...DENOM_SORT_KEY}, denomGroupOrder:[...DENOM_GROUP_ORDER] })); } catch(e) {}
     return coins;
   } catch(e) {
     document.getElementById('loadScreen').innerHTML = `<div style="text-align:center;padding:3rem;font-family:Cormorant Garamond,serif"><div style="font-size:1.4rem;color:#9B2335;margin-bottom:1rem">⚠ Could not load data</div><div style="color:#555;font-size:.9rem;margin-bottom:1.5rem">${esc(e.message)}</div></div>`;
@@ -1378,7 +1397,7 @@ function renderHome() {
   </div>`;
 
   // ── Featured collections ──
-  const featuredCards = FEATURED_COLLECTIONS.filter(n=>collStats[n]).map(name => {
+  const featuredCards = getFeaturedCollections().filter(n=>collStats[n]).map(name => {
     const { got, total, img } = collStats[name];
     const pct = total ? Math.round(got/total*100) : 0;
     const bgStyle = img ? `background-image:url('${img}')` : `background:linear-gradient(135deg,var(--dark2),var(--dark))`;
@@ -1567,7 +1586,12 @@ function renderCollections() {
     if (c.status==='Got') collStats[c.collection].got++;
     if (!collStats[c.collection].img) collStats[c.collection].img = resolveImage(c);
   });
-  const sorted = Object.keys(collStats).sort();
+  const sorted = Object.keys(collStats).sort((a,b) => {
+    const oa = COLLECTIONS_META[a]?.homeOrder ?? 9999;
+    const ob = COLLECTIONS_META[b]?.homeOrder ?? 9999;
+    if (oa !== ob) return oa - ob;
+    return a.localeCompare(b);
+  });
   const cards = sorted.map(name => {
     const { got, total, img } = collStats[name];
     const pct = total ? Math.round(got/total*100) : 0;
