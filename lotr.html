@@ -56,29 +56,29 @@ body {
 }
 
 /* Photo background */
-.hero-bg {
+.hero-bg-img {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('/images/mordor-bg.webp') center center / cover no-repeat;
-  will-change: transform;
+  object-fit: cover;
+  object-position: center center;
+  z-index: 1;
 }
-/* Fallback gradient when image hasn't loaded yet */
-.hero-bg::before {
-  content: '';
+/* Fallback gradient (shows behind image while it loads) */
+.hero-bg-fallback {
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse 120% 60% at 50% 110%, #7a2800 0%, #3d1200 30%, #0a0300 65%, #020100 100%);
-  z-index: -1;
+  z-index: 0;
 }
-/* Base darkness overlay on photo */
-.hero-bg::after {
-  content: '';
+/* Base darkness overlay */
+.hero-bg-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.42);
+  z-index: 2;
 }
 
 /* Scroll-driven darkness — opacity set by JS */
@@ -87,7 +87,7 @@ body {
   inset: 0;
   background: #000;
   opacity: 0;
-  z-index: 13;
+  z-index: 5;
   pointer-events: none;
 }
 
@@ -95,7 +95,7 @@ body {
 #smokeCanvas {
   position: absolute;
   inset: 0;
-  z-index: 14;
+  z-index: 6;
   pointer-events: none;
   width: 100%;
   height: 100%;
@@ -108,7 +108,7 @@ body {
   left: 0;
   right: 0;
   height: 22%;
-  z-index: 15;
+  z-index: 7;
   pointer-events: none;
 }
 .fire-tongue {
@@ -372,7 +372,9 @@ body {
 <!-- HERO -->
 <section class="hero" id="hero">
   <!-- Photo background + overlays -->
-  <div class="hero-bg" id="heroBg" data-speed="0.08"></div>
+  <div class="hero-bg-fallback"></div>
+  <img src="/images/mordor-bg.webp" class="hero-bg-img" id="heroBg" alt="" data-speed="0.08">
+  <div class="hero-bg-overlay"></div>
 
   <!-- Scroll darkness (JS-driven) -->
   <div id="scrollDark"></div>
