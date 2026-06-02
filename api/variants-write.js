@@ -48,6 +48,69 @@ module.exports = async function handler(req, res) {
   catch { return res.status(400).json({ error: 'Invalid JSON' }); }
 
   const { action, variantCode, name, denom, collection, monarch, year, status, imgUrl, notes, priority } = body || {};
+
+  if (action === 'seed-monarchs') {
+    const PORTRAITS = [
+      ['King Charles III',   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/King_Charles_III_%28July_2023%29.jpg/500px-King_Charles_III_%28July_2023%29.jpg'],
+      ['Queen Elizabeth II', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Queen_Elizabeth_II_on_her_Coronation_Day.jpg/500px-Queen_Elizabeth_II_on_her_Coronation_Day.jpg'],
+      ['King George Vi',     'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg/500px-King_George_VI_LOC_matpc.14736_A_%28cropped%29.jpg'],
+      ['King George V',      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/King_George_1923_LCCN2014715558_%28cropped%29.jpg/500px-King_George_1923_LCCN2014715558_%28cropped%29.jpg'],
+      ['King George III',    'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/King_George_III_of_England_by_Johann_Zoffany.jpg/500px-King_George_III_of_England_by_Johann_Zoffany.jpg'],
+      ['King Edward VII',    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/King-Edward-VII_%28cropped%29_%28b%29.jpg/500px-King-Edward-VII_%28cropped%29_%28b%29.jpg'],
+      ['Queen Victoria',     'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/500px-Queen_Victoria_by_Bassano.jpg'],
+    ];
+    try {
+      const token = await getAccessToken();
+      const readResp = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Monarchs`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!readResp.ok) throw new Error('Read failed: ' + await readResp.text());
+      const rows = (await readResp.json()).values || [];
+      const headers = (rows[0] || []).map(h => h.trim().toLowerCase());
+      let nameCol     = headers.indexOf('name');
+      let portraitCol = headers.findIndex(h => h.includes('portrait') || h.includes('imageurl') || h.includes('image'));
+
+      if (nameCol === -1 || portraitCol === -1) {
+        const values = [['name', 'portraitUrl'], ...PORTRAITS];
+        const wr = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Monarchs!A1?valueInputOption=RAW`, {
+          method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ range: 'Monarchs!A1', majorDimension: 'ROWS', values }),
+        });
+        if (!wr.ok) throw new Error('Write failed: ' + await wr.text());
+        return res.status(200).json({ ok: true, action: 'wrote_fresh', rows: values.length });
+      }
+
+      const nameToRowIdx = {};
+      for (let i = 1; i < rows.length; i++) { const n = rows[i][nameCol]?.trim(); if (n) nameToRowIdx[n] = i; }
+      const colLetter = String.fromCharCode(65 + portraitCol);
+      let nextRow = rows.length + 1;
+      const results = [];
+      for (const [n, url] of PORTRAITS) {
+        const ri = nameToRowIdx[n];
+        if (ri !== undefined) {
+          const range = `Monarchs!${colLetter}${ri + 1}`;
+          const wr = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+            method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ range, majorDimension: 'ROWS', values: [[url]] }),
+          });
+          if (!wr.ok) throw new Error(`Update ${n} failed: ` + await wr.text());
+          results.push({ name: n, action: 'updated' });
+        } else {
+          const newRow = new Array(Math.max(nameCol, portraitCol) + 1).fill('');
+          newRow[nameCol] = n; newRow[portraitCol] = url;
+          const range = `Monarchs!A${nextRow}`;
+          const wr = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+            method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ range, majorDimension: 'ROWS', values: [newRow] }),
+          });
+          if (!wr.ok) throw new Error(`Append ${n} failed: ` + await wr.text());
+          results.push({ name: n, action: 'appended' }); nextRow++;
+        }
+      }
+      return res.status(200).json({ ok: true, results });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
