@@ -523,6 +523,12 @@ body {
 
 <script>
 // ── SERIES DATA ────────────────────────────────────────────────────────────────
+const COIN_IMAGES = {
+  'UK-D-50P-2026-LOTB-': 'https://crawleycoins.co.uk/wp-content/uploads/2026/05/UK26LRCBU-The-Lord-of-the-Rings-2026-UK-50p-Brilliant-Uncirculated-Coin-Reverse.jpg',
+  'UK-D-50P-2026-LOTC-': 'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/coin-1---completer/product-images/uk26lrcbuc---the-lord-of-the-rings-2026-uk-50p-brilliant-uncirculated-colour-coin-reverse-edge.jpg',
+  'UK-D-50P-2026-LOTS-': 'https://www.royalmint.com/globalassets/_ecommerce/commemorative/launches/2026-launches/lord-of-the-rings/one-ring-silver-1500x1500.jpg',
+};
+
 const SERIES = [
   { num: 1, name: 'The One Ring',   year: 2026, owned: true,  release: null,            vc: 'UK-D-50P-2026-LOTB-' },
   { num: 2, name: 'TBC',            year: 2026, owned: false, release: 'Expected 2026' },
@@ -533,18 +539,21 @@ const SERIES = [
   { num: 7, name: 'TBC',            year: 2027, owned: false, release: 'Expected 2027' },
 ];
 
-// ── COIN IMAGE (from localStorage cache if available) ─────────────────────────
-function getCoinImage() {
+// ── COIN IMAGE (localStorage cache first, hardcoded fallback) ─────────────────
+function getCoinImage(vc) {
   try {
     const raw = localStorage.getItem('coinhub_gs_cache');
-    if (!raw) return null;
-    const cache = JSON.parse(raw);
-    const coins = cache?.data?.variants || cache?.variants || [];
-    const match = coins.find(c => c.variantCode === 'UK-D-50P-2026-LOTB-' || c[0] === 'UK-D-50P-2026-LOTB-');
-    if (!match) return null;
-    // Row array format: col H (index 7) is imageUrl
-    return Array.isArray(match) ? match[7] : match.imageUrl;
-  } catch(e) { return null; }
+    if (raw) {
+      const cache = JSON.parse(raw);
+      const coins = cache?.data?.variants || cache?.variants || [];
+      const match = coins.find(c => c.variantCode === vc || c[0] === vc);
+      if (match) {
+        const url = Array.isArray(match) ? match[7] : match.imageUrl;
+        if (url) return url;
+      }
+    }
+  } catch(e) {}
+  return COIN_IMAGES[vc] || null;
 }
 
 function goldCoinSVG(label) {
@@ -578,10 +587,10 @@ function seriesCardPlaceholderSVG(num) {
 
 // ── RENDER HERO COIN ──────────────────────────────────────────────────────────
 const heroCoin = document.getElementById('heroCoin');
-const imgUrl = getCoinImage();
-if (imgUrl) {
+const heroImgUrl = getCoinImage('UK-D-50P-2026-LOTB-');
+if (heroImgUrl) {
   const img = document.createElement('img');
-  img.src = imgUrl;
+  img.src = heroImgUrl;
   img.alt = 'The One Ring 50p';
   img.onerror = () => { heroCoin.innerHTML = goldCoinSVG('50p'); };
   heroCoin.appendChild(img);
@@ -596,8 +605,9 @@ SERIES.forEach((coin, i) => {
   card.className = 'series-card ' + (coin.owned ? 'owned' : 'future');
   card.style.transitionDelay = (i * 0.08) + 's';
 
-  const imgHtml = coin.owned && imgUrl
-    ? `<img src="${imgUrl}" alt="${coin.name}" onerror="this.parentElement.innerHTML='${seriesCardPlaceholderSVG(coin.num).replace(/'/g, "\\'")}';">`
+  const cardImgUrl = coin.vc ? getCoinImage(coin.vc) : null;
+  const imgHtml = coin.owned && cardImgUrl
+    ? `<img src="${cardImgUrl}" alt="${coin.name}" onerror="this.parentElement.innerHTML='${seriesCardPlaceholderSVG(coin.num).replace(/'/g, "\\'")}';">`
     : seriesCardPlaceholderSVG(coin.num);
 
   card.innerHTML = `
