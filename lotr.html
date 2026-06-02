@@ -426,7 +426,7 @@ body {
 </head>
 <body>
 
-<a href="/CoinHub_v2.html" class="back-link">← Back to Collection</a>
+<a href="/CoinHub_v2.html" class="back-link" id="backLink">← Back to Collection</a>
 
 <!-- HERO -->
 <section class="hero" id="hero">
@@ -548,6 +548,16 @@ const VARIANTS = {
 const urlVc = new URLSearchParams(location.search).get('vc');
 const selectedVc = VARIANTS[urlVc] ? urlVc : 'UK-D-50P-2026-LOTB-';
 const selected = VARIANTS[selectedVc];
+
+// Back link: variant page → /lotr, collection page → main gallery
+const backLink = document.getElementById('backLink');
+if (urlVc && VARIANTS[urlVc]) {
+  backLink.href = '/lotr';
+  backLink.textContent = '← Back to LOTR';
+} else {
+  backLink.href = '/CoinHub_v2.html';
+  backLink.textContent = '← Back to Collection';
+}
 
 // ── SERIES DATA ────────────────────────────────────────────────────────────────
 const SERIES = [
