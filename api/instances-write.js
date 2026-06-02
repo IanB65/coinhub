@@ -33,6 +33,49 @@ async function getAccessToken() {
   return (await resp.json()).access_token;
 }
 
+async function syncVariantStatus(token, sheetId, variantCode) {
+  // Count instances for this variant
+  const instResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances!A:B?majorDimension=ROWS`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!instResp.ok) throw new Error('Instance read failed: ' + instResp.status);
+  const { values: instRows } = await instResp.json();
+  const count = (instRows || []).filter((r, i) => i > 0 && r[1]?.trim() === variantCode).length;
+
+  // Read variant row to get current status
+  const varResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:G?majorDimension=ROWS`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!varResp.ok) throw new Error('Variants read failed: ' + varResp.status);
+  const { values: varRows } = await varResp.json();
+  const varRowIndex = (varRows || []).findIndex((r, i) => i > 0 && r[0]?.trim() === variantCode);
+  if (varRowIndex === -1) return; // variant not found, nothing to do
+
+  const currentStatus = varRows[varRowIndex][6] || '';
+  const desiredStatus = count > 0 ? 'Got' : 'Need';
+  if (currentStatus === desiredStatus) return; // already correct
+
+  const sheetRow = varRowIndex + 1;
+  const today = new Date().toISOString().slice(0, 10);
+  const writeResp = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        valueInputOption: 'USER_ENTERED',
+        data: [
+          { range: `Variants!G${sheetRow}`, values: [[desiredStatus]] },
+          { range: `Variants!K${sheetRow}`, values: [[today]] },
+        ],
+      }),
+    }
+  );
+  if (!writeResp.ok) throw new Error('Status update failed: ' + await writeResp.text());
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!verifyToken(req)) return res.status(401).json({ error: 'Unauthorised' });
@@ -82,6 +125,7 @@ module.exports = async function handler(req, res) {
         }
       );
       if (!appendResp.ok) throw new Error('Append failed: ' + await appendResp.text());
+      await syncVariantStatus(token, sheetId, instance.variantCode);
       return res.status(200).json({ ok: true, action: 'add', id: instance.id });
     }
 
@@ -108,6 +152,7 @@ module.exports = async function handler(req, res) {
       const { values } = await readResp.json();
       const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === id);
       if (rowIndex === -1) return res.status(404).json({ error: `Instance ${id} not found in sheet` });
+      const removedVariantCode = values[rowIndex][1]?.trim();
 
       const deleteResp = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`,
@@ -124,6 +169,7 @@ module.exports = async function handler(req, res) {
         }
       );
       if (!deleteResp.ok) throw new Error('Delete failed: ' + await deleteResp.text());
+      if (removedVariantCode) await syncVariantStatus(token, sheetId, removedVariantCode);
       return res.status(200).json({ ok: true, action: 'remove', id });
     }
 

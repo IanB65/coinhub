@@ -111,6 +111,65 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  if (action === 'audit-statuses') {
+    // Read all instances and variants, then fix any status mismatches.
+    // Got = has ≥1 instance; Need = has 0 instances (only changes Got↔Need, never touches List).
+    try {
+      const token = await getAccessToken();
+      const today = new Date().toISOString().slice(0, 10);
+
+      const [instResp, varResp] = await Promise.all([
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Instances!A:B?majorDimension=ROWS`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:K?majorDimension=ROWS`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      if (!instResp.ok) throw new Error('Instances read failed: ' + instResp.status);
+      if (!varResp.ok) throw new Error('Variants read failed: ' + varResp.status);
+
+      const { values: instRows } = await instResp.json();
+      const { values: varRows } = await varResp.json();
+
+      // Count instances per variant
+      const instanceCounts = {};
+      for (let i = 1; i < (instRows || []).length; i++) {
+        const vc = instRows[i][1]?.trim();
+        if (vc) instanceCounts[vc] = (instanceCounts[vc] || 0) + 1;
+      }
+
+      // Find variants with wrong status
+      const updates = [];
+      for (let i = 1; i < (varRows || []).length; i++) {
+        const vc = varRows[i][0]?.trim();
+        if (!vc) continue;
+        const currentStatus = varRows[i][6] || '';
+        const count = instanceCounts[vc] || 0;
+        const desiredStatus = count > 0 ? 'Got' : 'Need';
+        // Only auto-correct Got↔Need; never overwrite List
+        if (currentStatus === desiredStatus) continue;
+        if (currentStatus !== 'Got' && currentStatus !== 'Need') continue;
+        const sheetRow = i + 1;
+        updates.push(
+          { range: `Variants!G${sheetRow}`, values: [[desiredStatus]] },
+          { range: `Variants!K${sheetRow}`, values: [[today]] }
+        );
+      }
+
+      if (updates.length === 0) return res.status(200).json({ ok: true, fixed: 0, message: 'All statuses correct' });
+
+      const batchResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: updates }),
+        }
+      );
+      if (!batchResp.ok) throw new Error('Batch update failed: ' + await batchResp.text());
+      return res.status(200).json({ ok: true, fixed: updates.length / 2 });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
