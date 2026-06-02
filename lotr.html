@@ -549,11 +549,11 @@ const urlVc = new URLSearchParams(location.search).get('vc');
 const selectedVc = VARIANTS[urlVc] ? urlVc : 'UK-D-50P-2026-LOTB-';
 const selected = VARIANTS[selectedVc];
 
-// Back link: variant page → /lotr, /lotr → main gallery
+// Back link: variant page → LOTR collection, /lotr → main gallery
 const backLink = document.getElementById('backLink');
 if (urlVc && VARIANTS[urlVc]) {
-  backLink.href = '/lotr';
-  backLink.textContent = '← Back to LOTR';
+  backLink.href = '/CoinHub_v2.html#collection/Lord%20of%20the%20Rings';
+  backLink.textContent = '← Back to Lord of the Rings';
 } else {
   backLink.href = '/CoinHub_v2.html';
   backLink.textContent = '← Back to Collection';
