@@ -111,6 +111,52 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // One-shot migration: fix wrong monarchs on pre-decimal threepence variants.
+  // POST body: { action: 'fix-threepence-monarchs' }  (add dry: true to preview)
+  // Remove this block after running.
+  if (action === 'fix-threepence-monarchs') {
+    try {
+      const token = await getAccessToken();
+      const today = new Date().toISOString().slice(0, 10);
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Sheet read failed: ' + await readResp.text());
+      const { values } = await readResp.json();
+      const dryRun = body.dry === true;
+      const updates = [], log = [];
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        const vc = row[0]?.trim() ?? '';
+        const m = vc.match(/^UK-PD-THRE-(\d{4})-$/);
+        if (!m) continue;
+        const yr = parseInt(m[1], 10);
+        const correctMonarch = yr >= 1902 && yr <= 1910 ? 'King Edward VII'
+                             : yr >= 1911 && yr <= 1936 ? 'King George V' : null;
+        if (!correctMonarch) continue;
+        if ((row[4]?.trim() ?? '') === correctMonarch) { log.push({ vc, action: 'skipped' }); continue; }
+        const sr = i + 1;
+        const newNotes = `A pre-decimal silver threepence from ${yr}, struck during the reign of ${correctMonarch}.`;
+        log.push({ vc, action: dryRun ? 'would-fix' : 'fixed', from: row[4], to: correctMonarch });
+        if (!dryRun) updates.push(
+          { range: `Variants!E${sr}`, values: [[correctMonarch]] },
+          { range: `Variants!I${sr}`, values: [[newNotes]] },
+          { range: `Variants!K${sr}`, values: [[today]] }
+        );
+      }
+      if (!dryRun && updates.length) {
+        const br = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchUpdate`,
+          { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: updates }) }
+        );
+        if (!br.ok) throw new Error('Batch update failed: ' + await br.text());
+      }
+      return res.status(200).json({ dryRun, fixed: updates.length / 3, log });
+    } catch (e) { return res.status(500).json({ error: e.message }); }
+  }
+
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
@@ -149,9 +195,8 @@ module.exports = async function handler(req, res) {
       const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === variantCode);
       if (rowIndex === -1) return res.status(404).json({ error: `Variant ${variantCode} not found` });
 
-      const sheetRow = rowIndex + 1; // 1-based
+      const sheetRow = rowIndex + 1;
 
-      // Get sheet ID (gid) for the Variants tab
       const metaResp = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -213,7 +258,7 @@ module.exports = async function handler(req, res) {
     const rowIndex = (values || []).findIndex((r, i) => i > 0 && r[0]?.trim() === variantCode);
     if (rowIndex === -1) return res.status(404).json({ error: `Variant ${variantCode} not found` });
 
-    const sheetRow = rowIndex + 1; // 1-based
+    const sheetRow = rowIndex + 1;
     const existing = values[rowIndex];
 
     const data = [
