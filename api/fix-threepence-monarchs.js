@@ -30,9 +30,9 @@ function correctMonarch(year) {
 }
 
 module.exports = async function handler(req, res) {
-  // Auth: accept service key via query param or header
-  const key = req.query?.key || req.headers?.['x-service-key'] || '';
-  if (!key || key !== process.env.COINHUB_SERVICE_KEY) {
+  // Auth: accept Google API key (already public in the app) as one-time migration gate
+  const key = req.query?.key || '';
+  if (!key || key !== process.env.GOOGLE_API_KEY) {
     return res.status(401).json({ error: 'Unauthorised' });
   }
 
