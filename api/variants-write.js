@@ -157,6 +157,69 @@ module.exports = async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: e.message }); }
   }
 
+  // One-shot seed: append all missing pre-decimal threepence variants (status LIST).
+  // Call: POST /api/variants-write  body: { action: 'seed-missing-threepences' }
+  // Add dry: true to preview. Delete this block after running.
+  if (action === 'seed-missing-threepences') {
+    // Complete struck-coin reference list, grouped by [variantCode, name, monarch, year, notes]
+    const MISSING = [
+      // Victoria silver (years Ian doesn't have yet)
+      ...[1838,1839,1840,1841,1842,1843,1844,1845,1846,1848,1850,1851,1852,1853,1854,1855,1856,1857,1858,1859,
+          1861,1862,1863,1864,1865,1866,1869,1871,1872,1875,1876,1877,1878,1880,1881,1882,1883,
+          1887,1888,1889,1891,1892,1894,1896,1897,1898].map(y => [
+        `UK-PD-THRE-${y}-`, 'Threepence (Silver)', 'Queen Victoria', y,
+        `A pre-decimal silver threepence from ${y}, struck during the reign of Queen Victoria.`
+      ]),
+      // Edward VII silver (missing years)
+      ...[1903,1904,1905,1906,1908,1909,1910].map(y => [
+        `UK-PD-THRE-${y}-`, 'Threepence (Silver)', 'King Edward VII', y,
+        `A pre-decimal silver threepence from ${y}, struck during the reign of King Edward VII.`
+      ]),
+      // George V silver (missing years)
+      ...[1913,1914,1923,1924,1925,1927,1928,1929,1932].map(y => [
+        `UK-PD-THRE-${y}-`, 'Threepence (Silver)', 'King George V', y,
+        `A pre-decimal silver threepence from ${y}, struck during the reign of King George V.`
+      ]),
+      // George VI silver threepences (separate coin from the 12-sided brass; different variant code)
+      ...[1937,1938,1939,1940,1941,1942,1943,1944].map(y => [
+        `UK-PD-THRE-${y}-SIL-`, 'Threepence (Silver)', 'King George VI', y,
+        `A pre-decimal silver threepence from ${y}, struck during the reign of King George VI. The small silver threepence was issued alongside the 12-sided brass version.`
+      ]),
+    ];
+
+    try {
+      const token = await getAccessToken();
+      const readResp = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants!A:A?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!readResp.ok) throw new Error('Sheet read failed: ' + await readResp.text());
+      const existing = new Set(((await readResp.json()).values || []).slice(1).map(r => r[0]?.trim()).filter(Boolean));
+
+      const dryRun = body.dry === true;
+      const today = new Date().toISOString().slice(0, 10);
+      const toAdd = MISSING.filter(([vc]) => !existing.has(vc));
+      const skipped = MISSING.filter(([vc]) => existing.has(vc)).map(([vc]) => vc);
+
+      if (!dryRun && toAdd.length > 0) {
+        const rows = toAdd.map(([vc, name, monarch, yr, notes]) =>
+          [vc, name, 'Threepence', 'Pre Decimal', monarch, String(yr), 'List', '', notes, today, today]
+        );
+        const appendResp = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Variants:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+          { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values: rows }) }
+        );
+        if (!appendResp.ok) throw new Error('Append failed: ' + await appendResp.text());
+      }
+
+      return res.status(200).json({
+        dryRun, added: toAdd.length, skippedAlreadyExist: skipped.length,
+        toAdd: toAdd.map(([vc]) => vc), skipped
+      });
+    } catch (e) { return res.status(500).json({ error: e.message }); }
+  }
+
   if (!variantCode) return res.status(400).json({ error: 'variantCode required' });
 
   try {
