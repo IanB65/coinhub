@@ -7,7 +7,12 @@
 import { createRequire } from 'module';
 import fs from 'fs';
 const require = createRequire(import.meta.url);
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = (() => {
+  for (const spec of ['playwright', '/opt/node22/lib/node_modules/playwright']) {
+    try { return require(spec); } catch (e) {}
+  }
+  throw new Error('playwright not found — run: npm i --no-save playwright && npx playwright install chromium');
+})();
 
 const BASE = process.env.COINHUB_URL || 'http://127.0.0.1:8787/CoinHub_v2.html';
 const SHOTS = 'scripts/coin3d-shots';

@@ -182,9 +182,14 @@ What it does:
 
 Coins listed in the `COIN3D` manifest in `CoinHub_v2.html` show a draggable/spinnable
 3D 50p (raw WebGL, no libraries) in the expanded lightbox, with a 3D/Photo toggle.
-Face textures live in `assets/coin3d/` (see its README for image specs and how to add
-coins). Falls back to the static photo if WebGL is unavailable. Verify changes with
-`http-server . -p 8787 -s` + `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scripts/verify-coin3d.mjs`.
+Face textures live in `assets/coin3d/` and are produced by the pre-processing pipeline
+`scripts/coin3d-prepare.mjs` (background isolation → rotation detection → master
+heptagon mask → WebP; can auto-update the manifest). The **Coin3D Textures** GitHub
+Action automates the whole chain from the sheet's imageUrl column (H): dispatch per
+collection or weekly sweep → download → process → commit (deploys from main). See `assets/coin3d/README.md`
+for the workflow and per-collection rollout status. Falls back to the static photo if
+WebGL is unavailable. Verify changes with `http-server . -p 8787 -s` +
+`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scripts/verify-coin3d.mjs`.
 
 ---
 

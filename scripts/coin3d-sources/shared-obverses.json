@@ -1,0 +1,5 @@
+{
+  "_comment": "URLs for the shared 'heads' (obverse) textures, one per monarch era. Fill these in and the coin3d-textures workflow downloads + processes them automatically. Alternatively drop a file named <key>.png into assets/coin3d/_inbox/.",
+  "kc3-obv": null,
+  "qe2-obv": null
+}
