@@ -25,6 +25,8 @@ A **single-file HTML/CSS/JS gallery website** for Ian's UK coin collection.
 | `CoinHub_GS.html` | Previous Google Sheets version (superseded by v2) |
 | `CoinHub.html` | Legacy Notion-backed file — **do not edit** |
 | `index.html` | Redirects `coins.ghghome.co.uk/` → `CoinHub_v2.html` |
+| `assets/coin3d/` | Face textures for the lightbox 3D coin viewer — see `assets/coin3d/README.md` |
+| `scripts/verify-coin3d.mjs` | Offline Playwright test for the 3D viewer (dev-only) |
 | `api/` | Vercel serverless functions (Node.js) |
 | `vercel.json` | Vercel routing config |
 | `CLAUDE.md` | This file |
@@ -173,6 +175,16 @@ What it does:
 1. Reads all rows in `NewCoinsInbox` where `approved = TRUE`
 2. Appends them to `Variants` tab (status = `Need`, dateAdded = today)
 3. Deletes the approved rows from `NewCoinsInbox`
+
+---
+
+## 3D coin viewer (lightbox)
+
+Coins listed in the `COIN3D` manifest in `CoinHub_v2.html` show a draggable/spinnable
+3D 50p (raw WebGL, no libraries) in the expanded lightbox, with a 3D/Photo toggle.
+Face textures live in `assets/coin3d/` (see its README for image specs and how to add
+coins). Falls back to the static photo if WebGL is unavailable. Verify changes with
+`http-server . -p 8787 -s` + `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node scripts/verify-coin3d.mjs`.
 
 ---
 
