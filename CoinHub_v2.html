@@ -594,7 +594,16 @@ body.guest-mode .arc-toolbar{top:calc(var(--nav-h) + 30px)}
 .inst-notes{font-size:.8rem;color:var(--ink);margin-bottom:.35rem;font-style:italic}
 .inst-sc{font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace}
 .inst-edit-form{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
-@media(max-width:700px){.lb-img-panel{width:100%;border-right:none;border-bottom:1px solid var(--border)}}
+/* ── 3D COIN VIEWER ── */
+.lb-3d-wrap{width:100%;aspect-ratio:1/1;max-height:240px;display:flex;align-items:center;justify-content:center}
+.lb-3d-wrap canvas{width:100%;height:100%;touch-action:none;cursor:grab;border-radius:var(--r)}
+.lb-3d-wrap canvas:active{cursor:grabbing}
+.lb-3d-toggle{display:flex;width:100%;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.lb-3d-toggle button{flex:1;min-height:44px;background:transparent;border:none;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:color .12s,background .12s}
+.lb-3d-toggle button+button{border-left:1px solid var(--border)}
+.lb-3d-toggle button:hover,.lb-3d-toggle button:active{color:var(--gold)}
+.lb-3d-toggle button.active{color:var(--gold);background:var(--paper2)}
+@media(max-width:700px){.lb-img-panel{width:100%;border-right:none;border-bottom:1px solid var(--border)}.lb-3d-wrap{max-height:260px}}
 
 /* ── STATS GRID ── */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem;padding:.5rem 0}
@@ -933,6 +942,25 @@ const DENOM_SORT_KEY = {
   '1d':10,'½d':11,'3d':13,'6d':14,'1s':15,'2s':16,'2s 6d':17
 };
 const LOTR_VARIANTS = new Set(['UK-D-50P-2026-LOTB-','UK-D-50P-2026-LOTC-','UK-D-50P-2026-LOTS-']);
+// 3D coin assets: obverse/reverse face textures served from /assets/coin3d (same-origin, required for WebGL).
+// String texture values reference COIN3D.shared keys (one portrait image shared by many coins).
+// scale/rotate align the photographed coin face with the heptagon geometry (1 = photo fills the texture square).
+const COIN3D = {
+  shared: {
+    'kc3-obv': { src:'assets/coin3d/_shared/obverse-kc3-50p.png', scale:1, rotate:0 }
+  },
+  coins: {
+    'UK-D-50P-2026-LOTB-': { obverse:'kc3-obv', reverse:{ src:'assets/coin3d/UK-D-50P-2026-LOTB-/reverse.png', scale:1.08, rotate:0 } },
+    'UK-D-50P-2026-LOTC-': { obverse:'kc3-obv', reverse:{ src:'assets/coin3d/UK-D-50P-2026-LOTC-/reverse.png', scale:1.08, rotate:0 } },
+    'UK-D-50P-2026-LOTS-': { obverse:'kc3-obv', reverse:{ src:'assets/coin3d/UK-D-50P-2026-LOTS-/reverse.png', scale:1.08, rotate:0 } }
+  }
+};
+function coin3dAssets(vc) {
+  const c = COIN3D.coins[vc];
+  if (!c) return null;
+  const r = t => typeof t === 'string' ? COIN3D.shared[t] : t;
+  return { obverse: r(c.obverse), reverse: r(c.reverse) };
+}
 const COTUK_MAP = {};
 const DENOM_GROUP_MAP = {};
 let DENOM_GROUP_ORDER = ['Decimal','Pre-decimal','Banknotes','Other'];
@@ -2009,6 +2037,304 @@ function onSearchPanelKey(e) {
   if (e.key==='Escape') closeSearchOverlay();
 }
 
+// ── COIN 3D VIEWER ────────────────────────────────────────────────────────────
+// Self-contained WebGL viewer for a 50p (Reuleaux heptagon, 27.3mm × 1.78mm).
+// One persistent canvas/context reused across coins (iOS Safari caps live GL contexts);
+// mount/unmount only swaps the face textures and re-parents the canvas.
+let _C3D = null;
+
+function _c3dClamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+function _c3dM4mul(a, b) { const o = new Float32Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k*4+r] * b[c*4+k]; o[c*4+r] = s; } return o; }
+function _c3dM4rotX(a) { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]); }
+function _c3dM4rotY(a) { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]); }
+function _c3dM4translate(x, y, z) { return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1]); }
+function _c3dM4persp(fov, asp, n, f) { const t = 1/Math.tan(fov/2), nf = 1/(n-f); return new Float32Array([t/asp,0,0,0, 0,t,0,0, 0,0,(f+n)*nf,-1, 0,0,2*f*n*nf,0]); }
+
+// Reuleaux heptagon prism: 7 vertices on circumradius R = W/(2·sin(3π/7)); each boundary
+// arc is centred on the opposite vertex with radius W (the constant width), swept π/7.
+function _c3dGeometry() {
+  const W = 27.3, T = 1.78, N = 7, SEG = 16;
+  const R = W / (2 * Math.sin(3 * Math.PI / 7));
+  const vx = [];
+  for (let k = 0; k < N; k++) { const a = Math.PI/2 + k * 2 * Math.PI / N; vx.push([R * Math.cos(a), R * Math.sin(a)]); }
+  const pts = [], nrm = [];
+  for (let i = 0; i < N; i++) {
+    const A = vx[i], B = vx[(i+1) % N], C = vx[(i+4) % N];
+    const a0 = Math.atan2(A[1]-C[1], A[0]-C[0]), a1 = Math.atan2(B[1]-C[1], B[0]-C[0]);
+    let d = a1 - a0; while (d <= 0) d += 2 * Math.PI;
+    for (let j = 0; j < SEG; j++) {
+      const a = a0 + d * j / SEG;
+      pts.push([C[0] + W * Math.cos(a), C[1] + W * Math.sin(a)]);
+      nrm.push([Math.cos(a), Math.sin(a)]);
+    }
+  }
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  pts.forEach(p => { minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]); minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]); });
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, sp = maxX - minX;
+  pts.forEach(p => { p[0] -= cx; p[1] -= cy; });
+  const M = pts.length, verts = [], idx = [];
+  const uv = p => [(p[0] + sp/2) / sp, (p[1] + sp/2) / sp];
+  verts.push(0, 0, T/2, 0, 0, 1, .5, .5);
+  pts.forEach(p => { const t = uv(p); verts.push(p[0], p[1], T/2, 0, 0, 1, t[0], t[1]); });
+  const backC = 1 + M;
+  verts.push(0, 0, -T/2, 0, 0, -1, .5, .5);
+  pts.forEach(p => { const t = uv(p); verts.push(p[0], p[1], -T/2, 0, 0, -1, 1 - t[0], t[1]); });
+  const edge0 = backC + 1 + M;
+  pts.forEach((p, i) => {
+    const n = nrm[i];
+    verts.push(p[0], p[1], T/2, n[0], n[1], 0, 0, 0);
+    verts.push(p[0], p[1], -T/2, n[0], n[1], 0, 0, 0);
+  });
+  for (let i = 0; i < M; i++) { const j = (i+1) % M; idx.push(0, 1+i, 1+j); }
+  const backOffset = idx.length;
+  for (let i = 0; i < M; i++) { const j = (i+1) % M; idx.push(backC, backC+1+j, backC+1+i); }
+  const edgeOffset = idx.length;
+  for (let i = 0; i < M; i++) {
+    const j = (i+1) % M, fi = edge0 + 2*i, bi = fi + 1, fj = edge0 + 2*j, bj = fj + 1;
+    idx.push(fi, bi, fj, fj, bi, bj);
+  }
+  return { verts: new Float32Array(verts), idx: new Uint16Array(idx), frontCount: backOffset, backOffset, backCount: edgeOffset - backOffset, edgeOffset, edgeCount: idx.length - edgeOffset };
+}
+
+// Procedurally drawn face — shown while a texture loads and kept if it 404s.
+function _c3dProceduralFace(label) {
+  const S = 1024, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const x = cv.getContext('2d');
+  x.fillStyle = '#C9C5BD'; x.fillRect(0, 0, S, S);
+  x.strokeStyle = '#8B6914'; x.lineWidth = 12;
+  x.beginPath(); x.arc(S/2, S/2, S*.38, 0, Math.PI*2); x.stroke();
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillStyle = '#4A4438'; x.font = '700 130px "Bodoni Moda", serif';
+  x.fillText(label || '50p', S/2, S/2 - 50);
+  x.fillStyle = '#8B6914'; x.font = '64px "DM Mono", monospace';
+  x.fillText('FIFTY PENCE', S/2, S/2 + 110);
+  return cv;
+}
+
+// Cover-fit the source photo into a 1024² (power-of-two) canvas, applying the manifest's
+// scale/rotate so the photographed coin lines up with the heptagon face.
+function _c3dNormalizeImage(img, spec) {
+  const S = 1024, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const x = cv.getContext('2d');
+  x.fillStyle = '#C9C5BD'; x.fillRect(0, 0, S, S);
+  x.translate(S/2, S/2);
+  x.rotate((spec.rotate || 0) * Math.PI / 180);
+  const k = S / Math.min(img.naturalWidth, img.naturalHeight) * (spec.scale || 1);
+  x.drawImage(img, -img.naturalWidth*k/2, -img.naturalHeight*k/2, img.naturalWidth*k, img.naturalHeight*k);
+  return cv;
+}
+
+function _c3dUploadTex(tex, src) {
+  const gl = _C3D.gl;
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.generateMipmap(gl.TEXTURE_2D);
+}
+
+function _c3dTexture(spec, label) {
+  const gl = _C3D.gl, tex = gl.createTexture();
+  _c3dUploadTex(tex, _c3dProceduralFace(label));
+  if (spec && spec.src) {
+    const img = new Image();
+    img.onload = () => {
+      if (!_C3D || _C3D.dead || (_C3D.tex.obv !== tex && _C3D.tex.rev !== tex)) return;
+      _c3dUploadTex(tex, _c3dNormalizeImage(img, spec));
+    };
+    img.src = spec.src;
+  }
+  return tex;
+}
+
+function _c3dCompile(gl, type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src); gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.error('coin3d shader:', gl.getShaderInfoLog(sh)); return null; }
+  return sh;
+}
+
+function _c3dInit() {
+  if (_C3D) return !_C3D.dead;
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl', { alpha: true, antialias: true }) || canvas.getContext('experimental-webgl', { alpha: true, antialias: true });
+  if (!gl) { _C3D = { dead: true }; return false; }
+  const vs = _c3dCompile(gl, gl.VERTEX_SHADER,
+    'attribute vec3 aPos;attribute vec3 aNrm;attribute vec2 aUV;' +
+    'uniform mat4 uMVP;uniform mat4 uModel;varying vec3 vNrm;varying vec2 vUV;' +
+    'void main(){gl_Position=uMVP*vec4(aPos,1.0);vNrm=(uModel*vec4(aNrm,0.0)).xyz;vUV=aUV;}');
+  const fs = _c3dCompile(gl, gl.FRAGMENT_SHADER,
+    'precision mediump float;varying vec3 vNrm;varying vec2 vUV;' +
+    'uniform sampler2D uTex;uniform int uUseTex;' +
+    'void main(){vec3 n=normalize(vNrm);vec3 L=normalize(vec3(0.4,0.5,0.8));vec3 metal=vec3(0.80,0.79,0.77);vec3 base=metal;' +
+    'if(uUseTex==1){vec4 t=texture2D(uTex,vUV);base=mix(metal,t.rgb,t.a);}' +
+    'float diff=max(dot(n,L),0.0);vec3 H=normalize(L+vec3(0.0,0.0,1.0));float spec=pow(max(dot(n,H),0.0),64.0)*0.45;' +
+    'gl_FragColor=vec4(base*(0.40+0.62*diff)+vec3(spec),1.0);}');
+  if (!vs || !fs) { _C3D = { dead: true }; return false; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.error('coin3d link:', gl.getProgramInfoLog(prog)); _C3D = { dead: true }; return false; }
+  gl.useProgram(prog);
+  const geom = _c3dGeometry();
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, geom.verts, gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geom.idx, gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'aPos'), aNrm = gl.getAttribLocation(prog, 'aNrm'), aUV = gl.getAttribLocation(prog, 'aUV');
+  gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 32, 0);
+  gl.enableVertexAttribArray(aNrm); gl.vertexAttribPointer(aNrm, 3, gl.FLOAT, false, 32, 12);
+  gl.enableVertexAttribArray(aUV); gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 32, 24);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.CULL_FACE);
+  const locs = { uMVP: gl.getUniformLocation(prog, 'uMVP'), uModel: gl.getUniformLocation(prog, 'uModel'), uUseTex: gl.getUniformLocation(prog, 'uUseTex') };
+  gl.uniform1i(gl.getUniformLocation(prog, 'uTex'), 0);
+  gl.activeTexture(gl.TEXTURE0);
+  _C3D = { canvas, gl, geom, locs, tex: {}, state: null, raf: 0, wrap: null, dead: false, mode: '3d', dist: 58, proj: _c3dM4persp(30*Math.PI/180, 1, 10, 200), reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches };
+  canvas.addEventListener('pointerdown', _c3dPointerDown);
+  canvas.addEventListener('pointermove', _c3dPointerMove);
+  canvas.addEventListener('pointerup', _c3dPointerUp);
+  canvas.addEventListener('pointercancel', _c3dPointerUp);
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); _C3D.dead = true; _c3dStopLoop(); toggleCoin3d('photo', true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) _c3dStopLoop(); else _c3dStartLoop(); });
+  window.addEventListener('resize', _c3dResize);
+  return true;
+}
+
+function _c3dResize() {
+  const C = _C3D;
+  if (!C || C.dead || !C.wrap) return;
+  const w = C.wrap.clientWidth || 192, h = C.wrap.clientHeight || w;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  C.canvas.width = Math.round(w * dpr); C.canvas.height = Math.round(h * dpr);
+  C.proj = _c3dM4persp(30*Math.PI/180, w/h, 10, 200);
+}
+
+const _C3D_DRAG_K = 0.012; // radians of spin per CSS pixel dragged
+function _c3dPointerDown(e) {
+  const s = _C3D.state; if (!s) return;
+  s.dragging = true; s.velX = 0; s.velY = 0;
+  s.px = e.clientX; s.py = e.clientY;
+  s.samples = [[performance.now(), e.clientX, e.clientY]];
+  s.lastInteract = performance.now();
+  try { _C3D.canvas.setPointerCapture(e.pointerId); } catch(err) {}
+  e.preventDefault();
+}
+function _c3dPointerMove(e) {
+  const s = _C3D.state; if (!s || !s.dragging) return;
+  s.rotY += (e.clientX - s.px) * _C3D_DRAG_K;
+  s.rotX = _c3dClamp(s.rotX + (e.clientY - s.py) * _C3D_DRAG_K, -.6, .6);
+  s.px = e.clientX; s.py = e.clientY;
+  const now = performance.now();
+  s.samples.push([now, e.clientX, e.clientY]);
+  while (s.samples.length > 2 && now - s.samples[0][0] > 120) s.samples.shift();
+  s.lastInteract = now;
+}
+function _c3dPointerUp(e) {
+  const s = _C3D.state; if (!s || !s.dragging) return;
+  s.dragging = false;
+  const now = performance.now(); s.lastInteract = now;
+  const first = s.samples[0], dt = (now - first[0]) / 1000;
+  if (dt > 0.016) {
+    s.velY = _c3dClamp((e.clientX - first[1]) * _C3D_DRAG_K / dt, -12, 12);
+    s.velX = _c3dClamp((e.clientY - first[2]) * _C3D_DRAG_K / dt, -12, 12);
+  }
+  s.samples = [];
+}
+
+function _c3dFrame(t) {
+  const C = _C3D;
+  if (!C || C.dead || !C.wrap) { if (C) C.raf = 0; return; }
+  C.raf = requestAnimationFrame(_c3dFrame);
+  const s = C.state, dt = s.prevT ? Math.min((t - s.prevT) / 1000, .05) : 0;
+  s.prevT = t;
+  if (!s.dragging) {
+    s.rotY += s.velY * dt;
+    s.rotX = _c3dClamp(s.rotX + s.velX * dt, -.6, .6);
+    const damp = Math.exp(-3 * dt);
+    s.velY *= damp; s.velX *= damp;
+    if (Math.abs(s.velY) < .02) s.velY = 0;
+    if (Math.abs(s.velX) < .02) s.velX = 0;
+    if (!C.reduceMotion && !s.velY && t - s.lastInteract > 3500) {
+      s.rotY += .45 * dt;
+      s.rotX += (.15 - s.rotX) * Math.min(1, 2 * dt);
+    }
+  }
+  const gl = C.gl;
+  gl.viewport(0, 0, C.canvas.width, C.canvas.height);
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  const model = _c3dM4mul(_c3dM4rotX(s.rotX), _c3dM4rotY(s.rotY));
+  const mvp = _c3dM4mul(C.proj, _c3dM4mul(_c3dM4translate(0, 0, -C.dist), model));
+  gl.uniformMatrix4fv(C.locs.uMVP, false, mvp);
+  gl.uniformMatrix4fv(C.locs.uModel, false, model);
+  gl.uniform1i(C.locs.uUseTex, 1);
+  gl.bindTexture(gl.TEXTURE_2D, C.tex.obv);
+  gl.drawElements(gl.TRIANGLES, C.geom.frontCount, gl.UNSIGNED_SHORT, 0);
+  gl.bindTexture(gl.TEXTURE_2D, C.tex.rev);
+  gl.drawElements(gl.TRIANGLES, C.geom.backCount, gl.UNSIGNED_SHORT, C.geom.backOffset * 2);
+  gl.uniform1i(C.locs.uUseTex, 0);
+  gl.drawElements(gl.TRIANGLES, C.geom.edgeCount, gl.UNSIGNED_SHORT, C.geom.edgeOffset * 2);
+}
+
+function _c3dStartLoop() {
+  const C = _C3D;
+  if (!C || C.dead || C.raf || !C.wrap || C.mode !== '3d' || document.hidden) return;
+  C.state.prevT = 0;
+  C.raf = requestAnimationFrame(_c3dFrame);
+}
+function _c3dStopLoop() {
+  const C = _C3D;
+  if (C && C.raf) { cancelAnimationFrame(C.raf); C.raf = 0; }
+}
+function _c3dDeleteCoinTex() {
+  const C = _C3D;
+  if (!C || C.dead || !C.gl) return;
+  if (C.tex.obv) { C.gl.deleteTexture(C.tex.obv); C.tex.obv = null; }
+  if (C.tex.rev) { C.gl.deleteTexture(C.tex.rev); C.tex.rev = null; }
+}
+
+function coin3dMount(wrapEl, assets) {
+  if (!wrapEl || !_c3dInit()) return false;
+  const C = _C3D;
+  C.wrap = wrapEl;
+  wrapEl.appendChild(C.canvas);
+  _c3dResize();
+  _c3dDeleteCoinTex();
+  C.tex.obv = _c3dTexture(assets.obverse, 'OBVERSE');
+  C.tex.rev = _c3dTexture(assets.reverse, 'REVERSE');
+  C.state = { rotX: .15, rotY: 0, velX: 0, velY: 0, dragging: false, samples: [], lastInteract: performance.now(), prevT: 0, px: 0, py: 0 };
+  C.mode = '3d';
+  _c3dStartLoop();
+  return true;
+}
+function coin3dUnmount() {
+  const C = _C3D;
+  if (!C || C.dead) return;
+  _c3dStopLoop();
+  _c3dDeleteCoinTex();
+  if (C.canvas && C.canvas.parentNode) C.canvas.parentNode.removeChild(C.canvas);
+  C.wrap = null;
+}
+function toggleCoin3d(mode, hideToggle) {
+  const wrap = document.getElementById('lb3dWrap'), photo = document.getElementById('lb3dPhoto'), tg = document.getElementById('lb3dToggle');
+  const b3 = document.getElementById('lb3dBtn'), bp = document.getElementById('lbPhotoBtn');
+  if (!wrap || !photo) return;
+  const is3d = mode === '3d';
+  wrap.style.display = is3d ? 'flex' : 'none';
+  photo.style.display = is3d ? 'none' : '';
+  if (b3) b3.classList.toggle('active', is3d);
+  if (bp) bp.classList.toggle('active', !is3d);
+  if (hideToggle && tg) tg.style.display = 'none';
+  if (_C3D && !_C3D.dead) {
+    _C3D.mode = mode;
+    if (is3d) { _c3dResize(); _c3dStartLoop(); } else _c3dStopLoop();
+  }
+}
+window._coin3dDebug = () => ({ running: !!(_C3D && _C3D.raf), mounted: !!(_C3D && _C3D.wrap), dead: !!(_C3D && _C3D.dead), rotY: _C3D && _C3D.state ? _C3D.state.rotY : 0, velY: _C3D && _C3D.state ? _C3D.state.velY : 0 });
+
 // ── COIN LIGHTBOX ─────────────────────────────────────────────────────────────
 let LB_VC = null, LB_IDX = -1;
 
@@ -2031,6 +2357,7 @@ function openCoinModal(vc, ctxId, idx) {
   if (titleEl && coin) titleEl.textContent = coin.name;
 }
 function closeCoinModal() {
+  coin3dUnmount();
   document.getElementById('coinModal').classList.remove('open');
   document.body.style.overflow = '';
   LB_VC = null;
@@ -2056,9 +2383,16 @@ function updateLightboxNav() {
 }
 
 function renderLightboxContent(vc) {
+  coin3dUnmount();
   const coin = ALL_COINS.find(c=>c.variantCode===vc);
   if (!coin) return;
   const img = resolveImage(coin);
+  const a3d = coin3dAssets(vc);
+  const imgPanelMedia = a3d
+    ? `<div class="lb-3d-toggle" id="lb3dToggle"><button id="lb3dBtn" class="active" onclick="toggleCoin3d('3d')">3D</button><button id="lbPhotoBtn" onclick="toggleCoin3d('photo')">Photo</button></div>
+      <div class="lb-3d-wrap" id="lb3dWrap"></div>
+      ${img ? `<img id="lb3dPhoto" style="display:none" src="${img}" alt="${esc(coin.name)}" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" onclick="openImgZoom('${img}')">` : `<span id="lb3dPhoto" style="display:none;width:100%">${coinPlaceholderSVG(coin.denom)}</span>`}`
+    : (img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom));
   const instances = INSTANCE_DATA[vc] || [];
   const instHTML = instances.map((inst,i)=>buildInstItemHTML(inst,i,vc)).join('');
   const addForm = GUEST_MODE ? '' : buildAddInstFormHTML(vc);
@@ -2066,7 +2400,7 @@ function renderLightboxContent(vc) {
   const deleteVariantBtn = GUEST_MODE ? '' : `<button class="btn-sm btn-danger" onclick="confirmDeleteVariant('${esc(vc)}')">Delete Variant</button>`;
   document.getElementById('modalInner').innerHTML = `
     <div class="lb-img-panel">
-      ${img ? `<img src="${img}" alt="${esc(coin.name)}" onerror="showCoinPlaceholder(this,'${esc(coin.denom)}')" onclick="openImgZoom('${img}')">` : coinPlaceholderSVG(coin.denom)}
+      ${imgPanelMedia}
       <div class="lb-img-actions">${editVariantBtn}</div>
     </div>
     <div class="lb-meta-panel">
@@ -2095,6 +2429,7 @@ function renderLightboxContent(vc) {
         <button class="btn-sm btn-danger" onclick="confirmDeleteVariant('${esc(vc)}')">Delete Variant</button>
       </div>`}
     </div>`;
+  if (a3d && !coin3dMount(document.getElementById('lb3dWrap'), a3d)) toggleCoin3d('photo', true);
 }
 
 function buildInstItemHTML(inst, i, vc) {

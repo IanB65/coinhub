@@ -6,6 +6,7 @@
 .coinhub_config
 
 # ─── Runtime state ────────────────────────────────────────────────────────────
+scripts/coin3d-shots/
 .coinhub_sync_queue.json
 coinhub_changes.log
 coinhub.log
