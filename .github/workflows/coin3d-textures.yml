@@ -1,0 +1,90 @@
+name: Coin3D Textures
+
+on:
+  workflow_dispatch:
+    inputs:
+      collection:
+        description: 'Collection name exactly as in the sheet (blank = sweep all 50p)'
+        required: false
+        default: ''
+        type: string
+      denomination:
+        description: 'Denomination filter'
+        required: false
+        default: '50p'
+        type: string
+      dry_run:
+        description: 'Audit column H only — no downloads or processing'
+        required: false
+        default: false
+        type: boolean
+      force:
+        description: 'Re-fetch variants that already have a texture'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: '23 7 * * 2'   # Weekly sweep, Tuesdays 07:23 UTC — picks up new imageUrls in the sheet
+
+permissions:
+  contents: write
+
+concurrency: coin3d-textures
+
+jobs:
+  textures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Audit column H and download images
+        id: fetch
+        env:
+          COLLECTION: ${{ inputs.collection }}
+          DENOMINATION: ${{ inputs.denomination || '50p' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FORCE: ${{ inputs.force }}
+        run: node scripts/coin3d-fetch.mjs
+
+      - name: Install Playwright chromium
+        if: ${{ inputs.dry_run != true && steps.fetch.outputs.downloaded > 0 }}
+        run: |
+          npm i --no-save playwright http-server
+          npx playwright install --with-deps chromium
+
+      - name: Process textures and update manifest
+        if: ${{ inputs.dry_run != true && steps.fetch.outputs.downloaded > 0 }}
+        run: |
+          node scripts/coin3d-prepare.mjs --apply-manifest | tee prepare.log
+          {
+            echo ""
+            echo "### Texture processing"
+            echo '```'
+            cat prepare.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify 3D viewer (gate before deploy)
+        if: ${{ inputs.dry_run != true && steps.fetch.outputs.downloaded > 0 }}
+        run: |
+          npx http-server . -p 8787 -s &
+          sleep 2
+          node scripts/verify-coin3d.mjs
+
+      - name: Commit textures
+        if: ${{ inputs.dry_run != true && steps.fetch.outputs.downloaded > 0 }}
+        run: |
+          git config user.name "coin3d-textures[bot]"
+          git config user.email "coin3d-textures@users.noreply.github.com"
+          git add assets/coin3d CoinHub_v2.html
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+            exit 0
+          fi
+          LABEL="${{ inputs.collection }}"
+          git commit -m "Add 3D coin textures: ${LABEL:-weekly sweep} (${{ steps.fetch.outputs.downloaded }} processed)"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

@@ -1,0 +1,8 @@
+"variantCode","name","denomination","collection","monarch","year","status","imageUrl","notes","dateAdded"
+"UK-D-50P-2011-ARCH-","Archery","50p","London 2012 Olympics","Queen Elizabeth II","2011","Got","https://example.com/img/arch.jpg","",""
+"UK-D-50P-2011-ATHL-","Athletics","50p","London 2012 Olympics","Queen Elizabeth II","2011","Need","","",""
+"UK-D-50P-2011-JUDO-","Judo, the gentle way","50p","London 2012 Olympics","Queen Elizabeth II","2011","Got","https://cdn.example.org/judo.png","has, commas","2024-01-01"
+"UK-M-50P-2011-COMP-","Completer ""Medallion""","50p","London 2012 Olympics","Queen Elizabeth II","2011","Got","https://example.com/comp.png","",""
+"UK-D-50P-2026-LOTS-","LOTR Silver Proof","50p","Lord of the Rings","King Charles III","2026","Got","https://example.com/lots.png","",""
+"UK-COMM-£2-2026-ZSLL-","ZSL London Zoo","£2","Commemorative","King Charles III","2026","Need","https://example.com/zsl.png","",""
+"UK-D-50P-2025-GRND-","Definitive","50p","Definitives","King Charles III","2025","Got","https://example.com/grnd.png","",""

@@ -4,7 +4,19 @@ Obverse/reverse photos mapped onto the 3D 50p in the CoinHub lightbox.
 Which coins are 3D-enabled is controlled by the `COIN3D` manifest in
 `CoinHub_v2.html` (search for `const COIN3D`).
 
-## Adding coins — the automated pipeline (preferred)
+## Adding coins — fully automated from the Google Sheet (preferred)
+
+The **Coin3D Textures** GitHub Action (`.github/workflows/coin3d-textures.yml`)
+reads the Variants tab's `imageUrl` column (H), downloads the images, runs the
+pre-processing pipeline, and commits the textures + manifest straight to the
+branch it runs on (on main this deploys in ~30s, gated by the offline
+verification suite). Run it from the Actions tab with a collection name
+(e.g. `London 2012 Olympics`), or let the weekly sweep (Tuesdays) pick up any
+50p whose sheet row gained an imageUrl. Every run writes a column-H audit to
+the job summary: host breakdown, failures, and the exact sheet rows to fix.
+Shared obverse URLs live in `scripts/coin3d-sources/shared-obverses.json`.
+
+## Adding coins — local pipeline
 
 `scripts/coin3d-prepare.mjs` turns raw product shots into ready-to-use
 textures. It isolates the coin from its background (alpha channel, or

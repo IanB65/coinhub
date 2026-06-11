@@ -40,3 +40,5 @@ desktop.ini
 .vscode/
 *.code-workspace
 assets/coin3d/_inbox/
+node_modules/
+package-lock.json

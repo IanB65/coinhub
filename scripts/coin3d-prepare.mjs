@@ -25,7 +25,12 @@ import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
 const require = createRequire(import.meta.url);
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = (() => {
+  for (const spec of ['playwright', '/opt/node22/lib/node_modules/playwright']) {
+    try { return require(spec); } catch (e) {}
+  }
+  throw new Error('playwright not found — run: npm i --no-save playwright && npx playwright install chromium');
+})();
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const args = process.argv.slice(2);
