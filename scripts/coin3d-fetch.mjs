@@ -219,7 +219,10 @@ async function main() {
   const rows = parseCsv(csv);
   const entries = filterRows(rows, collection, denomination);
   if (!entries.length) {
+    const distinct = col => [...new Set(rows.slice(1).map(r => (r[col] || '').trim()).filter(Boolean))].sort();
     console.error(`No variants match collection="${collection}" denomination="${denomination}" — check the spelling against the sheet.`);
+    console.error(`Denominations in the sheet: ${distinct(COL.denomination).join(' | ')}`);
+    console.error(`Collections in the sheet: ${distinct(COL.collection).join(' | ')}`);
     process.exit(1);
   }
   console.log(`${entries.length} variants matched.`);
