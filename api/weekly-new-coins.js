@@ -45,11 +45,24 @@ async function getAccessToken() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const HEADERS_FEED = {
-  'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
+const HEADERS_HTML = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en-GB,en;q=0.9',
 };
+
+const HEADERS_RSS = {
+  'User-Agent': 'Mozilla/5.0 (compatible; CoinHubBot/1.0)',
+  'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+};
+
+function extractText(html) {
+  return html.replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&#8211;/g, '–').replace(/&#8217;/g, "'").replace(/&#8216;/g, "'")
+    .replace(/\s+/g, ' ').trim();
+}
 
 function guessDenomination(text) {
   const t = text.toLowerCase();
@@ -93,103 +106,167 @@ async function safeFetch(url, headers, timeoutMs = 12000) {
   }
 }
 
-// ─── Scraper ──────────────────────────────────────────────────────────────────
+// Extract a clean coin name from a Change Checker style title.
+// Their titles are coin-focused, e.g.:
+//   "New 50p Coin: The Prince's Trust"
+//   "2026 £2 Coin – Mary Anning"
+//   "50 Years of Aardman 50p Coin"
+function cleanChangecheckerTitle(raw) {
+  // Strip HTML entities and trim
+  let t = raw.trim();
 
-// Convert a Royal Mint product URL slug into a readable coin name.
-function slugToName(slug, denom, year) {
-  const SKIP = new Set([
-    'uk', 'coin', 'coins',
-    'brilliant', 'uncirculated', 'bu',
-    'silver', 'gold', 'platinum', 'proof', 'colour', 'coloured', 'piedfort',
-    'seven', 'six', 'five', 'four', 'three', 'two', 'collection', 'set',
-    '50', '2', '5', '1', '10', '20', 'pence', 'penny', 'pound', 'pounds',
-  ]);
-  const LOWERCASE = new Set(['of', 'the', 'a', 'an', 'in', 'on', 'at', 'by', 'for', 'with', 'from', 'and', 'or']);
-  const ROMAN = { 'Ii': 'II', 'Iii': 'III', 'Iv': 'IV', 'Vi': 'VI', 'Vii': 'VII', 'Viii': 'VIII' };
+  // Skip non-release articles
+  const SKIP = ['scarcity index', 'check your change', 'coin value', 'most wanted',
+    'how to', 'top 10', 'round-up', 'infographic', 'competition', 'giveaway',
+    'sell', 'sold', 'worth £', 'rarest', 'error coin', 'complete guide'];
+  const lower = t.toLowerCase();
+  if (SKIP.some(p => lower.includes(p))) return null;
 
-  const words = slug
-    .split('-')
-    .filter(w => w && w !== year && !SKIP.has(w.toLowerCase()) && !/^\d+$/.test(w));
+  // Pattern: "New [denom] Coin: [name]" or "New [denom]: [name]"
+  let m = t.match(/^new\s+(?:50p|£\d|\d+p)\s*(?:coin)?\s*[:\–\-]\s*(.+)/i);
+  if (m) return m[1].replace(/\s*\(.*\)$/, '').trim();
 
-  if (!words.length) return '';
+  // Pattern: "[year] [denom] [name] Coin"
+  m = t.match(/^\d{4}\s+(?:50p|£\d|\d+p)\s+(.+?)\s+coin$/i);
+  if (m) return m[1].trim();
 
-  return words.map((w, i) => {
-    const lower = w.toLowerCase();
-    if (i > 0 && LOWERCASE.has(lower)) return lower;
-    const titled = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-    return ROMAN[titled] || titled;
-  }).join(' ').trim();
+  // Pattern: "[name] [denom] Coin" (product-style title)
+  m = t.match(/^(.+?)\s+(?:50p|£\d|\d+p)\s+coin$/i);
+  if (m) {
+    const name = m[1].trim();
+    if (name.length >= 3 && name.length <= 80) return name;
+  }
+
+  // Pattern: "[denom] [name]" at end: "50p: The Queen's Beasts"
+  m = t.match(/^(?:50p|£\d|\d+p)[:\s–\-]+(.+)/i);
+  if (m) return m[1].replace(/\s*coin\s*$/i, '').trim();
+
+  // Has a colon — after-colon is the coin name
+  if (t.includes(':')) {
+    const after = t.split(':').slice(1).join(':').trim();
+    const after2 = after.replace(/\s*coin\s*$/i, '').trim();
+    if (after2.length >= 3 && after2.length <= 80 && !/\b(is|are|was|will|has)\b/i.test(after2)) {
+      return after2;
+    }
+  }
+
+  // Short clean title with no verb phrases — use as-is
+  if (t.length <= 70 && !/\b(is|are|was|will|has|have|could|celebrating|announces?|launches?|unveils?)\b/i.test(t) && !/[?!]/.test(t)) {
+    return t.replace(/\s*coin\s*$/i, '').trim() || null;
+  }
+
+  return null;
 }
 
-async function scrapeRoyalMint() {
+// ─── Scrapers ─────────────────────────────────────────────────────────────────
+
+async function scrapeChangechecker() {
+  const coins = [];
+  const errors = [];
+  const seen = new Set();
+  const cutoffMs = Date.now() - 180 * 24 * 60 * 60 * 1000;
+
+  // Change Checker RSS — WordPress, always accessible, coin-focused titles
+  const rss = await safeFetch('https://www.changechecker.org/feed/', HEADERS_RSS, 15000);
+  if (!rss.ok) {
+    errors.push(`Change Checker RSS: HTTP ${rss.status}${rss.error ? ' ' + rss.error : ''}`);
+    return { coins, errors, source: 'Change Checker' };
+  }
+
+  for (const [, itemXml] of rss.text.matchAll(/<item>([\s\S]*?)<\/item>/gi)) {
+    // Check pubDate within cutoff
+    const pdMatch = itemXml.match(/<pubDate>([^<]+)<\/pubDate>/i);
+    if (pdMatch) {
+      const pd = new Date(pdMatch[1].trim()).getTime();
+      if (!isNaN(pd) && pd < cutoffMs) continue;
+    }
+
+    const titleMatch = itemXml.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/i);
+    if (!titleMatch) continue;
+    const rawTitle = extractText(titleMatch[1] || titleMatch[2] || '');
+
+    const denom = guessDenomination(rawTitle);
+    if (!denom) continue;
+
+    const cleanName = cleanChangecheckerTitle(rawTitle);
+    if (!cleanName || cleanName.length < 3) continue;
+
+    const linkMatch = itemXml.match(/<link>(https?:\/\/[^<]+)<\/link>/i);
+    const sourceUrl = linkMatch ? linkMatch[1].trim() : 'https://www.changechecker.org/';
+
+    const year = guessYear(rawTitle + ' ' + (pdMatch ? pdMatch[1] : ''));
+    const key = `${cleanName.toLowerCase()}|${year}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    coins.push({ name: cleanName.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl });
+  }
+
+  return { coins, errors, source: 'Change Checker' };
+}
+
+async function scrapeWestminster() {
   const coins = [];
   const errors = [];
   const seen = new Set();
   const currentYear = new Date().getFullYear();
 
-  // Next.js apps embed initial data in __NEXT_DATA__ — parse that for product slugs
-  const PAGES = [
-    'https://www.royalmint.com/shop/limited-editions/',
-    'https://www.royalmint.com/shop/new/',
+  // Westminster Collection — Royal Mint authorised retailer, lists actual coin products
+  const URLS = [
+    'https://www.westminstercollection.com/change-checker/certified-bu-coins/',
+    'https://www.westminstercollection.com/new-releases/',
   ];
 
-  const allProductUrls = new Set();
-
-  for (const pageUrl of PAGES) {
-    const result = await safeFetch(pageUrl, HEADERS_FEED, 20000);
+  for (const url of URLS) {
+    const result = await safeFetch(url, HEADERS_HTML, 15000);
     if (!result.ok) {
-      errors.push(`Royal Mint ${pageUrl}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
+      errors.push(`Westminster ${url}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
       continue;
     }
 
-    // Extract __NEXT_DATA__ JSON blob
-    const ndMatch = result.text.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
-    if (ndMatch) {
-      try {
-        const nd = JSON.parse(ndMatch[1]);
-        const ndStr = JSON.stringify(nd);
-        // Find all /shop/ paths in the JSON
-        for (const [, path] of ndStr.matchAll(/"(\/shop\/[^"?#]+)"/g)) {
-          const clean = path.replace(/\/$/, '');
-          const depth = clean.split('/').filter(Boolean).length;
-          if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
-        }
-        errors.push(`DEBUG __NEXT_DATA__ ${pageUrl}: found ${allProductUrls.size} product URLs. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
-      } catch (e) {
-        errors.push(`DEBUG __NEXT_DATA__ parse error ${pageUrl}: ${e.message}`);
+    // Extract product titles from h2/h3 elements (their product cards use these)
+    for (const [, titleHtml] of result.text.matchAll(/<h[23][^>]*class="[^"]*(?:product|title)[^"]*"[^>]*>([\s\S]*?)<\/h[23]>/gi)) {
+      const raw = extractText(titleHtml);
+      const denom = guessDenomination(raw);
+      if (!denom) continue;
+      const year = guessYear(raw);
+      if (parseInt(year) < currentYear - 2) continue;
+      // Strip denomination and year from name
+      const name = raw
+        .replace(/\b(50p|£\d|£\d+|\d+p)\b/gi, '')
+        .replace(/\b20\d{2}\b/g, '')
+        .replace(/\bcoin\b/gi, '')
+        .replace(/\s+/g, ' ').trim();
+      if (!name || name.length < 3) continue;
+      const key = `${name.toLowerCase()}|${year}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: url });
+    }
+
+    // Fallback: any heading containing a denomination
+    if (!coins.length) {
+      for (const [, headHtml] of result.text.matchAll(/<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/gi)) {
+        const raw = extractText(headHtml);
+        const denom = guessDenomination(raw);
+        if (!denom) continue;
+        const year = guessYear(raw);
+        if (parseInt(year) < currentYear - 2) continue;
+        const name = raw
+          .replace(/\b(50p|£\d|£\d+|\d+p)\b/gi, '')
+          .replace(/\b20\d{2}\b/g, '')
+          .replace(/\bcoin\b/gi, '')
+          .replace(/\s+/g, ' ').trim();
+        if (!name || name.length < 3) continue;
+        const key = `${name.toLowerCase()}|${year}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: url });
       }
-    } else {
-      // Fallback: look for shop hrefs in raw HTML
-      for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
-        const clean = href.replace(/\/$/, '');
-        const depth = clean.split('/').filter(Boolean).length;
-        if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
-      }
-      errors.push(`DEBUG no __NEXT_DATA__ on ${pageUrl}, ${result.text.length} bytes, ${allProductUrls.size} hrefs`);
     }
   }
 
-  for (const fullUrl of allProductUrls) {
-    const path = fullUrl.replace('https://www.royalmint.com', '');
-    const slug = path.split('/').pop();
-
-    const denom = guessDenomination(slug.replace(/-/g, ' '));
-    if (!denom) continue;
-
-    const year = guessYear(slug.replace(/-/g, ' '));
-    if (parseInt(year) < currentYear - 2) continue;
-
-    const name = slugToName(slug, denom, year);
-    if (!name || name.length < 4) continue;
-
-    const key = `${name.toLowerCase()}|${year}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-
-    coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: fullUrl });
-  }
-
-  return { coins, errors, source: 'Royal Mint' };
+  return { coins, errors, source: 'Westminster Collection' };
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -204,14 +281,25 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const smResult = await scrapeRoyalMint();
+    const [ccResult, wmResult] = await Promise.all([
+      scrapeChangechecker(),
+      scrapeWestminster(),
+    ]);
 
-    const sourceSummary = [{ source: smResult.source, found: smResult.coins.length, errors: smResult.errors }];
+    const sourceSummary = [ccResult, wmResult].map(r => ({
+      source: r.source, found: r.coins.length, errors: r.errors,
+    }));
 
-    const candidates = smResult.coins;
+    // Deduplicate across sources
+    const dedupedMap = new Map();
+    for (const c of [...ccResult.coins, ...wmResult.coins]) {
+      const key = `${c.denomination}|${c.year}|${c.name.toLowerCase()}`;
+      if (!dedupedMap.has(key)) dedupedMap.set(key, c);
+    }
+    const candidates = [...dedupedMap.values()];
 
     if (!candidates.length) {
-      return res.status(200).json({ staged: 0, skipped: 0, found: 0, message: 'No new coins found on Royal Mint pages', sources: sourceSummary });
+      return res.status(200).json({ staged: 0, skipped: 0, found: 0, message: 'No new coins found', sources: sourceSummary });
     }
 
     const token = await getAccessToken();
@@ -252,7 +340,6 @@ module.exports = async function handler(req, res) {
       if (coinYear < currentYear - 2) continue;
 
       const monarch = coinYear >= 2023 ? 'King Charles III' : 'Queen Elizabeth II';
-      const collection = 'Commemorative';
       const variantCode = buildVariantCode('D', c.denomination, c.year, c.name);
 
       if (existingCodes.has(variantCode)) continue;
@@ -260,8 +347,8 @@ module.exports = async function handler(req, res) {
       if (existingNameYears.has(nameYearKey)) continue;
 
       newRows.push([
-        variantCode, c.name.slice(0, 120), c.denomination, collection, monarch, c.year,
-        c.imageUrl || '', c.sourceUrl || '', c.price || '', 'FALSE', today,
+        variantCode, c.name.slice(0, 120), c.denomination, 'Commemorative', monarch, c.year,
+        c.imageUrl || '', c.sourceUrl || '', '', 'FALSE', today,
       ]);
     }
 
