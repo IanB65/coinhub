@@ -203,8 +203,6 @@ async function scrapeChangechecker() {
     const denom = guessDenomination(rawTitle);
     if (!denom) continue;
 
-    errors.push(`CC_TITLE: ${rawTitle}`);
-
     const cleanName = cleanChangecheckerTitle(rawTitle);
     if (!cleanName || cleanName.length < 3) continue;
 
@@ -230,8 +228,8 @@ async function scrapeWestminster() {
 
   // Westminster Collection — Royal Mint authorised retailer, lists actual coin products
   const URLS = [
-    'https://www.westminstercollection.com/change-checker/certified-bu-coins/',
-    'https://www.westminstercollection.com/coins/uk-coins/',
+    'https://www.westminstercollection.com/change-checker/',
+    'https://www.westminstercollection.com/coins/',
   ];
 
   for (const url of URLS) {
