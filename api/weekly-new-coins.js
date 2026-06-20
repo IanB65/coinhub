@@ -128,9 +128,18 @@ async function scrapeRoyalMintSitemap() {
   const cutoffMs = Date.now() - 180 * 24 * 60 * 60 * 1000; // 180 days
   const currentYear = new Date().getFullYear();
 
-  const idxResult = await safeFetch('https://www.royalmint.com/sitemap_index.xml', HEADERS_FEED, 15000);
+  const SITEMAP_INDEX_URLS = [
+    'https://www.royalmint.com/sitemap_index.xml',
+    'https://www.royalmint.com/sitemap.xml',
+    'https://www.royalmint.com/sitemaps/sitemap_index.xml',
+  ];
+  let idxResult = { ok: false };
+  for (const url of SITEMAP_INDEX_URLS) {
+    idxResult = await safeFetch(url, HEADERS_FEED, 15000);
+    if (idxResult.ok) break;
+    errors.push(`Royal Mint sitemap ${url}: HTTP ${idxResult.status}${idxResult.error ? ' ' + idxResult.error : ''}`);
+  }
   if (!idxResult.ok) {
-    errors.push(`Royal Mint sitemap index: HTTP ${idxResult.status}${idxResult.error ? ' ' + idxResult.error : ''}`);
     return { coins, errors, source: 'Royal Mint (sitemap)' };
   }
 
