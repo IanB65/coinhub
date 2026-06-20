@@ -151,6 +151,8 @@ async function scrapeRoyalMint() {
     }
   }
 
+  errors.push(`DEBUG: ${categoryUrls.size} category URLs, ${allProductUrls.size} product URLs after pass 1. Sample cats: ${[...categoryUrls].slice(0,3).join(' | ')}`);
+
   // Second pass: scrape each category page for product links
   const catArray = [...categoryUrls].slice(0, 40);
   await Promise.all(catArray.map(async (catUrl) => {
@@ -162,6 +164,8 @@ async function scrapeRoyalMint() {
       if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
     }
   }));
+
+  errors.push(`DEBUG: ${allProductUrls.size} product URLs after pass 2. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
 
   for (const fullUrl of allProductUrls) {
     const path = fullUrl.replace('https://www.royalmint.com', '');
