@@ -79,6 +79,9 @@ const ARTICLE_SKIP = [
   'in circulation', 'entering circulation', 'enters circulation',
   'no new', 'not be made', 'signs deal', 'expands into',
   'how much is', 'how to spot', 'what to look for',
+  // non-coin physical items / art
+  'sand art', 'sand sculpture', 'sculpture', 'statue', 'artwork', 'mural',
+  'painting', 'exhibition', 'display', 'installation', 'tribute art',
 ];
 
 /**
@@ -139,7 +142,10 @@ function cleanCoinName(raw) {
   const ANNOUNCE_VERBS = /\b(unveils?|launches?|releases?|reveals?|introduces?|strikes?|issues?)\b/i;
   if (ANNOUNCE_VERBS.test(raw)) {
     const subject = extractCoinSubject(raw);
-    return subject || null;
+    if (!subject) return null;
+    // Reject if the extracted subject is about non-coin items
+    if (ARTICLE_SKIP.some(p => subject.toLowerCase().includes(p))) return null;
+    return subject;
   }
 
   // Suffixes in the after-colon part that indicate article language — strip them to get coin name
