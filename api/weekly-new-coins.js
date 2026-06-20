@@ -118,9 +118,15 @@ function cleanChangecheckerTitle(raw) {
   // Skip non-release articles
   const SKIP = ['scarcity index', 'check your change', 'coin value', 'most wanted',
     'how to', 'top 10', 'round-up', 'infographic', 'competition', 'giveaway',
-    'sell', 'sold', 'worth £', 'rarest', 'error coin', 'complete guide'];
+    'sell', 'sold', 'worth £', 'rarest', 'error coin', 'complete guide',
+    'what we know', 'everything we know', 'all you need', 'things to know',
+    'preview:', 'update:', 'round up', 'new design', 'designs revealed',
+    'entering circulation', 'in circulation', 'check their change', 'urged to check'];
   const lower = t.toLowerCase();
   if (SKIP.some(p => lower.includes(p))) return null;
+
+  // Skip if extracted name would start with an interrogative (article-style)
+  if (/^(what|how|why|when|where|which|everything|all the|here's|find out)/i.test(t)) return null;
 
   // Pattern: "New [denom] Coin: [name]" or "New [denom]: [name]"
   let m = t.match(/^new\s+(?:50p|£\d|\d+p)\s*(?:coin)?\s*[:\–\-]\s*(.+)/i);
@@ -214,7 +220,7 @@ async function scrapeWestminster() {
   // Westminster Collection — Royal Mint authorised retailer, lists actual coin products
   const URLS = [
     'https://www.westminstercollection.com/change-checker/certified-bu-coins/',
-    'https://www.westminstercollection.com/new-releases/',
+    'https://www.westminstercollection.com/coins/uk-coins/',
   ];
 
   for (const url of URLS) {
