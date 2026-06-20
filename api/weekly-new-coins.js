@@ -142,8 +142,10 @@ async function scrapeRoyalMint() {
       errors.push(`Royal Mint ${pageUrl}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
       continue;
     }
+    const hrefs = [...result.text.matchAll(/href="(\/shop\/[^"]+)"/gi)].map(m => m[1]);
+    errors.push(`DEBUG ${pageUrl}: ${result.text.length} bytes, ${hrefs.length} shop hrefs found, sample: ${hrefs.slice(0,3).join(' | ')}`);
     // Extract all /shop/ hrefs from the page HTML
-    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"]+)"/gi)) {
+    for (const href of hrefs) {
       const clean = href.replace(/\?[^"]*$/, '').replace(/\/$/, '');
       if (clean.split('/').length >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
     }
