@@ -128,8 +128,15 @@ function cleanChangecheckerTitle(raw) {
   // Skip if extracted name would start with an interrogative (article-style)
   if (/^(what|how|why|when|where|which|everything|all the|here's|find out)/i.test(t)) return null;
 
+  // Pattern: "New [name] UK [denom] [anything]" e.g. "New Aardman UK 50p Celebrates..."
+  let m = t.match(/^new\s+(.+?)\s+uk\s+(?:50p|£\d+|\d+p)\b/i);
+  if (m) {
+    const name = m[1].trim();
+    if (name.length >= 3 && name.length <= 60 && !/\b(design|coin|release|issue)\b/i.test(name)) return name;
+  }
+
   // Pattern: "New [denom] Coin: [name]" or "New [denom]: [name]"
-  let m = t.match(/^new\s+(?:50p|£\d|\d+p)\s*(?:coin)?\s*[:\–\-]\s*(.+)/i);
+  m = t.match(/^new\s+(?:50p|£\d|\d+p)\s*(?:coin)?\s*[:\–\-]\s*(.+)/i);
   if (m) return m[1].replace(/\s*\(.*\)$/, '').trim();
 
   // Pattern: "[year] [denom] [name] Coin"
@@ -157,8 +164,8 @@ function cleanChangecheckerTitle(raw) {
   }
 
   // Short clean title with no verb phrases — use as-is
-  if (t.length <= 70 && !/\b(is|are|was|will|has|have|could|celebrating|announces?|launches?|unveils?)\b/i.test(t) && !/[?!]/.test(t)) {
-    return t.replace(/\s*coin\s*$/i, '').trim() || null;
+  if (t.length <= 70 && !/\b(is|are|was|will|has|have|could|celebrating|announces?|launches?|unveils?)\b/i.test(t) && !/[?]/.test(t)) {
+    return t.replace(/[!]$/, '').replace(/\s*coin\s*$/i, '').trim() || null;
   }
 
   return null;
@@ -172,8 +179,10 @@ async function scrapeChangechecker() {
   const seen = new Set();
   const cutoffMs = Date.now() - 180 * 24 * 60 * 60 * 1000;
 
-  // Change Checker RSS — WordPress, always accessible, coin-focused titles
-  const rss = await safeFetch('https://www.changechecker.org/feed/', HEADERS_RSS, 15000);
+  // Change Checker RSS — try the new-coins category feed first, fall back to main feed
+  let rss = await safeFetch('https://www.changechecker.org/category/new-uk-coins/feed/', HEADERS_RSS, 15000);
+  if (!rss.ok) rss = await safeFetch('https://www.changechecker.org/category/new-coins/feed/', HEADERS_RSS, 15000);
+  if (!rss.ok) rss = await safeFetch('https://www.changechecker.org/feed/', HEADERS_RSS, 15000);
   if (!rss.ok) {
     errors.push(`Change Checker RSS: HTTP ${rss.status}${rss.error ? ' ' + rss.error : ''}`);
     return { coins, errors, source: 'Change Checker' };
