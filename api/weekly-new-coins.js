@@ -127,29 +127,41 @@ async function scrapeRoyalMint() {
   const seen = new Set();
   const currentYear = new Date().getFullYear();
 
-  // Pages to scrape for product links
+  // Pages to scrape for category/product links
   const PAGES = [
-    'https://www.royalmint.com/new-coins/',
     'https://www.royalmint.com/shop/limited-editions/',
-    'https://www.royalmint.com/shop/coins/',
+    'https://www.royalmint.com/shop/commemorative-coins/',
   ];
 
+  const categoryUrls = new Set();
   const allProductUrls = new Set();
 
+  // First pass: collect category links from top-level pages
   for (const pageUrl of PAGES) {
     const result = await safeFetch(pageUrl, HEADERS_FEED, 20000);
     if (!result.ok) {
       errors.push(`Royal Mint ${pageUrl}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
       continue;
     }
-    const hrefs = [...result.text.matchAll(/href="(\/shop\/[^"]+)"/gi)].map(m => m[1]);
-    errors.push(`DEBUG ${pageUrl}: ${result.text.length} bytes, ${hrefs.length} shop hrefs found, sample: ${hrefs.slice(0,3).join(' | ')}`);
-    // Extract all /shop/ hrefs from the page HTML
-    for (const href of hrefs) {
-      const clean = href.replace(/\?[^"]*$/, '').replace(/\/$/, '');
-      if (clean.split('/').length >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
+    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
+      const clean = href.replace(/\/$/, '');
+      const depth = clean.split('/').filter(Boolean).length;
+      if (depth === 3) categoryUrls.add('https://www.royalmint.com' + clean + '/'); // e.g. /shop/limited-editions/lotr/
+      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean); // already deep enough
     }
   }
+
+  // Second pass: scrape each category page for product links
+  const catArray = [...categoryUrls].slice(0, 40);
+  await Promise.all(catArray.map(async (catUrl) => {
+    const result = await safeFetch(catUrl, HEADERS_FEED, 15000);
+    if (!result.ok) return;
+    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
+      const clean = href.replace(/\/$/, '');
+      const depth = clean.split('/').filter(Boolean).length;
+      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
+    }
+  }));
 
   for (const fullUrl of allProductUrls) {
     const path = fullUrl.replace('https://www.royalmint.com', '');
