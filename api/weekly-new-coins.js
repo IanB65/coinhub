@@ -556,7 +556,7 @@ module.exports = async function handler(req, res) {
 
       const monarch = coinYear >= 2023 ? 'King Charles III' : 'Queen Elizabeth II';
       const collection = 'Commemorative';
-      const variantCode = buildVariantCode('COMM', c.denomination, c.year, c.name);
+      const variantCode = buildVariantCode('D', c.denomination, c.year, c.name);
 
       if (existingCodes.has(variantCode)) continue;
       const nameYearKey = `${c.name.toLowerCase().trim()}|${c.year}`;
