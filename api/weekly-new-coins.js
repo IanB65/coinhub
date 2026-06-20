@@ -127,59 +127,47 @@ async function scrapeRoyalMint() {
   const seen = new Set();
   const currentYear = new Date().getFullYear();
 
-  // Pages to scrape for category/product links
+  // Next.js apps embed initial data in __NEXT_DATA__ — parse that for product slugs
   const PAGES = [
-    'https://www.royalmint.com/shop/new/',
     'https://www.royalmint.com/shop/limited-editions/',
-    'https://www.royalmint.com/shop/commemorative-coins/',
+    'https://www.royalmint.com/shop/new/',
   ];
 
-  const categoryUrls = new Set();
   const allProductUrls = new Set();
 
-  // First pass: collect category links from top-level pages
   for (const pageUrl of PAGES) {
     const result = await safeFetch(pageUrl, HEADERS_FEED, 20000);
     if (!result.ok) {
       errors.push(`Royal Mint ${pageUrl}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
       continue;
     }
-    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
-      const clean = href.replace(/\/$/, '');
-      const depth = clean.split('/').filter(Boolean).length;
-      if (depth === 3) categoryUrls.add('https://www.royalmint.com' + clean + '/'); // e.g. /shop/limited-editions/lotr/
-      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean); // already deep enough
+
+    // Extract __NEXT_DATA__ JSON blob
+    const ndMatch = result.text.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i);
+    if (ndMatch) {
+      try {
+        const nd = JSON.parse(ndMatch[1]);
+        const ndStr = JSON.stringify(nd);
+        // Find all /shop/ paths in the JSON
+        for (const [, path] of ndStr.matchAll(/"(\/shop\/[^"?#]+)"/g)) {
+          const clean = path.replace(/\/$/, '');
+          const depth = clean.split('/').filter(Boolean).length;
+          if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
+        }
+        errors.push(`DEBUG __NEXT_DATA__ ${pageUrl}: found ${allProductUrls.size} product URLs. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
+      } catch (e) {
+        errors.push(`DEBUG __NEXT_DATA__ parse error ${pageUrl}: ${e.message}`);
+      }
+    } else {
+      // Fallback: look for shop hrefs in raw HTML
+      for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
+        const clean = href.replace(/\/$/, '');
+        const depth = clean.split('/').filter(Boolean).length;
+        if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
+      }
+      errors.push(`DEBUG no __NEXT_DATA__ on ${pageUrl}, ${result.text.length} bytes, ${allProductUrls.size} hrefs`);
     }
   }
-
-  errors.push(`DEBUG pass1: ${categoryUrls.size} cats, ${allProductUrls.size} products. Cats: ${[...categoryUrls].slice(0,3).join(' | ')}. Products: ${[...allProductUrls].slice(0,3).join(' | ')}`);
-
-  // Second pass: scrape each category page for product links
-  const catArray = [...categoryUrls].slice(0, 40);
-  await Promise.all(catArray.map(async (catUrl) => {
-    const result = await safeFetch(catUrl, HEADERS_FEED, 15000);
-    if (!result.ok) return;
-    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
-      const clean = href.replace(/\/$/, '');
-      const depth = clean.split('/').filter(Boolean).length;
-      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
-    }
-  }));
-
-  // Third pass: the "product URLs" so far may still be collection pages — go one level deeper
-  const pass2Urls = [...allProductUrls];
-  allProductUrls.clear();
-  await Promise.all(pass2Urls.slice(0, 60).map(async (catUrl) => {
-    const result = await safeFetch(catUrl, HEADERS_FEED, 15000);
-    if (!result.ok) return;
-    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
-      const clean = href.replace(/\/$/, '');
-      const depth = clean.split('/').filter(Boolean).length;
-      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
-    }
-  }));
-
-  errors.push(`DEBUG: ${allProductUrls.size} product URLs after pass 3. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
 
   for (const fullUrl of allProductUrls) {
     const path = fullUrl.replace('https://www.royalmint.com', '');
