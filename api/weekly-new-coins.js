@@ -165,7 +165,20 @@ async function scrapeRoyalMint() {
     }
   }));
 
-  errors.push(`DEBUG: ${allProductUrls.size} product URLs after pass 2. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
+  // Third pass: the "product URLs" so far may still be collection pages — go one level deeper
+  const pass2Urls = [...allProductUrls];
+  allProductUrls.clear();
+  await Promise.all(pass2Urls.slice(0, 60).map(async (catUrl) => {
+    const result = await safeFetch(catUrl, HEADERS_FEED, 15000);
+    if (!result.ok) return;
+    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"?#]+)"/gi)) {
+      const clean = href.replace(/\/$/, '');
+      const depth = clean.split('/').filter(Boolean).length;
+      if (depth >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
+    }
+  }));
+
+  errors.push(`DEBUG: ${allProductUrls.size} product URLs after pass 3. Sample: ${[...allProductUrls].slice(0,3).join(' | ')}`);
 
   for (const fullUrl of allProductUrls) {
     const path = fullUrl.replace('https://www.royalmint.com', '');
