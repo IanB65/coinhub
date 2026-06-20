@@ -1,0 +1,27 @@
+name: Stage King's Trust coin (one-shot)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage coin to NewCoinsInbox
+        run: |
+          curl -s -X POST https://coins.ghghome.co.uk/api/inbox-stage \
+            -H "Content-Type: application/json" \
+            -H "x-service-key: ${{ secrets.COINHUB_SERVICE_KEY }}" \
+            -d '{
+              "coins": [{
+                "variantCode": "UK-D-50P-2026-KTII-",
+                "name": "Kings Trust",
+                "denomination": "50p",
+                "collection": "Commemorative",
+                "monarch": "King Charles III",
+                "year": 2026,
+                "imageUrl": "",
+                "sourceUrl": "",
+                "price": ""
+              }]
+            }'
