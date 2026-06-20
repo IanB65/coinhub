@@ -125,7 +125,7 @@ async function scrapeRoyalMintSitemap() {
   const coins = [];
   const errors = [];
   const seen = new Set();
-  const cutoffMs = Date.now() - 45 * 24 * 60 * 60 * 1000; // 45 days
+  const cutoffMs = Date.now() - 180 * 24 * 60 * 60 * 1000; // 180 days
   const currentYear = new Date().getFullYear();
 
   const idxResult = await safeFetch('https://www.royalmint.com/sitemap_index.xml', HEADERS_FEED, 15000);
@@ -167,7 +167,7 @@ async function scrapeRoyalMintSitemap() {
       if (!denom) continue;
 
       const year = guessYear(slug.replace(/-/g, ' '));
-      if (parseInt(year) < currentYear - 1) continue;
+      if (parseInt(year) < currentYear - 2) continue;
 
       const name = slugToName(slug, denom, year);
       if (!name || name.length < 4) continue;
