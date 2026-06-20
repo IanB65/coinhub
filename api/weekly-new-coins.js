@@ -46,7 +46,7 @@ async function getAccessToken() {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const HEADERS_FEED = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en-GB,en;q=0.9',
 };
@@ -129,6 +129,7 @@ async function scrapeRoyalMint() {
 
   // Pages to scrape for category/product links
   const PAGES = [
+    'https://www.royalmint.com/shop/new/',
     'https://www.royalmint.com/shop/limited-editions/',
     'https://www.royalmint.com/shop/commemorative-coins/',
   ];
@@ -151,7 +152,7 @@ async function scrapeRoyalMint() {
     }
   }
 
-  errors.push(`DEBUG: ${categoryUrls.size} category URLs, ${allProductUrls.size} product URLs after pass 1. Sample cats: ${[...categoryUrls].slice(0,3).join(' | ')}`);
+  errors.push(`DEBUG pass1: ${categoryUrls.size} cats, ${allProductUrls.size} products. Cats: ${[...categoryUrls].slice(0,3).join(' | ')}. Products: ${[...allProductUrls].slice(0,3).join(' | ')}`);
 
   // Second pass: scrape each category page for product links
   const catArray = [...categoryUrls].slice(0, 40);
