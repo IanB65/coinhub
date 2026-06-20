@@ -46,8 +46,9 @@ async function getAccessToken() {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const HEADERS_FEED = {
-  'User-Agent': 'CoinHub-Scanner/1.0 (coin collection tracker)',
-  'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-GB,en;q=0.9',
 };
 
 function guessDenomination(text) {
