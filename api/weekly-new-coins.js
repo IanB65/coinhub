@@ -121,75 +121,55 @@ function slugToName(slug, denom, year) {
   }).join(' ').trim();
 }
 
-async function scrapeRoyalMintSitemap() {
+async function scrapeRoyalMint() {
   const coins = [];
   const errors = [];
   const seen = new Set();
-  const cutoffMs = Date.now() - 180 * 24 * 60 * 60 * 1000; // 180 days
   const currentYear = new Date().getFullYear();
 
-  const SITEMAP_INDEX_URLS = [
-    'https://www.royalmint.com/sitemap_index.xml',
-    'https://www.royalmint.com/sitemap.xml',
-    'https://www.royalmint.com/sitemaps/sitemap_index.xml',
+  // Pages to scrape for product links
+  const PAGES = [
+    'https://www.royalmint.com/new-coins/',
+    'https://www.royalmint.com/shop/limited-editions/',
+    'https://www.royalmint.com/shop/coins/',
   ];
-  let idxResult = { ok: false };
-  for (const url of SITEMAP_INDEX_URLS) {
-    idxResult = await safeFetch(url, HEADERS_FEED, 15000);
-    if (idxResult.ok) break;
-    errors.push(`Royal Mint sitemap ${url}: HTTP ${idxResult.status}${idxResult.error ? ' ' + idxResult.error : ''}`);
-  }
-  if (!idxResult.ok) {
-    return { coins, errors, source: 'Royal Mint (sitemap)' };
-  }
 
-  const allChildSitemaps = [...idxResult.text.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(m => m[1].trim());
-  const shopSitemaps = allChildSitemaps.filter(u => /shop|product|coin/i.test(u));
-  const toFetch = (shopSitemaps.length ? shopSitemaps : allChildSitemaps).slice(0, 10);
+  const allProductUrls = new Set();
 
-  for (const smUrl of toFetch) {
-    const smResult = await safeFetch(smUrl, HEADERS_FEED, 20000);
-    if (!smResult.ok) {
-      errors.push(`Royal Mint sitemap ${smUrl}: HTTP ${smResult.status}`);
+  for (const pageUrl of PAGES) {
+    const result = await safeFetch(pageUrl, HEADERS_FEED, 20000);
+    if (!result.ok) {
+      errors.push(`Royal Mint ${pageUrl}: HTTP ${result.status}${result.error ? ' ' + result.error : ''}`);
       continue;
     }
-
-    for (const [, entry] of smResult.text.matchAll(/<url>([\s\S]*?)<\/url>/gi)) {
-      const locMatch = entry.match(/<loc>(https?:\/\/www\.royalmint\.com(\/shop\/[^<]+))<\/loc>/i);
-      if (!locMatch) continue;
-      const fullUrl = locMatch[1];
-      const path = locMatch[2];
-
-      if (!path.match(/\/shop\/(limited-editions|commemorative|coins|bullion|gifts)\//i)) continue;
-      if (path.includes('/collection/') || path.includes('/all-coins')) continue;
-      const depth = path.replace(/\/$/, '').split('/').length;
-      if (depth < 4) continue;
-
-      const lastmodMatch = entry.match(/<lastmod>([^<]+)<\/lastmod>/i);
-      if (lastmodMatch) {
-        const lastmod = new Date(lastmodMatch[1].trim()).getTime();
-        if (!isNaN(lastmod) && lastmod < cutoffMs) continue;
-      }
-
-      const slug = path.replace(/\/$/, '').split('/').pop();
-      const denom = guessDenomination(slug.replace(/-/g, ' '));
-      if (!denom) continue;
-
-      const year = guessYear(slug.replace(/-/g, ' '));
-      if (parseInt(year) < currentYear - 2) continue;
-
-      const name = slugToName(slug, denom, year);
-      if (!name || name.length < 4) continue;
-
-      const key = `${name.toLowerCase()}|${year}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: fullUrl });
+    // Extract all /shop/ hrefs from the page HTML
+    for (const [, href] of result.text.matchAll(/href="(\/shop\/[^"]+)"/gi)) {
+      const clean = href.replace(/\?[^"]*$/, '').replace(/\/$/, '');
+      if (clean.split('/').length >= 4) allProductUrls.add('https://www.royalmint.com' + clean);
     }
   }
 
-  return { coins, errors, source: 'Royal Mint (sitemap)' };
+  for (const fullUrl of allProductUrls) {
+    const path = fullUrl.replace('https://www.royalmint.com', '');
+    const slug = path.split('/').pop();
+
+    const denom = guessDenomination(slug.replace(/-/g, ' '));
+    if (!denom) continue;
+
+    const year = guessYear(slug.replace(/-/g, ' '));
+    if (parseInt(year) < currentYear - 2) continue;
+
+    const name = slugToName(slug, denom, year);
+    if (!name || name.length < 4) continue;
+
+    const key = `${name.toLowerCase()}|${year}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: fullUrl });
+  }
+
+  return { coins, errors, source: 'Royal Mint' };
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────────────
@@ -204,14 +184,14 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const smResult = await scrapeRoyalMintSitemap();
+    const smResult = await scrapeRoyalMint();
 
     const sourceSummary = [{ source: smResult.source, found: smResult.coins.length, errors: smResult.errors }];
 
     const candidates = smResult.coins;
 
     if (!candidates.length) {
-      return res.status(200).json({ staged: 0, skipped: 0, found: 0, message: 'No new coins found in Royal Mint sitemap', sources: sourceSummary });
+      return res.status(200).json({ staged: 0, skipped: 0, found: 0, message: 'No new coins found on Royal Mint pages', sources: sourceSummary });
     }
 
     const token = await getAccessToken();
