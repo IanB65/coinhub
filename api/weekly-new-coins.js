@@ -82,10 +82,51 @@ const ARTICLE_SKIP = [
 ];
 
 /**
+ * Strip the " - Publication Name" suffix that Google News appends to article titles.
+ */
+function stripNewsSuffix(raw) {
+  // " - Source" at the end — source names are typically 1-4 words with no lowercase connectives
+  return raw.replace(/\s+-\s+[A-Z][^\-]{0,40}$/, '').trim();
+}
+
+/**
+ * For announcement headlines like "Royal Mint unveils X coin for Y" or
+ * "Royal Mint, Organisation Release X Coin", try to extract just the subject name.
+ * Returns null if extraction isn't confident.
+ */
+function extractCoinSubject(raw) {
+  // Pattern: "... unveils/launches/releases [the] <denom> coin for/celebrating/marking <subject>"
+  let m = raw.match(/\b(?:unveils?|launches?|releases?|reveals?|introduces?|strikes?)\b.+?\b(?:coin|50p|£\d)\b\s+(?:for|celebrating|marking|honoring|honouring|to mark|to celebrate)\s+(.+)/i);
+  if (m) {
+    const subject = m[1].replace(/\s*[,;].+$/, '').replace(/\s*\(.*\)/, '').trim();
+    if (subject.length >= 4 && subject.length <= 80) return subject;
+  }
+
+  // Pattern: "... <Organisation>, Royal Mint Release <subject> <denom> Coin"
+  m = raw.match(/\bRelease\s+(.+?)\s+(?:50p|£\d|\d+p)\b/i);
+  if (m) {
+    const subject = m[1].trim();
+    if (subject.length >= 4 && subject.length <= 80) return subject;
+  }
+
+  // Pattern: "new <denom> coin for/celebrating <subject>"
+  m = raw.match(/\bnew\s+(?:50p|£\d|\d+p)\s+coin\s+(?:for|celebrating|marking|honouring)\s+(.+)/i);
+  if (m) {
+    const subject = m[1].replace(/\s*[,;].+$/, '').trim();
+    if (subject.length >= 4 && subject.length <= 80) return subject;
+  }
+
+  return null;
+}
+
+/**
  * Attempt to derive a clean coin name from a raw title (which may be an article headline).
  * Returns null if the title looks like an editorial rather than a coin product name.
  */
 function cleanCoinName(raw) {
+  // Strip news source suffix first (e.g. " - MSN", " - License Global")
+  raw = stripNewsSuffix(raw);
+
   const lower = raw.toLowerCase();
 
   // Skip obvious non-coin articles
@@ -93,6 +134,13 @@ function cleanCoinName(raw) {
 
   // Skip if it looks like a sentence / article (verb phrases, question marks, etc.)
   if (/[?!]/.test(raw)) return null;
+
+  // Announcement verbs — try to extract the coin subject before treating as junk
+  const ANNOUNCE_VERBS = /\b(unveils?|launches?|releases?|reveals?|introduces?|strikes?|issues?)\b/i;
+  if (ANNOUNCE_VERBS.test(raw)) {
+    const subject = extractCoinSubject(raw);
+    return subject || null;
+  }
 
   // Suffixes in the after-colon part that indicate article language — strip them to get coin name
   const ARTICLE_SUFFIX = /\s+(honoured|celebrated|celebrates?|features?|featured|launched|unveiled|released|revealed|announced|coming|arrives?|to be minted|on new|on the new)\b.*/i;
@@ -121,7 +169,7 @@ function cleanCoinName(raw) {
   }
 
   // No colon — skip if it looks like a sentence
-  if (/\b(is|are|was|were|has|have|will|could|should|might|reveals?|launches?|introduces?|celebrates?|honours?|honoured|features?|featured)\b/i.test(raw)) return null;
+  if (/\b(is|are|was|were|has|have|will|could|should|might|celebrates?|honours?|honoured|features?|featured)\b/i.test(raw)) return null;
 
   // Skip if excessively long (likely a sentence)
   if (raw.length > 100) return null;
