@@ -228,6 +228,10 @@ async function scrapeWestminster() {
 
   // Westminster Collection — Royal Mint authorised retailer, lists actual coin products
   const URLS = [
+    'https://www.westminstercollection.com/coins/uk-coins/',
+    'https://www.westminstercollection.com/coins/uk-coins/50p-coins/',
+    'https://www.westminstercollection.com/coins/uk-coins/2-coins/',
+    'https://www.westminstercollection.com/coins/uk-coins/1-coins/',
     'https://www.westminstercollection.com/change-checker/',
     'https://www.westminstercollection.com/coins/',
   ];
@@ -240,7 +244,7 @@ async function scrapeWestminster() {
     }
 
     // Extract product titles from h2/h3 elements (their product cards use these)
-    for (const [, titleHtml] of result.text.matchAll(/<h[23][^>]*class="[^"]*(?:product|title)[^"]*"[^>]*>([\s\S]*?)<\/h[23]>/gi)) {
+    for (const [, titleHtml] of result.text.matchAll(/<h[23][^>]*>([\s\S]*?)<\/h[23]>/gi)) {
       const raw = extractText(titleHtml);
       const denom = guessDenomination(raw);
       if (!denom) continue;
@@ -259,26 +263,6 @@ async function scrapeWestminster() {
       coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: url });
     }
 
-    // Fallback: any heading containing a denomination
-    if (!coins.length) {
-      for (const [, headHtml] of result.text.matchAll(/<h[2-4][^>]*>([\s\S]*?)<\/h[2-4]>/gi)) {
-        const raw = extractText(headHtml);
-        const denom = guessDenomination(raw);
-        if (!denom) continue;
-        const year = guessYear(raw);
-        if (parseInt(year) < currentYear - 2) continue;
-        const name = raw
-          .replace(/\b(50p|£\d|£\d+|\d+p)\b/gi, '')
-          .replace(/\b20\d{2}\b/g, '')
-          .replace(/\bcoin\b/gi, '')
-          .replace(/\s+/g, ' ').trim();
-        if (!name || name.length < 3) continue;
-        const key = `${name.toLowerCase()}|${year}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        coins.push({ name: name.slice(0, 120), denomination: denom, year, imageUrl: '', sourceUrl: url });
-      }
-    }
   }
 
   return { coins, errors, source: 'Westminster Collection' };
