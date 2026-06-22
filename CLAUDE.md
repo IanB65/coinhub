@@ -109,10 +109,11 @@ Vercel auto-deploys within ~30 seconds. No manual deploy step needed.
 UK-{type}-{denom}-{year}-{id}-
 
 UK-D-50P-2025-GRND-        Definitive 50p 2025
-UK-COMM-£2-2026-ZSLL-      Commemorative £2 2026 (ZSL London Zoo)
+UK-D-£2-2026-ZSLL-         Commemorative £2 2026 (ZSL London Zoo)
 UK-PD-FART-1922-           Pre-decimal Farthing 1922
 ```
-Types: `D` (definitive), `PD` (pre-decimal), `COMM` (commemorative)  
+Types: `D` (all decimal coins — definitives AND commemoratives), `PD` (pre-decimal)  
+**Never use `UK-COMM-` — all decimal coins use `UK-D-` regardless of whether they are definitive or commemorative.**  
 Monarch rule: King Charles III for year ≥ 2023, Queen Elizabeth II for year ≤ 2022
 
 ---
