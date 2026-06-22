@@ -1,4 +1,4 @@
-name: Stage King's Trust coin (one-shot)
+name: Stage coin to inbox (one-shot)
 
 on:
   workflow_dispatch:
@@ -14,14 +14,14 @@ jobs:
             -H "x-service-key: ${{ secrets.COINHUB_SERVICE_KEY }}" \
             -d '{
               "coins": [{
-                "variantCode": "UK-D-50P-2026-KTII-",
-                "name": "Kings Trust",
+                "variantCode": "UK-COMM-50P-2026-WTPF-",
+                "name": "Winnie the Pooh Friendship",
                 "denomination": "50p",
                 "collection": "Commemorative",
                 "monarch": "King Charles III",
                 "year": 2026,
                 "imageUrl": "",
-                "sourceUrl": "",
+                "sourceUrl": "https://www.westminstercollection.com/p-177L/2026-UK-Winnie-the-Pooh-Friendship-CBU-50p.aspx",
                 "price": ""
               }]
             }'
